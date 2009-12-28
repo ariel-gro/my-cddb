@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+   <extension
+         id="application"
+         point="org.eclipse.core.runtime.applications">
+      <application
+            icon="icons/itunes.jpg">
+         <run
+               class="view.Application">
+         </run>
+      </application>
+   </extension>
+   <extension
+         point="org.eclipse.ui.perspectives">
+      <perspective
+            name="RCP Perspective"
+            class="view.Perspective"
+            id="Cd_Store.perspective">
+      </perspective>
+   </extension>
+   <extension
+         point="org.eclipse.ui.views">
+      <view
+            name="Welcome"
+            allowMultiple="true"
+            class="view.View"
+            id="Cd_Store.view">
+      </view>
+      <view
+            name="Navigation View"
+            allowMultiple="true"
+            class="view.NavigationView"
+            id="Cd_Store.navigationView">
+      </view>
+      <view
+            allowMultiple="true"
+            class="view.UserView"
+            id="Cd_Store.UserView"
+            name="UserView">
+      </view>
+      <view
+            allowMultiple="true"
+            class="view.QueryView"
+            id="Cd_Store.queryView"
+            name="QueryView">
+      </view>
+      <view
+            allowMultiple="true"
+            class="view.ShoppingCartView"
+            id="Cd_Store.shoppingCartView"
+            name="Shopping Cart">
+      </view>
+   </extension>
+   <extension
+         point="org.eclipse.ui.commands">
+      <category
+            name="Mail"
+            id="Cd_Store.category">
+      </category>
+      <command
+            name="Open Query View"
+            description="Opens a query view"
+            categoryId="Cd_Store.category"
+            id="Cd_Store.open">
+      </command>
+      <command
+            name="Open Message Dialog"
+            description="Open a message dialog"
+            categoryId="Cd_Store.category"
+            id="Cd_Store.openMessage">
+      </command>
+      <command
+            defaultHandler="view.ExitHandler"
+            id="Cd_Store.exitCommand"
+            name="Exit">
+      </command>
+   </extension>
+   <extension
+         id="product"
+         point="org.eclipse.core.runtime.products">
+      <product
+            application="Cd_Store.application"
+            name="RCP Product">
+         <property
+               name="aboutText"
+               value="RCP Mail template created by PDE">
+         </property>
+         <property
+               name="windowImages"
+               value="icons/itunes.jpg">
+         </property>
+         <property
+               name="aboutImage"
+               value="product_lg.gif">
+         </property>
+      </product>
+   </extension>
+   <extension
+         id="product1"
+         point="org.eclipse.core.runtime.products">
+      <product
+            application="Cd_Store.application"
+            name="CD Store">
+         <property
+               name="appName"
+               value="CD Store">
+         </property>
+         <property
+               name="startupProgressRect"
+               value="1,345,290,15">
+         </property>
+         <property
+               name="preferenceCustomization"
+               value="plugin_customization.ini">
+         </property>
+         <property
+               name="aboutImage"
+               value="itunes_128_128.GIF">
+         </property>
+         <property
+               name="windowImages"
+               value="itunes_16_16.GIF,itunes_32_32.GIF,itunes_48_48.GIF,itunes_64_64.GIF,itunes_128_128.GIF">
+         </property>
+         <property
+               name="aboutText"
+               value="CD Store DB Project.&#x0A;Version 1.0&#x0A;&#x0A;By:&#x0A;Liron Lasry&#x0A;Ariel Groenteman&#x0A;Ido Sekely&#x0A;Roni Stern">
+         </property>
+      </product>
+   </extension>
+
+</plugin>
