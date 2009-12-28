@@ -46,7 +46,7 @@ public class ShoppingCartView extends ViewPart
 		Text text = new Text(top, SWT.MULTI | SWT.WRAP);
 		text.setText("Shopping Cart View");
 		text.setLayoutData(new GridData(GridData.FILL_BOTH));
-		text.setBackgroundImage(Activator.getImageDescriptor("icons/music013.gif").createImage());
+		text.setBackgroundImage(Activator.getImageDescriptor("icons/music040.gif").createImage());
 	}
 
 	private Image resize(Image image, int width, int height)

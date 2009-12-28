@@ -143,10 +143,10 @@ public class NavigationView extends ViewPart
 		@Override
 		public Font getFont(Object obj, int columnIndex)
 		{
-			if(obj instanceof TreeParent)
+			//if(obj instanceof TreeParent)
 				return registry.getBold(Display.getCurrent().getSystemFont().getFontData()[0].getName());
 				
-			return null;
+			//return null;
 		}
 	}
 
@@ -192,6 +192,7 @@ public class NavigationView extends ViewPart
 	public void createPartControl(Composite parent)
 	{	
 		viewer = new TreeViewer(parent, SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
+		viewer.getTree().setBackgroundImage(Activator.getImageDescriptor("icons/music040.gif").createImage());
 		TreeColumn column = new TreeColumn(viewer.getTree(),SWT.NONE);
 		column.setWidth(180);
 		viewer.setContentProvider(new ViewContentProvider());

@@ -113,13 +113,14 @@ public class View extends ViewPart
 		textArea.setLayoutData(new GridData(GridData.FILL_BOTH));
 		textArea.setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_WHITE));
 		Label generalTextLabel = new Label(textArea, SWT.WRAP);
-		generalTextLabel.setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_WHITE));
-		generalTextLabel.setText("Here we'll write all sorts of crap.\nbla\nbla\nbla\nbla\nbla\nbla\nbla");
-		generalTextLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		generalTextLabel.setBackgroundImage(Activator.getImageDescriptor("icons/music040.gif").createImage());
+		generalTextLabel.setText("Here we'll write all sorts of crap.\nbla\nbla\nbla\nbla\nbla\nbla\nbla\n\n\n\n\n\n\n\n\n\n\n");
+		generalTextLabel.setLayoutData(new GridData(GridData.FILL_BOTH));
 		
 		Composite recordsArea = new Composite(mainArea, SWT.BORDER);
 		recordsArea.setLayoutData(new GridData(GridData.FILL_BOTH));
-		recordsArea.setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_WHITE));
+		recordsArea.setBackgroundImage(Activator.getImageDescriptor("icons/music040.gif").createImage());
+		//recordsArea.setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_WHITE));
 		layout = new GridLayout();
 		layout.marginHeight = 0;
 		layout.marginWidth = 0;
