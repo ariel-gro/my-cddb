@@ -51,10 +51,13 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor
 	{
 		super.postWindowOpen();
 
+		// Set Maximized
+		getWindowConfigurer().getWorkbenchConfigurer().getWorkbench().getWorkbenchWindows()[0].getShell().setMaximized(true);
+		
 		// Set status line
 		IStatusLineManager statusline = getWindowConfigurer().getActionBarConfigurer().getStatusLineManager();
 		statusline.setErrorMessage("Not connected to DB");
-
+		
 		// Setup minimize feature
 		window = getWindowConfigurer().getWindow();
 		trayItem = initTaskItem(window);
