@@ -76,6 +76,11 @@
             id="Cd_Store.exitCommand"
             name="Exit">
       </command>
+      <command
+            defaultHandler="view.UpdateShoppingCart"
+            id="Cd_Store.updateShoppingCart"
+            name="updateShoppingCart">
+      </command>
    </extension>
    <extension
          id="product"
@@ -109,7 +114,7 @@
          </property>
          <property
                name="startupProgressRect"
-               value="1,345,290,15">
+               value="1,342,290,15">
          </property>
          <property
                name="preferenceCustomization"
