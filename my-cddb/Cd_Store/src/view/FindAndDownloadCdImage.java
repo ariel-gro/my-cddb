@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
 public class FindAndDownloadCdImage
 {
 
-	static String urlString = "http://www.coverhunt.com/search/celebration+madonna";
+	static String urlString = "http://www.coverhunt.com/search/green+day+nimrod";
 
 	public static void main(String args[])
 	{

@@ -1,8 +1,13 @@
 package view;
 
-import org.eclipse.jface.dialogs.MessageDialog;
+import model.Disk;
+import model.ShoppingCartContent;
+
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Font;
@@ -78,7 +83,7 @@ public class View extends ViewPart
 		Label separator = new Label(banner, SWT.BORDER);
 
 		
-		final Link loginLink = new Link(banner, SWT.NONE);
+		Link loginLink = new Link(banner, SWT.NONE);
 		loginLink.setText("<a>Advanced Search</a>");
 		loginLink.setFont(boldFont);
 		//loginLink.setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_WHITE));
@@ -113,14 +118,13 @@ public class View extends ViewPart
 		textArea.setLayoutData(new GridData(GridData.FILL_BOTH));
 		textArea.setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_WHITE));
 		Label generalTextLabel = new Label(textArea, SWT.WRAP);
-		generalTextLabel.setBackgroundImage(Activator.getImageDescriptor("icons/music040.gif").createImage());
-		generalTextLabel.setText("Here we'll write all sorts of crap.\nbla\nbla\nbla\nbla\nbla\nbla\nbla\n\n\n\n\n\n\n\n\n\n\n");
+		generalTextLabel.setBackgroundImage(Activator.getImageDescriptor("icons/music013.gif").createImage());
+		generalTextLabel.setText("Here we'll write all sorts of crap.\nbla\nbla\nbla\nbla\nbla\nbla\nbla\n\n\n\n");
 		generalTextLabel.setLayoutData(new GridData(GridData.FILL_BOTH));
 		
 		Composite recordsArea = new Composite(mainArea, SWT.BORDER);
 		recordsArea.setLayoutData(new GridData(GridData.FILL_BOTH));
-		recordsArea.setBackgroundImage(Activator.getImageDescriptor("icons/music040.gif").createImage());
-		//recordsArea.setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_WHITE));
+		recordsArea.setBackgroundImage(Activator.getImageDescriptor("icons/music013.gif").createImage());
 		layout = new GridLayout();
 		layout.marginHeight = 0;
 		layout.marginWidth = 0;
@@ -134,11 +138,76 @@ public class View extends ViewPart
 		layout.numColumns = 5;	
 		layout.makeColumnsEqualWidth = true;
 		recordsCoversArea.setLayout(layout);
-		for (int i = 1; i <= 10; i++) 
+		
+		Disk[] dummyDisks = getDummyDisks();
+		for (int i = 0; i < dummyDisks.length; i++) 
 		{
-			Label lab = new Label(recordsCoversArea, SWT.CENTER);
-			lab.setImage(resize(Activator.getImageDescriptor("album covers/images_" + i + ".jpg").createImage(), 110, 110));
-			lab.setToolTipText("images_" + i + ".jpg");
+			Composite recordComposite = new Composite(recordsCoversArea, SWT.NONE);
+			recordsCoversArea.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, true));
+			layout = new GridLayout();
+			recordComposite.setLayout(layout);
+			
+			Label lab = new Label(recordComposite, SWT.CENTER);
+			lab.setImage(resize(Activator.getImageDescriptor(dummyDisks[i].getCoverImage()).createImage(), 110, 110));
+			lab.setToolTipText(dummyDisks[i].getTitle() + "\n" + dummyDisks[i].getArtist());
+			lab.setData(dummyDisks[i]);
+			lab.addMouseListener(new MouseListener() {
+				@Override
+				public void mouseDoubleClick(MouseEvent e)
+				{
+					Label selectedLabel = (Label) e.getSource();
+					Disk selectedDisk = (Disk)selectedLabel.getData();
+					if(new CustomMessageDialog(getSite().getShell(), "Add disk to Shopping Cart?", resize(Activator.getImageDescriptor(selectedDisk.getCoverImage()).createImage(), 140, 140), "Would you like to add the following disk to your Shopping Cart?\n\n" + selectedDisk.toString()).open() == IDialogConstants.YES_ID)
+					{
+						IHandlerService handlerService = (IHandlerService) getSite().getService(IHandlerService.class);
+						ShoppingCartContent.addToContent(selectedDisk);
+						try 
+						{		
+							handlerService.executeCommand("Cd_Store.updateShoppingCart", null);
+							
+						} catch (Exception ex) 
+						{
+							throw new RuntimeException("Cd_Store.updateShoppingCart not found");
+						}
+					}
+				}
+
+				@Override
+				public void mouseDown(MouseEvent e)
+				{}
+
+				@Override
+				public void mouseUp(MouseEvent e)
+				{}
+			});
+			
+			Link recordLink = new Link(recordComposite, SWT.NONE);
+			recordLink.setText("<a>" + dummyDisks[i].getTitle() + "</a>");
+			recordLink.setFont(boldFont);
+			recordLink.setData(dummyDisks[i]);
+			recordLink.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, true));
+			recordLink.addSelectionListener(new SelectionAdapter() {    
+				public void widgetSelected(SelectionEvent e) 
+				{			
+					IHandlerService handlerService = (IHandlerService) getSite().getService(IHandlerService.class);
+					Link selectedLink = (Link) e.getSource();
+					Disk selectedDisk = (Disk)selectedLink.getData();
+
+					if(new CustomMessageDialog(getSite().getShell(), "Add disk to Shopping Cart?", resize(Activator.getImageDescriptor(selectedDisk.getCoverImage()).createImage(), 140, 140), "Would you like to add the following disk to your Shopping Cart?\n\n" + selectedDisk.toString()).open() == IDialogConstants.YES_ID)
+					{
+						ShoppingCartContent.addToContent(selectedDisk);
+						try 
+						{		
+							handlerService.executeCommand("Cd_Store.updateShoppingCart", null);
+							
+						} catch (Exception ex) 
+						{
+							throw new RuntimeException("Cd_Store.updateShoppingCart not found");
+						}
+					}
+				}    
+			});
+			
 		}		
 	}
 
@@ -154,6 +223,18 @@ public class View extends ViewPart
 		return scaled;
 	}
 
+	private Disk[] getDummyDisks()
+	{
+		Disk[] myDisks = new Disk[10];
+		
+		for (int i = 0; i < myDisks.length; i++) 
+		{
+			myDisks[i] = new Disk("id" + i,"title" + i, "artist" + i, "genre" + i, "subGenre" + i, "year" + i, "totalTime" + i, "price" + i, "album covers/images_" + i + ".jpg", null);
+		}
+			
+		return myDisks;	
+	}
+	
 	public void setFocus()
 	{}
 }
