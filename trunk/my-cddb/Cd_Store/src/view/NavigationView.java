@@ -2,21 +2,28 @@ package view;
 
 import java.util.ArrayList;
 
+import org.eclipse.jface.resource.FontDescriptor;
 import org.eclipse.jface.resource.FontRegistry;
+import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
+import org.eclipse.jface.viewers.DoubleClickEvent;
+import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITableFontProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.window.DefaultToolTip;
+import org.eclipse.jface.window.ToolTip;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.part.ViewPart;
 
 public class NavigationView extends ViewPart
@@ -143,10 +150,13 @@ public class NavigationView extends ViewPart
 		@Override
 		public Font getFont(Object obj, int columnIndex)
 		{
-			//if(obj instanceof TreeParent)
-				return registry.getBold(Display.getCurrent().getSystemFont().getFontData()[0].getName());
+			FontDescriptor header_fdesc=FontDescriptor.createFrom("Tahoma",12,SWT.BOLD); 
+			FontDescriptor regular_fdesc=FontDescriptor.createFrom("Tahoma",10,SWT.BOLD);
+			
+			if(obj instanceof TreeParent)
+				return header_fdesc.createFont(registry.defaultFont().getDevice());
 				
-			//return null;
+			return regular_fdesc.createFont(registry.defaultFont().getDevice());
 		}
 	}
 
@@ -192,15 +202,39 @@ public class NavigationView extends ViewPart
 	public void createPartControl(Composite parent)
 	{	
 		viewer = new TreeViewer(parent, SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
-		viewer.getTree().setBackgroundImage(Activator.getImageDescriptor("icons/music040.gif").createImage());
+		viewer.getTree().setBackgroundImage(Activator.getImageDescriptor("icons/music013.gif").createImage());
 		TreeColumn column = new TreeColumn(viewer.getTree(),SWT.NONE);
-		column.setWidth(180);
+		column.setWidth(250);
 		viewer.setContentProvider(new ViewContentProvider());
 		viewer.setLabelProvider(new ViewLabelProvider());
 		viewer.setAutoExpandLevel(3);
 		viewer.setInput(createDummyModel());
+		hookDoubleClickCommand();
+		
+		DefaultToolTip toolTip = new DefaultToolTip(viewer.getControl(), ToolTip.RECREATE, false);
+		toolTip.setText("Double click on the item to get the predefined query");
 	}		
 
+	private void hookDoubleClickCommand()
+	{
+		viewer.addDoubleClickListener(new IDoubleClickListener() {
+			public void doubleClick(DoubleClickEvent event)
+			{
+				IHandlerService handlerService = (IHandlerService) getSite().getService(IHandlerService.class);
+				try 
+				{
+					System.out.println("Double click works !!!" + "  " + viewer.getTree().getSelection()[0].getText());
+					
+					//handlerService.executeCommand("de.vogella.rcp.intro.editor.callEditor", null);
+					
+				} catch (Exception ex) 
+				{
+					throw new RuntimeException("de.vogella.rcp.intro.editor.callEditor not found");
+				}
+			}
+		});
+	}
+	
 	/**
 	 * Passing the focus request to the viewer's control.
 	 */
