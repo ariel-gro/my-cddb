@@ -5,6 +5,7 @@ import java.util.List;
 
 public class Disk
 {
+	private String id;
 	private String title;
 	private String artist;
 	private String genre;
@@ -13,6 +14,7 @@ public class Disk
 	private String totalTime;
 	private String price;
 	private List<Track> tracks;
+	private String coverImage;
 	
 	public Disk(String title, String artist, String genre, String subGenre, String year, String totalTime, String price, List<Track> tracks) 
 	{
@@ -26,6 +28,22 @@ public class Disk
 		this.tracks = tracks;
 	}
 	
+	
+	
+	public String getId()
+	{
+		return id;
+	}
+
+
+
+	public void setId(String id)
+	{
+		this.id = id;
+	}
+
+
+
 	public String getTitle()
 	{
 		return title;
@@ -92,14 +110,33 @@ public class Disk
 	{
 		this.tracks = tracks;
 	}
+	
+	public String getCoverImage()
+	{
+		return coverImage;
+	}
+
+	public void setCoverImage(String coverImage)
+	{
+		this.coverImage = coverImage;
+	}
 
 	public String toString() 
 	{
+		return toString(false);
+	}
+	
+	public String toString(boolean includeTracks) 
+	{
 		String tracksTitles = "";
-		for (Iterator<Track> iterator = tracks.iterator(); iterator.hasNext();) 
+		if(includeTracks)
 		{
-			Track track = (Track) iterator.next();
-			tracksTitles += track.getTitle() + "\n";
+			tracksTitles += "\nTracks:\n";
+			for (Iterator<Track> iterator = tracks.iterator(); iterator.hasNext();) 
+			{
+				Track track = (Track) iterator.next();
+				tracksTitles += track.getTitle() + "\n";
+			}
 		}
 		
 		return 	"Title: " + title + "\n" +
@@ -108,7 +145,7 @@ public class Disk
 				"Sub Genre: " + subGenre + "\n" +
 				"Year: " + year + "\n" +
 				"Total Time: " + totalTime + "\n" +
-				"Price: " + price  + "\n" +
-				"Tracks:\n" + tracksTitles;
+				"Price: " + price + 
+				tracksTitles;
 	}
 }
