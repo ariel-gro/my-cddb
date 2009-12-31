@@ -16,8 +16,9 @@ public class Disk
 	private List<Track> tracks;
 	private String coverImage;
 	
-	public Disk(String title, String artist, String genre, String subGenre, String year, String totalTime, String price, List<Track> tracks) 
+	public Disk(String id, String title, String artist, String genre, String subGenre, String year, String totalTime, String price, String coverImage, List<Track> tracks) 
 	{
+		this.id = id;
 		this.title = title;
 		this.artist = artist;
 		this.genre = genre;
@@ -25,24 +26,19 @@ public class Disk
 		this.year = year;
 		this.totalTime = totalTime;
 		this.price = price;
+		this.coverImage = coverImage;
 		this.tracks = tracks;
 	}
-	
-	
 	
 	public String getId()
 	{
 		return id;
 	}
 
-
-
 	public void setId(String id)
 	{
 		this.id = id;
 	}
-
-
 
 	public String getTitle()
 	{
@@ -147,5 +143,14 @@ public class Disk
 				"Total Time: " + totalTime + "\n" +
 				"Price: " + price + 
 				tracksTitles;
+	}
+	
+	public String toStringShort() 
+	{
+	
+		return 	"Title: " + title + "\n" +
+				"Artist: " + artist + "\n" +
+				"Year: " + year + "\n" +
+				"Price: " + price;
 	}
 }
