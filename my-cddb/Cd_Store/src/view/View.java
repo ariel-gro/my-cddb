@@ -4,6 +4,8 @@ import model.Disk;
 import model.ShoppingCartContent;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.resource.FontDescriptor;
+import org.eclipse.jface.resource.FontRegistry;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseEvent;
@@ -33,8 +35,14 @@ public class View extends ViewPart
 	public void createPartControl(Composite parent)
 	{
 
-		// setup bold font
+		// Fonts
 		Font boldFont = JFaceResources.getFontRegistry().getBold(JFaceResources.DEFAULT_FONT);
+		
+		FontRegistry registry = new FontRegistry();
+		FontDescriptor header_fdesc=FontDescriptor.createFrom("Tahoma",16,SWT.BOLD); 
+		Font headerBoldFont = header_fdesc.createFont(registry.defaultFont().getDevice());
+		
+		Image backgroundImage = Activator.getImageDescriptor("icons/music013.gif").createImage();
 
 		Composite top = new Composite(parent, SWT.NONE);
 		GridLayout layout = new GridLayout();
@@ -102,29 +110,29 @@ public class View extends ViewPart
 		// Main area
 		Composite mainArea = new Composite(top, SWT.BORDER);
 		mainArea.setLayoutData(new GridData(GridData.FILL_BOTH));
-		mainArea.setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_WHITE));
+		mainArea.setBackgroundImage(backgroundImage);
 		layout = new GridLayout();
 		layout.marginHeight = 0;
 		layout.marginWidth = 0;
 		layout.numColumns = 1;
 		mainArea.setLayout(layout);
 		
-		Composite textArea = new Composite(mainArea, SWT.BORDER);
-		layout = new GridLayout();
-		layout.marginHeight = 0;
-		layout.marginWidth = 0;
-		layout.numColumns = 1;
-		textArea.setLayout(layout);
-		textArea.setLayoutData(new GridData(GridData.FILL_BOTH));
-		textArea.setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_WHITE));
-		Label generalTextLabel = new Label(textArea, SWT.WRAP);
-		generalTextLabel.setBackgroundImage(Activator.getImageDescriptor("icons/music013.gif").createImage());
-		generalTextLabel.setText("Here we'll write all sorts of crap.\nbla\nbla\nbla\nbla\nbla\nbla\nbla\n\n\n\n");
-		generalTextLabel.setLayoutData(new GridData(GridData.FILL_BOTH));
+		Label haeadeLabel = new Label(mainArea, SWT.WRAP);
+		haeadeLabel.setBackgroundImage(backgroundImage);
+		haeadeLabel.setText("Welcome to the best CD store in the world !!!");	
+		haeadeLabel.setFont(headerBoldFont);
+		haeadeLabel.setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_DARK_CYAN));
+		haeadeLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_CENTER));
+		
+		Label textLabel = new Label(mainArea, SWT.WRAP);
+		textLabel.setBackgroundImage(backgroundImage);
+		textLabel.setText("\nBla Bla \nBla Bla\nBla Bla\n\n\n\n\n");	
+		textLabel.setFont(boldFont);
+		textLabel.setLayoutData(new GridData(GridData.FILL_BOTH));
 		
 		Composite recordsArea = new Composite(mainArea, SWT.BORDER);
 		recordsArea.setLayoutData(new GridData(GridData.FILL_BOTH));
-		recordsArea.setBackgroundImage(Activator.getImageDescriptor("icons/music013.gif").createImage());
+		recordsArea.setBackgroundImage(backgroundImage);
 		layout = new GridLayout();
 		layout.marginHeight = 0;
 		layout.marginWidth = 0;
@@ -154,6 +162,15 @@ public class View extends ViewPart
 			lab.addMouseListener(new MouseListener() {
 				@Override
 				public void mouseDoubleClick(MouseEvent e)
+				{}
+
+				@Override
+				public void mouseDown(MouseEvent e)
+				{		
+				}
+
+				@Override
+				public void mouseUp(MouseEvent e)
 				{
 					Label selectedLabel = (Label) e.getSource();
 					Disk selectedDisk = (Disk)selectedLabel.getData();
@@ -169,16 +186,8 @@ public class View extends ViewPart
 						{
 							throw new RuntimeException("Cd_Store.updateShoppingCart not found");
 						}
-					}
+					}	
 				}
-
-				@Override
-				public void mouseDown(MouseEvent e)
-				{}
-
-				@Override
-				public void mouseUp(MouseEvent e)
-				{}
 			});
 			
 			Link recordLink = new Link(recordComposite, SWT.NONE);
