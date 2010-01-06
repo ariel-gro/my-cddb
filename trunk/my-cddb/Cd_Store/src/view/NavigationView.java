@@ -4,10 +4,10 @@ import java.util.ArrayList;
 
 import org.eclipse.jface.resource.FontDescriptor;
 import org.eclipse.jface.resource.FontRegistry;
-import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
+import org.eclipse.jface.viewers.ITableColorProvider;
 import org.eclipse.jface.viewers.ITableFontProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.LabelProvider;
@@ -16,10 +16,11 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.window.DefaultToolTip;
 import org.eclipse.jface.window.ToolTip;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
@@ -130,7 +131,7 @@ public class NavigationView extends ViewPart
 		}
 	}
 
-	class ViewLabelProvider extends LabelProvider implements ITableFontProvider
+	class ViewLabelProvider extends LabelProvider implements ITableFontProvider, ITableColorProvider
 	{
 		FontRegistry registry = new FontRegistry();
 		
@@ -154,9 +155,24 @@ public class NavigationView extends ViewPart
 			FontDescriptor regular_fdesc=FontDescriptor.createFrom("Tahoma",10,SWT.BOLD);
 			
 			if(obj instanceof TreeParent)
-				return header_fdesc.createFont(registry.defaultFont().getDevice());
-				
+				return header_fdesc.createFont(registry.defaultFont().getDevice());	
+			
 			return regular_fdesc.createFont(registry.defaultFont().getDevice());
+		}
+
+		@Override
+		public Color getBackground(Object element, int columnIndex)
+		{
+			return null;
+		}
+
+		@Override
+		public Color getForeground(Object element, int columnIndex)
+		{
+			if(element instanceof TreeParent)
+				return Display.getCurrent().getSystemColor(SWT.COLOR_DARK_CYAN);
+			
+			return null;	
 		}
 	}
 
@@ -209,6 +225,10 @@ public class NavigationView extends ViewPart
 		viewer.setLabelProvider(new ViewLabelProvider());
 		viewer.setAutoExpandLevel(3);
 		viewer.setInput(createDummyModel());
+		
+		if(viewer.getTree().getItem(0).getItem(0) != null)
+			viewer.getTree().setSelection(viewer.getTree().getItem(0).getItem(0));
+		
 		hookDoubleClickCommand();
 		
 		DefaultToolTip toolTip = new DefaultToolTip(viewer.getControl(), ToolTip.RECREATE, false);
