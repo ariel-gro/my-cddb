@@ -12,6 +12,11 @@ import org.eclipse.ui.actions.ActionFactory.IWorkbenchAction;
 import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
 
+import view.commands.OpenAdvancedQueryViewAction;
+import view.commands.OpenQueryViewAction;
+import view.views.AdvancedQueryView;
+import view.views.QueryView;
+
 /**
  * An action bar advisor is responsible for creating, adding, and disposing of the
  * actions added to a workbench window. Each window will be populated with
@@ -24,7 +29,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
     // when fillActionBars is called with FILL_PROXY.
     private IWorkbenchAction exitAction;
     private IWorkbenchAction aboutAction;
-    private OpenViewAction openViewAction;
+    private OpenQueryViewAction openQueryViewAction;
+    private OpenAdvancedQueryViewAction openAdvancedQueryViewAction;
     private Action messagePopupAction;
     
 
@@ -45,8 +51,11 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
         aboutAction = ActionFactory.ABOUT.create(window);
         register(aboutAction);
         
-        openViewAction = new OpenViewAction(window, "Open Another Message View", QueryView.ID);
-        register(openViewAction);
+        openQueryViewAction = new OpenQueryViewAction(window, "Open Another Query View", QueryView.ID);
+        register(openQueryViewAction);
+        
+        openAdvancedQueryViewAction = new OpenAdvancedQueryViewAction(window, "Open Another Advanced Query View", AdvancedQueryView.ID);
+        register(openAdvancedQueryViewAction);
         
         messagePopupAction = new MessagePopupAction("Import DB", window);
         register(messagePopupAction);
