@@ -25,61 +25,73 @@
       <view
             name="Welcome"
             allowMultiple="true"
-            class="view.View"
+            class="view.views.View"
             id="Cd_Store.view">
       </view>
       <view
             name="Navigation View"
             allowMultiple="true"
-            class="view.NavigationView"
+            class="view.views.NavigationView"
             id="Cd_Store.navigationView">
       </view>
       <view
             allowMultiple="true"
-            class="view.UserView"
+            class="view.views.UserView"
             id="Cd_Store.UserView"
             name="UserView">
       </view>
       <view
             allowMultiple="true"
-            class="view.QueryView"
+            class="view.views.QueryView"
             id="Cd_Store.queryView"
             name="QueryView">
       </view>
       <view
             allowMultiple="true"
-            class="view.ShoppingCartView"
+            class="view.views.ShoppingCartView"
             id="Cd_Store.shoppingCartView"
             name="Shopping Cart">
+      </view>
+      <view
+            allowMultiple="true"
+            class="view.views.AdvancedQueryView"
+            id="Cd_Store.advancedQueryView"
+            name="AdvancedQueryView">
       </view>
    </extension>
    <extension
          point="org.eclipse.ui.commands">
       <category
-            name="Mail"
+            name="Commands"
             id="Cd_Store.category">
       </category>
       <command
             name="Open Query View"
             description="Opens a query view"
             categoryId="Cd_Store.category"
-            id="Cd_Store.open">
+            id="Cd_Store.commands.openQueryViewAction">
       </command>
       <command
             name="Open Message Dialog"
             description="Open a message dialog"
             categoryId="Cd_Store.category"
-            id="Cd_Store.openMessage">
+            id="Cd_Store.commands.openMessage">
       </command>
       <command
-            defaultHandler="view.ExitHandler"
+            defaultHandler="view.commands.ExitHandler"
             id="Cd_Store.exitCommand"
             name="Exit">
       </command>
       <command
-            defaultHandler="view.UpdateShoppingCart"
-            id="Cd_Store.updateShoppingCart"
+            defaultHandler="view.commands.UpdateShoppingCart"
+            id="Cd_Store.commands.updateShoppingCart"
             name="updateShoppingCart">
+      </command>
+      <command
+            categoryId="Cd_Store.category"
+            description="Opens an advanced query view"
+            id="Cd_Store.commands.openAdvancedQueryViewAction"
+            name="Open Advanced Query View">
       </command>
    </extension>
    <extension
