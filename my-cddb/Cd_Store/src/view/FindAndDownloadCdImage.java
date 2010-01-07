@@ -7,18 +7,24 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class FindAndDownloadCdImage
+public class FindAndDownloadCdImage extends Thread
 {
+	//"http://www.coverhunt.com/search/green+day+nimrod";
+	final String SEARCH_SITE = "http://www.coverhunt.com/search/";
+	String searchPhrase;
+	String localFileName;
 
-	static String urlString = "http://www.coverhunt.com/search/green+day+nimrod";
+	public FindAndDownloadCdImage(String searchPhrase, String localFileName) {
+		this.searchPhrase = searchPhrase;
+		this.localFileName = localFileName;
+	}
 
-	public static void main(String args[])
+	public void run()
 	{
-		downloadImage(getImageUrl(urlString));
+		downloadImage(getImageUrl(SEARCH_SITE + searchPhrase));
 	}
 
 	private static void downloadImage(URL url)
@@ -31,11 +37,12 @@ public class FindAndDownloadCdImage
 			InputStream is = url.openStream();
 
 			// Get only file name
-			StringTokenizer st = new StringTokenizer(url.getFile(), "/");
-			while (st.hasMoreTokens())
-				localFile = st.nextToken();
+			//StringTokenizer st = new StringTokenizer(url.getFile(), "/");
+			//while (st.hasMoreTokens())
+			//	localFile = st.nextToken();
+		
 			fos = new FileOutputStream(localFile);
-
+			
 			int oneChar, count = 0;
 			while ((oneChar = is.read()) != -1) {
 				fos.write(oneChar);
