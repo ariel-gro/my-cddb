@@ -22,9 +22,6 @@ public class Parser {
 			this.inputDB = inputFile;
 			this.createNewDisc();
 		}
-		else{
-			System.err.println("error creating new Parser");
-		}
 	}
 	
 	private void createNewDisc() {
@@ -60,15 +57,11 @@ public class Parser {
 			}
 				line = null;
 		} catch (NumberFormatException e) {
-			System.err.println("Error in parser: Argument is not a number in file " + inputDB.getAbsolutePath() );
 		} catch (IOException e) {
-			System.err.println("Error in parser: Failed to parse file "	+ inputDB.getAbsolutePath());
 			e.printStackTrace();
 		} catch (NullPointerException e) {
-			System.err.println("Error in parser: NullPointerException in file " + inputDB.getAbsolutePath());
 			e.printStackTrace();
 		} catch (ArrayIndexOutOfBoundsException e) {
-			System.err.println("Error in parser: Array index out of bounds for file " + inputDB.getAbsolutePath());
 			e.printStackTrace();
 		}
 	}
@@ -80,11 +73,9 @@ public class Parser {
 			if (br.readLine().startsWith("# xmcd"))
 				return true;
 		} catch (FileNotFoundException e) {
-			System.out.println("error reading file " + br.toString()+  ". stacktrace:\n" );
 			e.printStackTrace();
 			return false;
 		} catch (IOException e) {
-			System.out.println("error reading file " + br.toString()+  ". stacktrace:\n" );
 			e.printStackTrace();
 			return false;
 		}
