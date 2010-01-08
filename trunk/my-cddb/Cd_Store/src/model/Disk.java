@@ -107,6 +107,10 @@ public class Disk
 		this.tracks = tracks;
 	}
 	
+	public void insertToTrackList(Track track){
+		this.tracks.add(track);
+	}
+	
 	public String getCoverImage()
 	{
 		return coverImage;
