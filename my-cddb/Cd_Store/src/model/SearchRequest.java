@@ -5,20 +5,20 @@ import java.util.List;
 public class SearchRequest implements Comparable<SearchRequest>
 {
 	public enum Priority {HIGH_PRIORITY, LOW_PRIORITY}
-	public enum SearchType {TOP_20, REGULAR, ADVANCED}	
-	public enum Top20Type {LATEST, MOST_POPULAR};	
+	public enum SearchType {TOP_10, REGULAR, ADVANCED}	
+	public enum Top10Type {LATEST, MOST_POPULAR};	
 	public enum MusicGenres {ALL, BLUES, CLASSICAL, COUNTRY, DATA, FOLK, JAZZ, NEWAGE, REGGAE, ROCK, SOUNDTRACK, MISC};
 	public enum AdvancedSearchFields {ALBUM_TITLE, ARTIST_NAME, TRACK_TITLE, GENRE, YEAR};
 	
 	private int id;
 	private Priority priority;
 	private SearchType searchType;
-	private Top20Type top20Type;
+	private Top10Type top10Type;
 	private MusicGenres musicGenre;
 	private String regularSearchString;
 	private List<advanceSearchFieldValueBundle> advanceSearchParameters;
 	
-	// TOP 20 by music musicGenres
+	// TOP 10 by music musicGenres
 	public SearchRequest(int id, Priority priority, SearchType searchType, MusicGenres musicGenre) 
 	{
 		this.id = id;
@@ -27,13 +27,13 @@ public class SearchRequest implements Comparable<SearchRequest>
 		this.musicGenre = musicGenre;
 	}
 	
-	// TOP 20 by top20Type
-	public SearchRequest(int id, Priority priority, SearchType searchType, Top20Type top20Type) 
+	// TOP 10 by top20Type
+	public SearchRequest(int id, Priority priority, SearchType searchType, Top10Type top10Type) 
 	{
 		this.id = id;
 		this.priority = priority;
 		this.searchType = searchType;
-		this.top20Type = top20Type;
+		this.top10Type = top10Type;
 	}
 	
 	// Regular search with musicGenres and regularSearchString
@@ -86,9 +86,9 @@ public class SearchRequest implements Comparable<SearchRequest>
 		return searchType;
 	}
 
-	public Top20Type getTop20Type()
+	public Top10Type getTop20Type()
 	{
-		return top20Type;
+		return top10Type;
 	}
 	
 	public MusicGenres getMusicGenres()
