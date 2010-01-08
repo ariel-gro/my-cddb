@@ -6,6 +6,8 @@ public class Track
 	private String title;
 	private String length;
 	
+	public Track() {}
+	
 	public Track(String num, String title, String length) 
 	{
 		this.num = num;
