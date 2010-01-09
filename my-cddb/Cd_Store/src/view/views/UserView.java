@@ -1,5 +1,7 @@
 package view.views;
 
+import model.UserPassword;
+
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
@@ -89,6 +91,8 @@ public class UserView extends ViewPart
 						loginDialog.setMessage("Could not login - please try again");
 					}
 					*/
+					UserPassword.setUser(loginDialog.getUser());
+					UserPassword.setPassword(loginDialog.getPassword());
 					
 				} catch (Exception connectionProblem) {
 					MessageDialog.openInformation(null, "Could not Connect", connectionProblem.toString());
@@ -118,12 +122,15 @@ public class UserView extends ViewPart
 						continue;
 					}
 					
-					/*login = Client.getDefault().login( loginDialog.getUser(), loginDialog.getPassword() );		
+					/*login = Client.getDefault().login( newUserDialog.getUser(), newUserDialog.getPassword() );		
 					if (!login) 
 					{
 						newUserDialog.setMessage("Could not login - please try again");
 					}
 					*/
+					
+					UserPassword.setUser(newUserDialog.getUser());
+					UserPassword.setPassword(newUserDialog.getPassword());
 					
 					return true;
 					
