@@ -69,13 +69,13 @@
             name="Open Query View"
             description="Opens a query view"
             categoryId="Cd_Store.category"
-            id="Cd_Store.commands.openQueryViewAction">
+            id="Cd_Store.view.commands.openQueryViewAction">
       </command>
       <command
             name="Open Message Dialog"
             description="Open a message dialog"
             categoryId="Cd_Store.category"
-            id="Cd_Store.commands.openMessage">
+            id="Cd_Store.view.commands.openMessage">
       </command>
       <command
             defaultHandler="view.commands.ExitHandler"
@@ -84,14 +84,20 @@
       </command>
       <command
             defaultHandler="view.commands.UpdateShoppingCart"
-            id="Cd_Store.commands.updateShoppingCart"
+            id="Cd_Store.view.commands.updateShoppingCart"
             name="updateShoppingCart">
       </command>
       <command
             categoryId="Cd_Store.category"
             description="Opens an advanced query view"
-            id="Cd_Store.commands.openAdvancedQueryViewAction"
+            id="Cd_Store.view.commands.openAdvancedQueryViewAction"
             name="Open Advanced Query View">
+      </command>
+      <command
+            categoryId="Cd_Store.category"
+            description="Open DB Config Dialog"
+            id="Cd_Store.view.commands.openDbConfigDialogAction"
+            name="Open DB Config Dialog">
       </command>
    </extension>
    <extension
@@ -102,7 +108,7 @@
             name="RCP Product">
          <property
                name="aboutText"
-               value="RCP Mail template created by PDE">
+               value="CD Store DB Project.">
          </property>
          <property
                name="windowImages"
@@ -110,7 +116,7 @@
          </property>
          <property
                name="aboutImage"
-               value="product_lg.gif">
+               value="/Cd_Store/itunes_128_128.GIF">
          </property>
       </product>
    </extension>
@@ -145,6 +151,44 @@
                value="CD Store DB Project.&#x0A;Version 1.0&#x0A;&#x0A;By:&#x0A;Liron Lasry&#x0A;Ariel Groenteman&#x0A;Ido Sekely&#x0A;Roni Stern">
          </property>
       </product>
+   </extension>
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            locationURI="menu:org.eclipse.ui.main.menu">
+         <menu
+               id="fileMenu"
+               label="File">
+            <command
+                  commandId="Cd_Store.exitCommand"
+                  label="Exit"
+                  style="push">
+            </command>
+         </menu>
+         <menu
+               id="databaseMenu"
+               label="Database">
+            <command
+                  commandId="Cd_Store.view.commands.openDbConfigDialogAction"
+                  label="DB Configuration"
+                  style="push">
+            </command>
+            <command
+                  commandId="Cd_Store.view.commands.openMessage"
+                  label="Import DB"
+                  style="push">
+            </command>
+         </menu>
+         <menu
+               id="helpMenu"
+               label="Help">
+            <command
+                  commandId="org.eclipse.ui.help.aboutAction"
+                  label="About"
+                  style="push">
+            </command>
+         </menu>
+      </menuContribution>
    </extension>
 
 </plugin>
