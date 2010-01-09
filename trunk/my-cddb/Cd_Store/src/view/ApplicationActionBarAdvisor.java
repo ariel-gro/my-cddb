@@ -4,7 +4,6 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.GroupMarker;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
-import org.eclipse.jface.action.Separator;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.actions.ActionFactory;
@@ -13,6 +12,7 @@ import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
 
 import view.commands.OpenAdvancedQueryViewAction;
+import view.commands.OpenDbConfigDialogAction;
 import view.commands.OpenQueryViewAction;
 import view.views.AdvancedQueryView;
 import view.views.QueryView;
@@ -27,11 +27,12 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
     // Actions - important to allocate these only in makeActions, and then use them
     // in the fill methods.  This ensures that the actions aren't recreated
     // when fillActionBars is called with FILL_PROXY.
-    private IWorkbenchAction exitAction;
-    private IWorkbenchAction aboutAction;
+//  private IWorkbenchAction exitAction;
+//  private IWorkbenchAction aboutAction;
     private OpenQueryViewAction openQueryViewAction;
     private OpenAdvancedQueryViewAction openAdvancedQueryViewAction;
     private Action messagePopupAction;
+    private Action dbConfigAction;
     
 
     public ApplicationActionBarAdvisor(IActionBarConfigurer configurer) {
@@ -45,11 +46,11 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
         // Registering also provides automatic disposal of the actions when
         // the window is closed.
 
-        exitAction = ActionFactory.QUIT.create(window);
-        register(exitAction);
+     //   exitAction = ActionFactory.QUIT.create(window);
+     //   register(exitAction);
         
-        aboutAction = ActionFactory.ABOUT.create(window);
-        register(aboutAction);
+    //    aboutAction = ActionFactory.ABOUT.create(window);
+    //    register(aboutAction);
         
         openQueryViewAction = new OpenQueryViewAction(window, "Open Another Query View", QueryView.ID);
         register(openQueryViewAction);
@@ -59,28 +60,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
         
         messagePopupAction = new MessagePopupAction("Import DB", window);
         register(messagePopupAction);
+        
+        dbConfigAction = new OpenDbConfigDialogAction(window);
+        register(dbConfigAction);
     }
-    
-    protected void fillMenuBar(IMenuManager menuBar) {
-        MenuManager fileMenu = new MenuManager("&File", IWorkbenchActionConstants.M_FILE);
-        MenuManager dataBaseMenu = new MenuManager("&Database", IWorkbenchActionConstants.M_WINDOW);
-        MenuManager helpMenu = new MenuManager("&Help", IWorkbenchActionConstants.M_HELP);
-        
-        menuBar.add(fileMenu);
-        // Add a group marker indicating where action set menus will appear.
-        menuBar.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
-        menuBar.add(dataBaseMenu);
-        menuBar.add(helpMenu);
-        
-        // File
-        //fileMenu.add(new Separator());
-        fileMenu.add(exitAction);
-       
-        // Database
-        dataBaseMenu.add(messagePopupAction);
-        
-        // Help
-        helpMenu.add(aboutAction);
-    }
-  
 }
