@@ -18,19 +18,20 @@ public class NewUserDialog extends MessageDialog
 	String verifyPassword = "";
 
 	public NewUserDialog(String title, String dialogMessage) {
-		super(null, title, null, dialogMessage, QUESTION, new String[] { "Add User", "Exit" }, 0);
+		super(null, title, null, dialogMessage, QUESTION, new String[] { "Add User", "Exit",}, 0);
 	}
 
 	protected Control createCustomArea(Composite parent)
 	{
 		Composite composite = new Composite(parent, SWT.NONE);
+		composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 		composite.setLayout(new GridLayout(2, false));
 
 		Label label = new Label(composite, SWT.NULL);
 		label.setText("User Name:");
 
 		final Text userText = new Text(composite, SWT.BORDER);
-		userText.setTextLimit(20);
+		userText.setTextLimit(30);
 		userText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		userText.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e)

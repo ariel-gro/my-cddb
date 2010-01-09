@@ -19,10 +19,11 @@ public class LoginDialog extends MessageDialog
 	public LoginDialog(String title, String dialogMessage) {
 		super(null, title, null, dialogMessage, QUESTION, new String[] { "Sign In", "Exit" }, 0);
 	}
-
+	
 	protected Control createCustomArea(Composite parent)
 	{
 		Composite composite = new Composite(parent, SWT.NONE);
+		composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 		composite.setLayout(new GridLayout(2, false));
 
 		Label label = new Label(composite, SWT.NULL);
@@ -42,7 +43,7 @@ public class LoginDialog extends MessageDialog
 		label.setText("Password:");
 
 		final Text passwordText = new Text(composite, SWT.BORDER | SWT.PASSWORD);
-		passwordText.setTextLimit(20);
+		passwordText.setTextLimit(30);
 		passwordText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		passwordText.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e)
