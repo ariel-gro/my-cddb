@@ -118,9 +118,9 @@ public class Parser {
 		return false;
 	}
 	
-	public boolean isPureAscii(String v) {
-		byte bytearray []  = v.getBytes();
-		CharsetDecoder d = Charset.forName("US-ASCII").newDecoder();
+	public boolean checkFormat(String line, String format) {
+		byte bytearray []  = line.getBytes();
+		CharsetDecoder d = Charset.forName(format).newDecoder();
 		    try {
 		      CharBuffer r = d.decode(ByteBuffer.wrap(bytearray));
 		      r.toString();
@@ -130,6 +130,10 @@ public class Parser {
 		    }
 		    return true;
 		  }
+	
+	public boolean isEligableCoding(String line){
+		return (checkFormat(line, "US-ASCII") || checkFormat(line, "UTF-16") || checkFormat(line, "UTF-8"));
+	}
 
 
 	/**
@@ -145,7 +149,7 @@ public class Parser {
 			// Read the file
 			int title_index = 0;
 			while ((line = br.readLine()) != null) {
-				if (!isPureAscii(line)){
+				if (!isEligableCoding(line)){
 					return false;
 				}
 				if (line.startsWith("# Disc length: ")) {
