@@ -6,6 +6,15 @@ public class DbConfiguration
 	private static int port = 0;
 	private static String user = "";
 	private static String password = "";
+	private static String db = "";
+	
+	public DbConfiguration(String address, int port, String db, String username, String password){
+		this.ipAddress = address;
+		this.port = port;
+		this.setDb(db);
+		this.user = username;
+		this.password = password;
+	}
 	
 	public static synchronized String getUser()
 	{
@@ -40,6 +49,14 @@ public class DbConfiguration
 	public static synchronized void setPort(int port)
 	{
 		DbConfiguration.port = port;
+	}
+
+	public static void setDb(String db) {
+		DbConfiguration.db = db;
+	}
+
+	public static String getDb() {
+		return db;
 	}
 	
 	

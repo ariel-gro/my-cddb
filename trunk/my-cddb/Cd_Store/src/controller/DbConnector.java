@@ -1,51 +1,77 @@
 package controller;
 import java.sql.*;
 
+import model.DbConfiguration;
+
+
 public class DbConnector {
-	
-	/** Private representation of the URL to the server. */
-	private String server = new String();
-	
-	/** Private representation of the username, password and database. */
-	private String username = new String();
-	private String password = new String();
-	private String database = new String();
 
-	private String query = new String();
+	private DbConfiguration DbConfig;
+	private Connection connection;	// DB connection
+
+	private String query;
 	private PreparedStatement ps;
-	
-	private Connection connection = null;
-	
-	/**
-	 * Initializes a newly created Mysql object with a new connection to a server.
-	 */
-	public DbConnector(String srv, String db, String user, String passwd) {
-		server = srv;
-		username = user;
-		password = passwd;
-		database = db;
-		String jdbcurl = "jdbc:mysql://"+server+":3306/"+database;
 
-		try {
-			// Load the JDBC driver
-			DriverManager.registerDriver((Driver)Class.forName("com.mysql.jdbc.Driver").newInstance());
-        
-			// Create a connection to the database
-			connection = DriverManager.getConnection(jdbcurl, username, password);
-		} catch (ClassNotFoundException e) {
-			System.err.println("ERROR: MySQL MM JDBC driver not found. " + e);
-		} catch (SQLException e) {
-			System.err.println("ERROR: " + e);
-		} catch (IllegalAccessException e) {
-			System.err.println("ERROR: " + e);
-		} catch (InstantiationException e) {
-			System.err.println("ERROR: " + e);
-		}
+
+	public DbConnector(String srv, int port, String db, String user, String passwd) {
+		this.DbConfig = new DbConfiguration(srv, port, db, user, passwd);
+		this.connection = null;
 	}
 
 	/**
-	 * Closes the connection to the MySQL server.
-	 *
+	 * default constructor
+	 */
+	public DbConnector() {
+		new DbConnector("@localhost", 1555, "csodb","hr_readonly","tiger");
+		//TODO: change port to 1521 (default), username and password
+	}
+
+	/**
+	 * 
+	 * @return the connection (null on error)
+	 */
+	public void openConnection()
+	{
+
+		// loading the driver
+		try
+		{
+			Class.forName("oracle.jdbc.driver.OracleDriver");
+		}
+		catch (ClassNotFoundException e)
+		{
+			System.out.println("Unable to load the Oracle JDBC driver..");
+			java.lang.System.exit(0); 
+		}
+		System.out.println("Driver loaded successfully");
+
+
+		// creating the connection
+		System.out.print("Trying to connect.. ");
+		try
+		{
+			String jdbcurl =
+				"jdbc:oracle:thin:" + DbConfig.getIpAddress()+":" + DbConfig.getPort() +
+				"/" + DbConfig.getDb();
+			
+			connection =
+				DriverManager.getConnection(jdbcurl, DbConfig.getUser(), DbConfig.getPassword());
+		}
+		catch (SQLException e)
+		{
+			System.out.println("Unable to connect - " + e.toString());
+			java.lang.System.exit(0); 
+		}
+		catch (Exception e)
+		{
+			System.err.println("ERROR: " + e);
+		}
+		System.out.println("Connected!");
+
+	}
+
+	/**
+	 * Closes the connection to the server.
 	 */
 	public void close() {
 		try {
@@ -53,17 +79,17 @@ public class DbConnector {
 		} catch (SQLException e) {
 			System.err.println("ERROR: Couldn't close connection to SQL-server. " + e);
 		}
+		System.out.println("connection closed successfully");
 	}
-	
+
 	public void closeStatement() {
 		try {
 			this.ps.close();
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
-	
+
 	/**
 	 * Execute the prepared statement.
 	 */
@@ -71,12 +97,12 @@ public class DbConnector {
 		try {
 			return ps.executeQuery();
 		} catch (SQLException e) {
-			System.err.println("MySQL ERROR: (executeQuery). " + e);
+			System.err.println("ERROR: (executeQuery). " + e);
 		}
-		
+
 		return null;
 	}
-	
+
 	/**
 	 * Execute the prepared statement. Must be an SQL INSERT, UPDATE or DELETE
 	 * statement; or an SQL statement that returns nothing, such as a DDL statement.
@@ -85,12 +111,12 @@ public class DbConnector {
 		try {
 			return ps.executeUpdate();
 		} catch (SQLException e) {
-			System.err.println("MySQL ERROR: (executeUpdate). " + e);
+			System.err.println("ERROR: (executeUpdate). " + e);
 		}
-		
+
 		return -1;
 	}
-	
+
 	/**
 	 * Wrapper for the PreparedStatement.getGeneratedKeys() method.
 	 */
@@ -98,12 +124,12 @@ public class DbConnector {
 		try {
 			return ps.getGeneratedKeys();
 		} catch (SQLException e) {
-			System.err.println("MySQL ERROR: (getGeneratedKeys). " + e);
+			System.err.println("ERROR: (getGeneratedKeys). " + e);
 		}
-		
+
 		return null;
 	}
-	
+
 	/**
 	 * Execute the given INSERT query and returns LAST_INSERTED_ID. Just pass
 	 * one query per call to this method because it will only return the ID of
@@ -114,21 +140,21 @@ public class DbConnector {
 	 */
 	public int insert(String query) {
 		try {
-	        Statement stmt = connection.createStatement();
-	    
-	        // Execute the insert statement
-	        stmt.executeUpdate(query, Statement.RETURN_GENERATED_KEYS);
-	        ResultSet rs = stmt.getGeneratedKeys();
-	        stmt.close(); // Do this or it will _consume_ memory, lots of it!
-	        if (rs.next()) {
-	        		return rs.getInt(1);
-	        }
-	    } catch (SQLException e) {
+			Statement stmt = connection.createStatement();
+
+			// Execute the insert statement
+			stmt.executeUpdate(query, Statement.RETURN_GENERATED_KEYS);
+			ResultSet rs = stmt.getGeneratedKeys();
+			stmt.close(); // Do this or it will _consume_ memory, lots of it!
+			if (rs.next()) {
+				return rs.getInt(1);
+			}
+		} catch (SQLException e) {
 			System.err.println("ERROR insert: "+e);
-	    }
+		}
 		return 0;
 	}
-	
+
 	/**
 	 * Execute the given SELECT query and returns a ResultSet based on the
 	 * query.
@@ -139,15 +165,15 @@ public class DbConnector {
 	public ResultSet select(String query) {
 		ResultSet rs = null;
 		try {
-	        // Create a result set containing all data from my_table
-	        Statement stmt = connection.createStatement();
-	        rs = stmt.executeQuery(query);
-	    } catch (SQLException e) {
-	    		System.err.println("MySQL ERROR: " + e);
-	    }
-	    return rs;
+			// Create a result set containing all data from my_table
+			Statement stmt = connection.createStatement();
+			rs = stmt.executeQuery(query);
+		} catch (SQLException e) {
+			System.err.println("ERROR: " + e);
+		}
+		return rs;
 	}
-	
+
 	/**
 	 * Wrapper for the ResultSet.setInt method.
 	 *
@@ -171,7 +197,7 @@ public class DbConnector {
 	public void setString(int parameterIndex, String x) throws SQLException, NullPointerException {
 		ps.setString(parameterIndex, x);
 	}
-	
+
 	/**
 	 * Set the query to be executed next.
 	 *
@@ -180,7 +206,7 @@ public class DbConnector {
 	public void setQuery(String que) {
 		setQuery(que, false);
 	}
-	
+
 	/**
 	 * Set the query to be executed next.
 	 *
@@ -195,12 +221,12 @@ public class DbConnector {
 				ps.close();
 			}
 		} catch (SQLException e1) {
-			System.err.println("MySQL ERROR: (setQuery) unable to clear parameters. " + e1);
+			System.err.println("ERROR: (setQuery) unable to clear parameters. " + e1);
 		} catch (NullPointerException e1) {
 			// Ignore
 		}*/
 		this.query = new String(que); // Copy the string (future thread safety)
-		
+
 		try {
 			if (requestKeys) {
 				this.ps = connection.prepareStatement(this.query, PreparedStatement.RETURN_GENERATED_KEYS);
@@ -208,10 +234,10 @@ public class DbConnector {
 				this.ps = connection.prepareStatement(this.query);
 			}
 		} catch (SQLException e) {
-			System.err.println("MySQL ERROR: (setQuery) unable to create prepared statement. " + e);
+			System.err.println("ERROR: (setQuery) unable to create prepared statement. " + e);
 		}
 	}
-	
+
 	/**
 	 * Get next row in ResultSet.
 	 * @param rs The ResultSet to be advanced
@@ -220,16 +246,15 @@ public class DbConnector {
 	 */
 	public ResultSet fetch_row(ResultSet rs) {
 		try {
-	        // Fetch next row from the result set
-	        if (rs.next()) {
-	        		return rs;
-	        }else{
-	        		return null;
-	        }
-	    } catch (SQLException e) {
-	    		System.err.println("MySQL ERROR: (fetch_row) " + e);
-	    }
-	    return rs;
+			// Fetch next row from the result set
+			if (rs.next()) {
+				return rs;
+			}else{
+				return null;
+			}
+		} catch (SQLException e) {
+			System.err.println("ERROR: (fetch_row) " + e);
+		}
+		return rs;
 	}
-	
 }
