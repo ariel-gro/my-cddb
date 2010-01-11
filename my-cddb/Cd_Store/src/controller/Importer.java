@@ -6,14 +6,14 @@ import java.util.HashMap;
 
 public class Importer {
 
-	//	public static void main(String[] argv){
-	//		Importer imp = new Importer(null);
-	//		try {
-	//			imp.run("C:\\test");
-	//		} catch (IOException e) {
-	//			e.printStackTrace();
-	//		}
-	//	}
+//		public static void main(String[] argv){
+//			Importer imp = new Importer(new DbConnector());
+//			try {
+//				imp.run("C:\\test");
+//			} catch (IOException e) {
+//				e.printStackTrace();
+//			}
+//		}
 	/**
 	 * Private map for temporary saved genres. Used to lighten the burden on the
 	 * SQL-server.
@@ -28,10 +28,10 @@ public class Importer {
 	/**
 	 * Private connection to the SQL-server.
 	 */
-	private DbConnector sql;
+	private DbConnector connector;
 
-	public Importer(DbConnector mysql) {
-		sql = mysql;
+	public Importer(DbConnector conn) {
+		connector = conn;
 	}
 
 	/**
@@ -42,6 +42,8 @@ public class Importer {
 	 */
 	public void run(String dir_path) throws IOException {
 		File f = new File(dir_path);
+
+		connector.openConnection();
 
 		if (f.isDirectory()) {
 			File[] files = f.listFiles();
@@ -92,7 +94,7 @@ public class Importer {
 				}
 			}
 		}
-		//sql.close();
+		connector.close();
 	} 
 
 	private int saveGenre(String sGenre) {
@@ -108,14 +110,14 @@ public class Importer {
 		if (genre == 0) {
 			// First try to look the genre up in the database (most common case)
 			ResultSet rs = null;
-			sql.setQuery("SELECT id FROM genres WHERE name=?");
+			connector.setQuery("SELECT id FROM genres WHERE name=?");
 			try {
-				sql.setString(1, sGenre);
-				rs = sql.executeQuery();
+				connector.setString(1, sGenre);
+				rs = connector.executeQuery();
 				if (rs.first()) {
 					genre = rs.getInt(1);
 				}
-				sql.closeStatement();
+				connector.closeStatement();
 			} catch (NullPointerException e) {
 				e.printStackTrace();
 			} catch (SQLException e) {
@@ -124,16 +126,16 @@ public class Importer {
 
 			if (genre == 0) {
 				// May be a new genre, save it
-				sql.setQuery("INSERT IGNORE INTO genres (name) VALUES (?)");
+				connector.setQuery("INSERT IGNORE INTO genres (name) VALUES (?)");
 				try {
-					sql.setString(1, sGenre);
-					sql.executeUpdate();
+					connector.setString(1, sGenre);
+					connector.executeUpdate();
 				} catch (NullPointerException e) {
 					e.printStackTrace();
 				} catch (SQLException e) {
 					e.printStackTrace();
 				}
-				sql.closeStatement();
+				connector.closeStatement();
 			}
 			tmpGenres.put(sGenre, new Integer(genre));
 		}
@@ -150,16 +152,16 @@ public class Importer {
 		for (int j = 0; j < arrDiscid.length; j++) {
 			if (arrDiscid[j].trim().length() > 0) {
 				ins = 0;
-				sql.setQuery("INSERT INTO discids SET discid=CONV(?,16,10)", true);
+				connector.setQuery("INSERT INTO discids SET discid=CONV(?,16,10)", true);
 				try {
-					sql.setString(1, arrDiscid[j]);
-					sql.executeUpdate();
+					connector.setString(1, arrDiscid[j]);
+					connector.executeUpdate();
 
-					ResultSet newID = sql.getGeneratedKeys();
+					ResultSet newID = connector.getGeneratedKeys();
 					if (newID.first()) {
 						ins = newID.getInt(1);
 					}
-					sql.closeStatement();
+					connector.closeStatement();
 				} catch (NullPointerException e) {
 					e.printStackTrace();
 				} catch (SQLException e) {
@@ -180,21 +182,21 @@ public class Importer {
 	private String saveDisc(Parser par, int genre) {
 		String disc = "0";
 		// Save info in freedb.discs and get discs.disc
-		sql.setQuery("INSERT INTO discs SET length=?, title=?, year=?, genre=?", true);
+		connector.setQuery("INSERT INTO discs SET length=?, title=?, year=?, genre=?", true);
 
 		try {
-			sql.setInt(1, par.getDiscLength());
-			sql.setString(2, par.getDtitle().trim());
-			sql.setInt(3, par.getDyear());
-			sql.setInt(4, genre);
-			sql.executeUpdate();
+			connector.setInt(1, par.getDiscLength());
+			connector.setString(2, par.getDtitle().trim());
+			connector.setInt(3, par.getDyear());
+			connector.setInt(4, genre);
+			connector.executeUpdate();
 
-			ResultSet newId = sql.getGeneratedKeys();
+			ResultSet newId = connector.getGeneratedKeys();
 			if (newId.first()) {
 				disc = String.valueOf(newId.getInt(1));
 			}
 
-			sql.closeStatement();
+			connector.closeStatement();
 		} catch (NullPointerException e) {
 			e.printStackTrace();
 		} catch (SQLException e) {
@@ -207,38 +209,38 @@ public class Importer {
 	private void saveTracks(String disc, String[] ttitles) {
 		for (int j = ttitles.length - 1; j > 0; j--) {
 			if (ttitles[j] != null) {
-				sql.setQuery("INSERT INTO tracks SET disc=?, title=?");
+				connector.setQuery("INSERT INTO tracks SET disc=?, title=?");
 				try {
-					sql.setInt(1, Integer.parseInt(disc));
+					connector.setInt(1, Integer.parseInt(disc));
 					if (ttitles[j].length() > 250) {
-						sql.setString(2, ttitles[j].substring(0, 250));
+						connector.setString(2, ttitles[j].substring(0, 250));
 					}else{
-						sql.setString(2, ttitles[j]);
+						connector.setString(2, ttitles[j]);
 					}
-					sql.executeUpdate();
+					connector.executeUpdate();
 				} catch (NullPointerException e) {
 					e.printStackTrace();
 				} catch (SQLException e) {
 					e.printStackTrace();
 				}
-				sql.closeStatement();
+				connector.closeStatement();
 			}
 		}
 	}
 
 	private void saveDiscIdRef(String[] discid, String disc) {
 		for (int j = 0; j < discid.length; j++) {
-			sql.setQuery("INSERT INTO discid_disc SET pri=?, disc=?");
+			connector.setQuery("INSERT INTO discid_disc SET pri=?, disc=?");
 			try {
-				sql.setInt(1, Integer.parseInt(discid[j]));
-				sql.setInt(2, Integer.parseInt(disc));
-				sql.executeUpdate();
+				connector.setInt(1, Integer.parseInt(discid[j]));
+				connector.setInt(2, Integer.parseInt(disc));
+				connector.executeUpdate();
 			} catch (NullPointerException e) {
 				e.printStackTrace();
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
-			sql.closeStatement();
+			connector.closeStatement();
 		}
 	}
 }
