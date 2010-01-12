@@ -2,7 +2,7 @@ package controller;
 
 import java.io.*;
 import java.sql.*;
-import java.util.HashMap;
+import java.util.*;
 
 public class Importer {
 
@@ -25,7 +25,9 @@ public class Importer {
 	private HashMap<String[],Integer> tmpDiscId = new HashMap<String[],Integer>(100);
 	private HashMap<String,Integer> tmpTracksTitle = new HashMap<String,Integer>(100);
 	
+	//for debug use
 	int debugCounter = 0;
+	
 	private DbConnector connector;
 
 	public Importer(DbConnector conn) {
@@ -71,19 +73,20 @@ public class Importer {
 							}
 
 							//testing and print
-							System.out.println("genre: " + par.getDgenre());
-							System.out.println("length: " + par.getDiscLength());
-							System.out.println("Dtitle: " + par.getDtitle());
-							System.out.println("year: " + par.getDyear());
-							String[] discid = par.getDiscId();
-							for (int j = 0; j<discid.length;j++)
-								System.out.println("discid " + j + ": "+ discid[j]);
-							String[] tracks = par.getTtitle();
-							for (int j = 0; j<tracks.length;j++)
-							{
-								if (tracks[j] != null)
-									System.out.println("track " + j + ": " + tracks[j]);
-							}
+//							System.out.println("genre: " + par.getDgenre());
+//							System.out.println("length: " + par.getDiscLength());
+//							System.out.println("Dtitle: " + par.getDtitle());
+//							System.out.println("year: " + par.getDyear());
+//							String[] discid = par.getDiscId();
+//							for (int j = 0; j<discid.length;j++)
+//								System.out.println("discid " + j + ": "+ discid[j]);
+//							String[] tracks = par.getTtitle();
+//							for (int j = 0; j<tracks.length;j++)
+//							{
+//								if (tracks[j] != null)
+//									System.out.println("track " + j + ": " + tracks[j]);
+//							}
+							
 							// Save data
 //							genre = saveGenre(sGenre);
 //							String[] discid = saveDiscIds(par.getDiscId());
@@ -95,7 +98,9 @@ public class Importer {
 							debugCounter++;
 					}
 					par.close();
+					file.delete();
 				}
+				f.delete();
 			}
 		}
 		System.out.println("total dropped files due to coding error:" + debugCounter);
