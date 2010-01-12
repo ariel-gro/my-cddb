@@ -99,6 +99,13 @@
             id="Cd_Store.view.commands.openDbConfigDialogAction"
             name="Open DB Config Dialog">
       </command>
+      <command
+            categoryId="Cd_Store.category"
+            defaultHandler="view.commands.OpenDbImportWizard"
+            description="Open DB Import Wizard"
+            id="Cd_Store.view.commands.openDbImportWizard"
+            name="Open DB Import Wizard">
+      </command>
    </extension>
    <extension
          id="product"
@@ -174,7 +181,7 @@
                   style="push">
             </command>
             <command
-                  commandId="Cd_Store.view.commands.openMessage"
+                  commandId="Cd_Store.view.commands.openDbImportWizard"
                   label="Import DB"
                   style="push">
             </command>
