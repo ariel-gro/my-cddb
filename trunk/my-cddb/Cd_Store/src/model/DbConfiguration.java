@@ -7,14 +7,7 @@ public class DbConfiguration
 	private static String user = "";
 	private static String password = "";
 	private static String db = "";
-	
-	public DbConfiguration(String address, int port, String db, String username, String password){
-		this.ipAddress = address;
-		this.port = port;
-		this.setDb(db);
-		this.user = username;
-		this.password = password;
-	}
+	private static String fileToImport = "";
 	
 	public static synchronized String getUser()
 	{
@@ -58,6 +51,12 @@ public class DbConfiguration
 	public static String getDb() {
 		return db;
 	}
-	
-	
+	public static synchronized String getFileToImport()
+	{
+		return fileToImport;
+	}
+	public static synchronized void setFileToImport(String fileToImport)
+	{
+		DbConfiguration.fileToImport = fileToImport;
+	}
 }
