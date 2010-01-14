@@ -1,5 +1,6 @@
 package model;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -10,13 +11,17 @@ public class Disk
 	private String artist;
 	private String genre;
 	private String subGenre;
-	private String year;
-	private String totalTime;
+	private int year;
+	private int totalTime;
 	private String price;
+	private int    revision;
 	private List<Track> tracks;
 	private String coverImage;
 	
-	public Disk(String id, String title, String artist, String genre, String subGenre, String year, String totalTime, String price, String coverImage, List<Track> tracks) 
+	public Disk()
+	{}
+	
+	public Disk(String id, String title, String artist, String genre, String subGenre, int year, int totalTime, String price, String coverImage, List<Track> tracks) 
 	{
 		this.id = id;
 		this.title = title;
@@ -30,103 +35,113 @@ public class Disk
 		this.tracks = tracks;
 	}
 	
-	public String getId()
+	public synchronized String getId()
 	{
 		return id;
 	}
 
-	public void setId(String id)
+	public synchronized void setId(String id)
 	{
 		this.id = id;
 	}
 
-	public String getTitle()
+	public synchronized String getTitle()
 	{
 		return title;
 	}
-	public void setTitle(String title)
+	public synchronized void setTitle(String title)
 	{
 		this.title = title;
 	}
-	public String getArtist()
+	public synchronized String getArtist()
 	{
 		return artist;
 	}
-	public void setArtist(String artist)
+	public synchronized void setArtist(String artist)
 	{
 		this.artist = artist;
 	}
-	public String getGenre()
+	public synchronized String getGenre()
 	{
 		return genre;
 	}
-	public void setGenre(String genre)
+	public synchronized void setGenre(String genre)
 	{
 		this.genre = genre;
 	}
-	public String getSubGenre()
+	public synchronized String getSubGenre()
 	{
 		return subGenre;
 	}
-	public void setSubGenre(String subGenre)
+	public synchronized void setSubGenre(String subGenre)
 	{
 		this.subGenre = subGenre;
 	}
-	public String getYear()
+	public synchronized int getYear()
 	{
 		return year;
 	}
-	public void setYear(String year)
+	public synchronized void setYear(int year)
 	{
 		this.year = year;
 	}
-	public String getTotalTime()
+	public synchronized int getTotalTime()
 	{
 		return totalTime;
 	}
-	public void setTotalTime(String totalTime)
+	public synchronized void setTotalTime(int totalTime)
 	{
 		this.totalTime = totalTime;
 	}
-	public String getPrice()
+	public synchronized String getPrice()
 	{
 		return price;
 	}
-	public void setPrice(String price)
+	public synchronized void setPrice(String price)
 	{
 		this.price = price;
 	}
 	
-	public List<Track> getTracks()
+	public synchronized List<Track> getTracks()
 	{
 		return tracks;
 	}
 
-	public void setTracks(List<Track> tracks)
+	public synchronized void setTracks(List<Track> tracks)
 	{
 		this.tracks = tracks;
 	}
 	
-	public void insertToTrackList(Track track){
+	public synchronized void insertToTrackList(Track track){
 		this.tracks.add(track);
 	}
 	
-	public String getCoverImage()
+	public synchronized String getCoverImage()
 	{
 		return coverImage;
 	}
 
-	public void setCoverImage(String coverImage)
+	public synchronized void setCoverImage(String coverImage)
 	{
 		this.coverImage = coverImage;
 	}
+	
+	public synchronized int getRevision()
+	{
+		return revision;
+	}
 
-	public String toString() 
+	public synchronized void setRevision(int revision)
+	{
+		this.revision = revision;
+	}
+
+	public synchronized String toString() 
 	{
 		return toString(false);
 	}
 	
-	public String toString(boolean includeTracks) 
+	public synchronized String toString(boolean includeTracks) 
 	{
 		String tracksTitles = "";
 		if(includeTracks)
@@ -149,7 +164,7 @@ public class Disk
 				tracksTitles;
 	}
 	
-	public String toStringShort() 
+	public synchronized String toStringShort() 
 	{
 	
 		return 	"Title: " + title + "\n" +
