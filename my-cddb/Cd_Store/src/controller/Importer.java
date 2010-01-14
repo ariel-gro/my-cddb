@@ -6,14 +6,14 @@ import java.util.*;
 
 public class Importer {
 
-//	public static void main(String[] argv){
-//		Importer imp = new Importer(new DbConnector());
-//		try {
-//			imp.run("C:\\test");
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//		}
-//	}
+	public static void main(String[] argv){
+		Importer imp = new Importer(new DbConnector());
+		try {
+			imp.run("C:\\test");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 	/**
 	 * Private map for temporary saved genres. Used to lighten the burden on the
 	 * SQL-server.
