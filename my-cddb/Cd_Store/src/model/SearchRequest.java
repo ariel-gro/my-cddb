@@ -86,7 +86,7 @@ public class SearchRequest implements Comparable<SearchRequest>
 		return searchType;
 	}
 
-	public Top10Type getTop20Type()
+	public Top10Type getTop10Type()
 	{
 		return top10Type;
 	}
