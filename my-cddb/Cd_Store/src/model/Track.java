@@ -2,24 +2,22 @@ package model;
 
 public class Track
 {
-	private String num;
+	private int num;
 	private String title;
-	private String length;
 	
 	public Track() {}
 	
-	public Track(String num, String title, String length) 
+	public Track(int num, String title) 
 	{
 		this.num = num;
 		this.title = title;
-		this.length = length;
 	}
 	
-	public String getNum()
+	public int getNum()
 	{
 		return num;
 	}
-	public void setNum(String num)
+	public void setNum(int num)
 	{
 		this.num = num;
 	}
@@ -31,19 +29,10 @@ public class Track
 	{
 		this.title = title;
 	}
-	public String getLength()
-	{
-		return length;
-	}
-	public void setLength(String length)
-	{
-		this.length = length;
-	}
 	
 	public String toString() 
 	{
 		return 	"Title: " + title + "\n" +
-				"Number: " + num + "\n" +
-				"Length: " + length;
+				"Number: " + num;
 	}
 }
