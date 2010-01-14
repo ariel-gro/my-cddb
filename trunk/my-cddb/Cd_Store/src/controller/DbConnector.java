@@ -6,7 +6,6 @@ import model.DbConfiguration;
 
 public class DbConnector {
 
-	private DbConfiguration DbConfig;
 	private Connection connection;	// DB connection
 
 	private String query;
@@ -14,7 +13,11 @@ public class DbConnector {
 
 
 	public DbConnector(String srv, int port, String db, String user, String passwd) {
-		this.DbConfig = new DbConfiguration(srv, port, db, user, passwd);
+		DbConfiguration.setIpAddress(srv);
+		DbConfiguration.setPort(port);
+		DbConfiguration.setDb(db);
+		DbConfiguration.setUser(user);
+		DbConfiguration.setPassword(passwd);		
 		this.connection = null;
 	}
 
@@ -51,11 +54,11 @@ public class DbConnector {
 		try
 		{
 			String jdbcurl =
-				"jdbc:oracle:thin:" + DbConfig.getIpAddress()+":" + DbConfig.getPort() +
-				"/" + DbConfig.getDb();
+				"jdbc:oracle:thin:" + DbConfiguration.getIpAddress()+":" + DbConfiguration.getPort() +
+				"/" + DbConfiguration.getDb();
 			
 			connection =
-				DriverManager.getConnection(jdbcurl, DbConfig.getUser(), DbConfig.getPassword());
+				DriverManager.getConnection(jdbcurl, DbConfiguration.getUser(), DbConfiguration.getPassword());
 		}
 		catch (SQLException e)
 		{
