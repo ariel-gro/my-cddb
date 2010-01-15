@@ -3,7 +3,7 @@ package view.views;
 import java.util.ArrayList;
 import java.util.List;
 
-import model.SearchRequest;
+import model.RequestToQueryHandler;
 import model.SearchesPriorityQueue;
 import model.advanceSearchFieldValueBundle;
 import model.tableViewsMap;
@@ -116,16 +116,16 @@ public class AdvancedQueryView extends ViewPart
 				List<advanceSearchFieldValueBundle> advancedSearchParaeters = new ArrayList<advanceSearchFieldValueBundle>();
 				
 				if(albumText.getText().equals("")==false)
-					advancedSearchParaeters.add(new advanceSearchFieldValueBundle(SearchRequest.AdvancedSearchFields.ALBUM_TITLE, advanceSearchFieldValueBundle.Relation.EQUALS, albumText.getText()));
+					advancedSearchParaeters.add(new advanceSearchFieldValueBundle(RequestToQueryHandler.AdvancedSearchFields.ALBUM_TITLE, advanceSearchFieldValueBundle.Relation.EQUALS, albumText.getText()));
 				if(trackText.getText().equals("")==false)
-					advancedSearchParaeters.add(new advanceSearchFieldValueBundle(SearchRequest.AdvancedSearchFields.TRACK_TITLE, advanceSearchFieldValueBundle.Relation.EQUALS, trackText.getText()));
+					advancedSearchParaeters.add(new advanceSearchFieldValueBundle(RequestToQueryHandler.AdvancedSearchFields.TRACK_TITLE, advanceSearchFieldValueBundle.Relation.EQUALS, trackText.getText()));
 				if(artistText.getText().equals("")==false)
-					advancedSearchParaeters.add(new advanceSearchFieldValueBundle(SearchRequest.AdvancedSearchFields.ARTIST_NAME, advanceSearchFieldValueBundle.Relation.EQUALS, artistText.getText()));
+					advancedSearchParaeters.add(new advanceSearchFieldValueBundle(RequestToQueryHandler.AdvancedSearchFields.ARTIST_NAME, advanceSearchFieldValueBundle.Relation.EQUALS, artistText.getText()));
 				
-				advancedSearchParaeters.add(new advanceSearchFieldValueBundle(SearchRequest.AdvancedSearchFields.GENRE, advanceSearchFieldValueBundle.Relation.EQUALS, albumText.getText()));						
-				advancedSearchParaeters.add(new advanceSearchFieldValueBundle(SearchRequest.AdvancedSearchFields.YEAR, (relationCombo.getSelectionIndex()==0 ? advanceSearchFieldValueBundle.Relation.GREATER : relationCombo.getSelectionIndex()==1 ? advanceSearchFieldValueBundle.Relation.EQUALS : advanceSearchFieldValueBundle.Relation.LESSER) , yearText.getText()));
+				advancedSearchParaeters.add(new advanceSearchFieldValueBundle(RequestToQueryHandler.AdvancedSearchFields.GENRE, advanceSearchFieldValueBundle.Relation.EQUALS, albumText.getText()));						
+				advancedSearchParaeters.add(new advanceSearchFieldValueBundle(RequestToQueryHandler.AdvancedSearchFields.YEAR, (relationCombo.getSelectionIndex()==0 ? advanceSearchFieldValueBundle.Relation.GREATER : relationCombo.getSelectionIndex()==1 ? advanceSearchFieldValueBundle.Relation.EQUALS : advanceSearchFieldValueBundle.Relation.LESSER) , yearText.getText()));
 							
-				SearchRequest advanceSearch = new SearchRequest(dataTableId, SearchRequest.Priority.LOW_PRIORITY, SearchRequest.SearchType.ADVANCED, advancedSearchParaeters);
+				RequestToQueryHandler advanceSearch = new RequestToQueryHandler(dataTableId, RequestToQueryHandler.Priority.LOW_PRIORITY, RequestToQueryHandler.SearchType.ADVANCED, advancedSearchParaeters);
 				SearchesPriorityQueue.addSearch(advanceSearch);
 				
 				tableViewsMap.addTable(dataTableId, new String[][]{new String[]{}});		

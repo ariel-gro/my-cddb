@@ -2,9 +2,9 @@ package view.views;
 
 import java.util.ArrayList;
 
-import model.SearchRequest;
+import model.RequestToQueryHandler;
 import model.SearchesPriorityQueue;
-import model.SearchRequest.MusicGenres;
+import model.RequestToQueryHandler.MusicGenres;
 
 import org.eclipse.jface.resource.FontDescriptor;
 import org.eclipse.jface.resource.FontRegistry;
@@ -265,18 +265,18 @@ public class NavigationView extends ViewPart
 						{
 							if(viewer.getTree().getSelection()[0].getText().equals("Latest CDs"))
 							{
-								SearchRequest top10LatestSearch = new SearchRequest(QueryId.getId(), SearchRequest.Priority.HIGH_PRIORITY, SearchRequest.SearchType.TOP_10, SearchRequest.Top10Type.LATEST);
+								RequestToQueryHandler top10LatestSearch = new RequestToQueryHandler(QueryId.getId(), RequestToQueryHandler.Priority.HIGH_PRIORITY, RequestToQueryHandler.SearchType.TOP_10, RequestToQueryHandler.Top10Type.LATEST);
 								SearchesPriorityQueue.addSearch(top10LatestSearch);
 							} else if (viewer.getTree().getSelection()[0].getText().equals("Most Popular CDs"))
 							{
-								SearchRequest top10PopularSearch = new SearchRequest(QueryId.getId(), SearchRequest.Priority.HIGH_PRIORITY, SearchRequest.SearchType.TOP_10, SearchRequest.Top10Type.MOST_POPULAR);
+								RequestToQueryHandler top10PopularSearch = new RequestToQueryHandler(QueryId.getId(), RequestToQueryHandler.Priority.HIGH_PRIORITY, RequestToQueryHandler.SearchType.TOP_10, RequestToQueryHandler.Top10Type.MOST_POPULAR);
 								SearchesPriorityQueue.addSearch(top10PopularSearch);
 							}
 						}
 						else if(viewer.getTree().getSelection()[0].getParentItem().getText().equals("MUSIC GENRES"))
 						{					
 							MusicGenres selectedMusicGenre = null;
-							MusicGenres[] allMusicGenresd = SearchRequest.MusicGenres.values();
+							MusicGenres[] allMusicGenresd = RequestToQueryHandler.MusicGenres.values();
 							for (int i = 0; i < allMusicGenresd.length; i++)
 							{
 								if(allMusicGenresd[i].toString().equals(viewer.getTree().getSelection()[0].getText()))
@@ -285,7 +285,7 @@ public class NavigationView extends ViewPart
 								}
 							}
 							
-							SearchRequest top10Search = new SearchRequest(QueryId.getId(), SearchRequest.Priority.HIGH_PRIORITY, SearchRequest.SearchType.TOP_10, selectedMusicGenre);
+							RequestToQueryHandler top10Search = new RequestToQueryHandler(QueryId.getId(), RequestToQueryHandler.Priority.HIGH_PRIORITY, RequestToQueryHandler.SearchType.TOP_10, selectedMusicGenre);
 							SearchesPriorityQueue.addSearch(top10Search);
 						}
 					}
