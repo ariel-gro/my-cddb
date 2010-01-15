@@ -6,7 +6,7 @@ import java.io.InputStream;
 
 public class RunProcess
 {
-	private final static long DEFAULT_PROCESS_TIMEOUT = 18000000;
+	private final static long DEFAULT_PROCESS_TIMEOUT = 65000000;
 	
 	/**
 	 * Will hold the output written to stdout by the process
@@ -50,7 +50,7 @@ public class RunProcess
 	 */
 	public String blockedExecProcess(String theCommand,long theTimeout) throws IOException
 	{
-		return blockedExecProcess(theCommand,null,null,theTimeout);
+		return blockedExecProcess(theCommand,null,theTimeout);
 	}
 	
 	/**
@@ -63,15 +63,12 @@ public class RunProcess
 	 * @throws IOException
 	 * @throws TimeoutExecption - thrown if time out reached.
 	 */
-	public String blockedExecProcess(String theCommand,File theDir,String theClassPath,long theTimeout) throws IOException
+	public String blockedExecProcess(String theCommand,File theDir,long theTimeout) throws IOException
 	{
 		Process p = null;
 		
-//		p = Runtime.getRuntime().exec(theCommand,null,theDir);
-        if (theClassPath!=null)
-            p = Runtime.getRuntime().exec(theCommand,new String[]{"java.class.path=" + theClassPath},theDir);
-        else
-            p = Runtime.getRuntime().exec(theCommand,null,theDir);
+		p = Runtime.getRuntime().exec(theCommand,null,theDir);
+		
 		InputStream std = p.getInputStream();
 		InputStream err = p.getErrorStream();
 		
