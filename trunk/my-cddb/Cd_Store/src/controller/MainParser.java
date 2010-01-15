@@ -192,7 +192,6 @@ public class MainParser extends Thread
 					trackId++;
 				}
 			}
-			 
 		}
 	}
 	
