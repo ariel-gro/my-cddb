@@ -1,6 +1,6 @@
 package model;
 
-import model.SearchRequest.AdvancedSearchFields;
+import model.RequestToQueryHandler.AdvancedSearchFields;
 
 public class advanceSearchFieldValueBundle
 {

@@ -4,24 +4,24 @@ import java.util.PriorityQueue;
 
 public class SearchesPriorityQueue
 {
-	private static PriorityQueue<SearchRequest> thePriorityQueus = null;
+	private static PriorityQueue<RequestToQueryHandler> thePriorityQueus = null;
 
 	protected SearchesPriorityQueue() {
 		// Exists only to defeat instantiation.
 	}
 
-	public synchronized static void addSearch(SearchRequest theSearchRequest)
+	public synchronized static void addSearch(RequestToQueryHandler theSearchRequest)
 	{
 		if (thePriorityQueus == null)
-			thePriorityQueus = new PriorityQueue<SearchRequest>();
+			thePriorityQueus = new PriorityQueue<RequestToQueryHandler>();
 
 		thePriorityQueus.add(theSearchRequest);
 	}
 
-	public synchronized static SearchRequest getSearch()
+	public synchronized static RequestToQueryHandler getSearch()
 	{
 		if (thePriorityQueus == null)
-			thePriorityQueus = new PriorityQueue<SearchRequest>();
+			thePriorityQueus = new PriorityQueue<RequestToQueryHandler>();
 
 		if (thePriorityQueus.isEmpty() == false)
 			return thePriorityQueus.remove();
@@ -32,7 +32,7 @@ public class SearchesPriorityQueue
 	public synchronized static boolean isEmpty()
 	{
 		if (thePriorityQueus == null)
-			thePriorityQueus = new PriorityQueue<SearchRequest>();
+			thePriorityQueus = new PriorityQueue<RequestToQueryHandler>();
 
 		return thePriorityQueus.isEmpty();
 	}
