@@ -72,7 +72,8 @@ public class queryHandler {
 					query += "Artists.name LIKE '%" + advanceSearchFieldValue.getValue() + "%' AND Albums.artistId = Artists.artistId ";
 					break;
 				case GENRE:
-					query += "Genres.genre LIKE '%" + advanceSearchFieldValue.getValue() + "%' AND Genres.genreId = Albums.genreId ";
+					if(advanceSearchFieldValue.getValue().equals("All_Music_Genres") == false)
+						query += "Genres.genre LIKE '%" + advanceSearchFieldValue.getValue() + "%' AND Genres.genreId = Albums.genreId ";
 					break;
 				case TRACK_TITLE:
 					query += "Tracks.title LIKE '%" + advanceSearchFieldValue.getValue() + "%' AND Tracks.id = Albums.id ";
