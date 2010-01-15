@@ -62,7 +62,7 @@ public class DbImportWizardPageOne extends WizardPage
 		fileDialog.setFilterNames(new String[] { "tar-archive file(*.tar)" });
 
 		Button selectFileButton = new Button(container, SWT.PUSH);
-		selectFileButton.setText("...");
+		selectFileButton.setText(" ... ");
 		selectFileButton.addSelectionListener(new SelectionListener() {
 
 			@Override
