@@ -2,10 +2,16 @@ package controller;
 
 import java.sql.ResultSet;
 import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
 import java.util.PriorityQueue;
+
+import org.eclipse.ui.internal.SwitchToWindowMenu;
 
 import model.SearchRequest;
 import model.SqlStatement;
+import model.advanceSearchFieldValueBundle;
+import model.SearchRequest.AdvancedSearchFields;
 import model.SearchRequest.MusicGenres;
 import model.SqlStatement.queryType;
 
@@ -16,6 +22,7 @@ public class queryHandler {
 	private String createQuery (){
 		
 		SqlStatement sqlStmt;
+		String query = "";
 		
 		switch (searchReq.getSearchType()){
 		// this.searchReq.getMusicGenre() - doing tostring, so need the enum to be lowercase?
@@ -49,7 +56,38 @@ public class queryHandler {
 		case ADVANCED:
 			//why use advanceSearchFieldValueBundle ? need just a list of string in a pre-determined order, and put them instead of the question marks.
 			//what if some are null?
-			sqlStmt = new SqlStatement(queryType.QUERY, "SELECT Albums.* FROM Albums, Artists, Genres, tracks WHERE (Albums.title LIKE ?) AND (Artists.name LIKE ? AND Albums.artistId = Artists.artistId) AND (Albums.year LIKE ?) AND (Genres.genre LIKE ? AND Genres.genreId = Albums.genreId) AND (Tracks.title LIKE ? AND Tracks.id = Albums.id) GROUP BY Albums.id", null, this.searchReq.getId());
+			List<advanceSearchFieldValueBundle> params = searchReq.getAdvanceSearchParameters();
+			query += "SELECT Albums.* FROM Albums, Artists, Genres, tracks WHERE ";
+			
+			for (Iterator iterator = params.iterator(); iterator.hasNext();)
+			{
+				advanceSearchFieldValueBundle advanceSearchFieldValue = (advanceSearchFieldValueBundle) iterator.next();
+
+				switch (advanceSearchFieldValue.getSearchField()) 
+				{
+				case ALBUM_TITLE:
+					query += "Albums.title LIKE '%" + advanceSearchFieldValue.getValue() + "%' ";
+					break;
+				case ARTIST_NAME:
+					query += "Artists.name LIKE '%" + advanceSearchFieldValue.getValue() + "%' AND Albums.artistId = Artists.artistId ";
+					break;
+				case GENRE:
+					query += "Genres.genre LIKE '%" + advanceSearchFieldValue.getValue() + "%' AND Genres.genreId = Albums.genreId ";
+					break;
+				case TRACK_TITLE:
+					query += "Tracks.title LIKE '%" + advanceSearchFieldValue.getValue() + "%' AND Tracks.id = Albums.id ";
+					break;
+				case YEAR:
+					query += "Albums.year " + (advanceSearchFieldValue.getRelation().equals(advanceSearchFieldValueBundle.Relation.GREATER)?">":advanceSearchFieldValue.getRelation().equals(advanceSearchFieldValueBundle.Relation.EQUALS)?"=":"<") + advanceSearchFieldValue.getValue() + " ";
+					break;
+				default:
+					break;
+				}
+			}
+			
+			query += "GROUP BY Albums.id";
+			
+			sqlStmt = new SqlStatement(queryType.QUERY, query, null, this.searchReq.getId());
 			connectionManager.insertToQueue(sqlStmt);
 			
 			
