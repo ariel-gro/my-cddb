@@ -67,7 +67,7 @@ public class View extends ViewPart
 		l.setFont(boldFont);
 
 		Combo categoriesCombo = new Combo(banner, SWT.NONE);
-		categoriesCombo.setItems(new String[] { "All Music Genres", "Country", "Jazz", "R&B", "Rap & Hip Hop", "Rock & Pop", "Soundtracks" });
+		categoriesCombo.setItems(new String[] {"All Music Genres", "Blues", "Classical", "Country", "Data", "Folk", "Jazz", "New Age", "Reggae", "Rock", "Soundtrack", "Misc"});
 		categoriesCombo.select(0);
 
 		Text text = new Text(banner, SWT.BORDER);
@@ -241,7 +241,7 @@ public class View extends ViewPart
 		
 		for (int i = 0; i < myDisks.length; i++) 
 		{
-			myDisks[i] = new Disk("id" + i,"title" + i, "artist" + i, "genre" + i, "subGenre" + i, "year" + i, "totalTime" + i, "price" + i, "album covers/images_" + i + ".jpg", null);
+			myDisks[i] = new Disk("id" + i,"title" + i, "artist" + i, "genre" + i, "subGenre" + i, 1978, 1000, "price" + i, "album covers/images_" + i + ".jpg", null);
 		}
 			
 		return myDisks;	

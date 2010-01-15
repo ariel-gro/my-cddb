@@ -14,6 +14,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.ProgressBar;
 import controller.MainExtractFileThread;
+import controller.MainParser;
 
 public class DbImportWizardPageTwo extends WizardPage
 {
@@ -69,8 +70,9 @@ public class DbImportWizardPageTwo extends WizardPage
 				{
 					try {Thread.sleep(1000);} catch (InterruptedException e) {}
 				}
-							
-				MainExtractFileThread myExtractFile = new MainExtractFileThread(DbConfiguration.getFileToImport());
+						
+				String fileToImport = DbConfiguration.getFileToImport();
+				MainExtractFileThread myExtractFile = new MainExtractFileThread(fileToImport);
 				myExtractFile.start();
 							
 				parent.getDisplay().syncExec(new Runnable() {
@@ -86,6 +88,15 @@ public class DbImportWizardPageTwo extends WizardPage
 					e1.printStackTrace();
 				}
 
+				MainParser myParse = new MainParser(fileToImport.substring(0, fileToImport.lastIndexOf("\\")+1)+"allDisks.txt");
+				myParse.start();
+				
+				try {
+					myParse.join();
+				} catch (InterruptedException e1) {
+					e1.printStackTrace();
+				}
+				
 				parent.getDisplay().asyncExec(new Runnable() {
 
 					public void run()
@@ -99,11 +110,10 @@ public class DbImportWizardPageTwo extends WizardPage
 				parent.getDisplay().syncExec(new Runnable() {
 					public void run()
 					{
+						setPageComplete(true);
 						getWizard().getContainer().updateButtons();
 					}
 				});
-				
-				setPageComplete(true);
 			}
 		};
 

@@ -2,6 +2,10 @@ package view.views;
 
 import java.util.ArrayList;
 
+import model.SearchRequest;
+import model.SearchesPriorityQueue;
+import model.SearchRequest.MusicGenres;
+
 import org.eclipse.jface.resource.FontDescriptor;
 import org.eclipse.jface.resource.FontRegistry;
 import org.eclipse.jface.viewers.DoubleClickEvent;
@@ -26,6 +30,8 @@ import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.part.ViewPart;
+
+import controller.QueryId;
 
 import view.Activator;
 
@@ -189,15 +195,19 @@ public class NavigationView extends ViewPart
 		TreeObject to2 = new TreeObject("Most Popular CDs");
 		p1.addChild(to1);
 		p1.addChild(to2);
-
+		
 		TreeParent p2 = new TreeParent("MUSIC GENRES");
-		TreeObject to3 = new TreeObject("Country");
-		TreeObject to4 = new TreeObject("Jazz");
-		TreeObject to5 = new TreeObject("R&B");
-		TreeObject to6 = new TreeObject("Rap & Hip Hop");
-		TreeObject to7 = new TreeObject("Rock & Pop");
-		TreeObject to8 = new TreeObject("Soundtracks");
-		TreeObject to9 = new TreeObject("New Age");
+		TreeObject to3 = new TreeObject("Blues");
+		TreeObject to4 = new TreeObject("Classical");
+		TreeObject to5 = new TreeObject("Country");
+		TreeObject to6 = new TreeObject("Data");
+		TreeObject to7 = new TreeObject("Folk");
+		TreeObject to8 = new TreeObject("Jazz");
+		TreeObject to9 = new TreeObject("NewAge");
+		TreeObject to10 = new TreeObject("Reggae");
+		TreeObject to11 = new TreeObject("Rock");
+		TreeObject to12 = new TreeObject("Soundtrack");
+		TreeObject to13 = new TreeObject("Misc");
 		p2.addChild(to3);
 		p2.addChild(to4);
 		p2.addChild(to5);
@@ -205,6 +215,10 @@ public class NavigationView extends ViewPart
 		p2.addChild(to7);
 		p2.addChild(to8);
 		p2.addChild(to9);
+		p2.addChild(to10);
+		p2.addChild(to11);
+		p2.addChild(to12);
+		p2.addChild(to13);
 
 		TreeParent root = new TreeParent("");
 		root.addChild(p1);
@@ -245,13 +259,43 @@ public class NavigationView extends ViewPart
 				IHandlerService handlerService = (IHandlerService) getSite().getService(IHandlerService.class);
 				try 
 				{
-					System.out.println("Double click works !!!" + "  " + viewer.getTree().getSelection()[0].getText());
+					if(viewer.getTree().getSelection()[0].getParentItem() != null)
+					{
+						if(viewer.getTree().getSelection()[0].getParentItem().getText().equals("POPULAR FEATURES"))
+						{
+							if(viewer.getTree().getSelection()[0].getText().equals("Latest CDs"))
+							{
+								SearchRequest top10LatestSearch = new SearchRequest(QueryId.getId(), SearchRequest.Priority.HIGH_PRIORITY, SearchRequest.SearchType.TOP_10, SearchRequest.Top10Type.LATEST);
+								SearchesPriorityQueue.addSearch(top10LatestSearch);
+							} else if (viewer.getTree().getSelection()[0].getText().equals("Most Popular CDs"))
+							{
+								SearchRequest top10PopularSearch = new SearchRequest(QueryId.getId(), SearchRequest.Priority.HIGH_PRIORITY, SearchRequest.SearchType.TOP_10, SearchRequest.Top10Type.MOST_POPULAR);
+								SearchesPriorityQueue.addSearch(top10PopularSearch);
+							}
+						}
+						else if(viewer.getTree().getSelection()[0].getParentItem().getText().equals("MUSIC GENRES"))
+						{					
+							MusicGenres selectedMusicGenre = null;
+							MusicGenres[] allMusicGenresd = SearchRequest.MusicGenres.values();
+							for (int i = 0; i < allMusicGenresd.length; i++)
+							{
+								if(allMusicGenresd[i].toString().equals(viewer.getTree().getSelection()[0].getText()))
+								{
+									selectedMusicGenre = allMusicGenresd[i];
+								}
+							}
+							
+							SearchRequest top10Search = new SearchRequest(QueryId.getId(), SearchRequest.Priority.HIGH_PRIORITY, SearchRequest.SearchType.TOP_10, selectedMusicGenre);
+							SearchesPriorityQueue.addSearch(top10Search);
+						}
+					}
 					
 					//handlerService.executeCommand("de.vogella.rcp.intro.editor.callEditor", null);
 					
 				} catch (Exception ex) 
 				{
-					throw new RuntimeException("de.vogella.rcp.intro.editor.callEditor not found");
+					ex.printStackTrace();
+					//throw new RuntimeException("de.vogella.rcp.intro.editor.callEditor not found");
 				}
 			}
 		});
