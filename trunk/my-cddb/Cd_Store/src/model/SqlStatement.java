@@ -1,28 +1,26 @@
 package model;
 
-import java.util.Hashtable;
-
 public class SqlStatement
 {
-	public enum queryType {INSERT_SINGLE, INSERT_BULK, QUERY}	
+	public enum QueryType {INSERT_SINGLE, INSERT_BULK, QUERY}	
 	
-	private queryType queryType;
+	private QueryType queryType;
 	private String stmt;
-	private Hashtable<String,String[]> tuples;
+	private String[][] tuples;
 	private int requestId;
 	
-	public SqlStatement(queryType queryType, String stmt, Hashtable<String, String[]> tuples, int requestId) {
+	public SqlStatement(QueryType queryType, String stmt, String[][] tuples, int requestId) {
 		this.queryType = queryType;
 		this.stmt = stmt;
 		this.tuples = tuples;
 		this.requestId = requestId;
 	}
 
-	public queryType getQueryType() {
+	public QueryType getQueryType() {
 		return queryType;
 	}
 
-	public void setQueryType(queryType queryType) {
+	public void setQueryType(QueryType queryType) {
 		this.queryType = queryType;
 	}
 
@@ -34,11 +32,11 @@ public class SqlStatement
 		this.stmt = stmt;
 	}
 
-	public Hashtable<String, String[]> getTuples() {
+	public String[][] getTuples() {
 		return tuples;
 	}
 
-	public void setTuples(Hashtable<String, String[]> tuples) {
+	public void setTuples(String[][] tuples) {
 		this.tuples = tuples;
 	}
 
