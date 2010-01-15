@@ -10,13 +10,8 @@ import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-
 import model.Disk;
-import model.Track;
 
 public class MainParser extends Thread
 {
@@ -30,7 +25,8 @@ public class MainParser extends Thread
 	boolean jumpToNextDisk = false;
 
 	Disk currentDisk = null;
-	List<Track> tracks;
+	//List<Track> tracks;
+	private String[] tracks;
 	
 	private HashMap<String,String[]> diskMap = new HashMap<String,String[]>(10000);
 	private HashMap<String,String[]> genresMap = new HashMap<String,String[]>(500);
@@ -50,8 +46,8 @@ public class MainParser extends Thread
 			br = new BufferedReader(new FileReader(file));
 
 			// Read the file
-			int title_index = 0;
-			while (jumpToNextDisk || (line = br.readLine()) != null)
+			int track_index = 0;
+			while ((jumpToNextDisk && (line!=null)) || (line = br.readLine()) != null)
 			{
 				if(jumpToNextDisk)
 					jumpToNextDisk = false;
@@ -61,10 +57,12 @@ public class MainParser extends Thread
 					if (line.startsWith("# xmcd"))
 					{
 						if (currentDisk != null)
+						{
 							updateMaps(currentDisk);
+						}
 
 						currentDisk = new Disk();
-						tracks = new ArrayList<Track>(50);
+						tracks =  new String[100];
 					}
 
 					if (!isEligableCoding(line))
@@ -79,24 +77,25 @@ public class MainParser extends Thread
 						currentDisk.setTotalTime(Integer.parseInt(line.split("\\s")[3]));
 					} else if (line.startsWith("DISCID="))
 					{
-						currentDisk.setId(line.substring(line.indexOf("=") + 1));
+						currentDisk.setId(line.substring(line.indexOf("=") + 1).split(",")[0]);
 					} else if (line.startsWith("DTITLE="))
 					{
-						dTitle = line.substring(line.indexOf("=") + 1);
-						if(line.split("/").length==1)
+						dTitle = line.substring(line.indexOf("=") + 1).trim().toLowerCase();
+						if(dTitle.split("/").length==1)
 						{
 							currentDisk.setTitle(dTitle);
 							currentDisk.setArtist(dTitle);
-						} else if (line.split("/").length==2)
+						} else if (dTitle.split("/").length==2)
 						{
-							currentDisk.setArtist(line.split("/")[0]);
-							currentDisk.setTitle(line.split("/")[1]);
+							currentDisk.setArtist(dTitle.split("/")[0]);
+							currentDisk.setTitle(dTitle.split("/")[1]);
 							
 						} else
 						{
-							currentDisk.setArtist("Various");
-							currentDisk.setTitle(line.split("/")[line.split("/").length-1]);
-						}					
+							currentDisk.setArtist("various");
+							currentDisk.setTitle(dTitle.split("/")[dTitle.split("/").length-1]);
+						}	
+										
 					} else if (line.startsWith("DYEAR="))
 					{
 						int len = line.substring(6).trim().length();
@@ -113,27 +112,31 @@ public class MainParser extends Thread
 						}
 					} else if (line.startsWith("DGENRE="))
 					{
-						currentDisk.setGenre(line.substring(line.indexOf("=") + 1));
+						currentDisk.setGenre(line.substring(line.indexOf("=") + 1).trim().toLowerCase());
 					} else if (line.startsWith("TTITLE"))
-					{
-						title_index = Integer.parseInt(line.substring(6, line.indexOf("=")));
-						if (tracks.get(title_index) == null)
-						{
-							tracks.add(title_index, new Track(title_index, line.substring(line.indexOf("=") + 1)));
-						} else
-						{
-							tracks.get(title_index).setTitle(tracks.get(title_index).getTitle() + line.substring(line.indexOf("=") + 1));
+					{		
+						track_index = Integer.parseInt(line.substring(6, line.indexOf("=")));
+						if (tracks[track_index] == null) {
+							tracks[track_index] = line.substring(line.indexOf("=")+1).trim().toLowerCase();
+						} else {
+							tracks[track_index] += line.substring(line.indexOf("=")+1).trim().toLowerCase();
 						}
 					}
 					line = null;
 				} catch (Exception e)
 				{
+					e.printStackTrace();
 					currentDisk = null;
 					jumpToNextDisc();
 				}
 			}
 
 			updateMaps(currentDisk);
+			
+			System.out.println("Num Of Disks: " + diskMap.size());
+			System.out.println("Num Of Artists: " + artistMap.size());
+			System.out.println("Num Of Genres: " + genresMap.size());
+			System.out.println("Num Of Tracks: " + tracksMap.size());
 
 		} catch (Exception e)
 		{
@@ -156,7 +159,6 @@ public class MainParser extends Thread
 		int genreId;
 		
 		diskId = Long.parseLong(currentDisk.getId(), 16); 
-		
 		if(diskMap.containsKey(diskId+"") == false)
 		{
 			if(artistMap.containsKey(currentDisk.getArtist()) == false)
@@ -181,12 +183,12 @@ public class MainParser extends Thread
 			
 			diskMap.put(diskId+"", new String[]{artistId+"", currentDisk.getTitle(), currentDisk.getYear()+"", genreId+"", currentDisk.getTotalTime()+"", (5+Math.random()*10)+""});
 			
-			List<Track> diskTracks = currentDisk.getTracks();
-			for (Iterator<Track> iterator = diskTracks.iterator(); iterator.hasNext();)
+			for (int i = 0; i < tracks.length; i++)
 			{
-				Track track = (Track) iterator.next();
-				tracksMap.put(track.getTitle(), new String[]{diskId+"", track.getNum()+""});		
-			}	
+				if(tracks[i] != null)
+					tracksMap.put(tracks[i], new String[]{diskId+"", i+""});			
+			}
+			 
 		}
 	}
 	
@@ -194,8 +196,6 @@ public class MainParser extends Thread
 	{
 		try
 		{
-			line = br.readLine();
-
 			while (line != null && line.startsWith("# xmcd") == false)
 				line = br.readLine();
 			
@@ -253,12 +253,12 @@ public class MainParser extends Thread
 	{
 		return (checkFormat(line, "US-ASCII"));
 	}
-
+/*
 	public static void main(String args[])
 	{
 		MainParser test = new MainParser("C:\\FreeDB_Files_Temp\\allDisks.txt");
 		test.run();
 		
 	}
-
+*/
 }
