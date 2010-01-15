@@ -1,5 +1,6 @@
 package controller;
 import java.sql.*;
+import java.util.concurrent.Callable;
 
 import javax.swing.text.StyleContext.SmallAttributeSet;
 
@@ -8,18 +9,22 @@ import model.SqlStatement;
 import model.SqlStatement.queryType;
 
 
-public class DbConnector {
+public class DbConnector implements Callable<ResultSet>{
 
 	private Connection connection;	// DB connection
 
-	private String query;
 	private PreparedStatement ps;
+	private SqlStatement stmt;
 
 
 	public DbConnector() {		
 		this.connection = null;
+		this.stmt = null;
 	}
 
+	public void setStatement(SqlStatement stmt){
+		this.stmt = stmt;
+	}
 	/**
 	 * 
 	 * @return the connection (null on error)
@@ -127,7 +132,7 @@ public class DbConnector {
 		return null;
 	}
 	
-	public ResultSet executeSqlStatement(SqlStatement stmt){
+	public ResultSet call(){
 		
 		queryType qt = stmt.getQueryType();
 		
