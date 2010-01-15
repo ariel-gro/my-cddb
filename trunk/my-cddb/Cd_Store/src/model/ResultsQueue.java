@@ -11,7 +11,7 @@ public class ResultsQueue
 		// Exists only to defeat instantiation.
 	}
 
-	public synchronized static void addSearch(Result theResult)
+	public synchronized static void addResult(Result theResult)
 	{
 		if (theResultsQueue == null)
 			theResultsQueue = new LinkedList<Result>();
@@ -19,7 +19,7 @@ public class ResultsQueue
 		theResultsQueue.add(theResult);
 	}
 
-	public synchronized static Result getSearch()
+	public synchronized static Result getResult()
 	{
 		if (theResultsQueue == null)
 			theResultsQueue = new LinkedList<Result>();
