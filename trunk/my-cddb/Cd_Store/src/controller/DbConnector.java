@@ -1,11 +1,9 @@
 package controller;
 import java.sql.*;
-import java.util.concurrent.Callable;
 
 
-import model.DbConfiguration;
 import model.SqlStatement;
-import model.SqlStatement.queryType;
+import model.SqlStatement.QueryType;
 
 
 public class DbConnector implements Runnable{
@@ -46,19 +44,24 @@ public class DbConnector implements Runnable{
 	
 	public void run(){
 		
-		queryType qt = stmt.getQueryType();
+		QueryType qt = stmt.getQueryType();
+		ResultSet result = null;
 		
 		switch (qt){
 		case INSERT_BULK:
-			executeBulkInsert(stmt);
+			result = executeBulkInsert(stmt);
 			break;
 		case INSERT_SINGLE:
-			executeSingleInsert(stmt);
+			result = executeSingleInsert(stmt);
 			break;
 		case QUERY:
-			executeQuery(stmt);
+			result = executeQuery(stmt);
 			break;
 		}
+		
+		connectionManager.insertToResultQueue(result);
+		connectionManager.insertToConnectionQueue(this.connection);
+		this.connection = null;
 	}
 
 	private ResultSet executeQuery(SqlStatement stmt) {
