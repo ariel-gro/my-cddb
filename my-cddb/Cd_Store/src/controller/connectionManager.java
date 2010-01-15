@@ -14,7 +14,7 @@ import model.SqlStatement;
 public class connectionManager {
 
 	private Executor connThreads;
-	private LinkedBlockingQueue<Connection> connQueue;
+	private static LinkedBlockingQueue<Connection> connQueue;
 	private Vector<Connection> conVector;
 	private static LinkedBlockingQueue<SqlStatement> queryQueue = null;
 	private static LinkedBlockingQueue<ResultSet> resultQueue = null;
@@ -39,6 +39,17 @@ public class connectionManager {
 		
 		try {
 			resultQueue.put(result);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public static synchronized void insertToConnectionQueue (Connection con){
+		if (connQueue == null)
+			connQueue = new LinkedBlockingQueue<Connection>();
+		
+		try {
+			connQueue.put(con);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
@@ -107,7 +118,7 @@ public class connectionManager {
 			Connection connection =
 				DriverManager.getConnection(jdbcurl, DbConfiguration.getUser(), DbConfiguration.getPassword());
 			
-			this.connQueue.put(connection);
+			insertToConnectionQueue(connection);
 			this.conVector.add(numOfConnections, connection);
 			numOfConnections++;
 		}
