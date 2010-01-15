@@ -19,30 +19,32 @@ public class SearchRequest implements Comparable<SearchRequest>
 	private List<advanceSearchFieldValueBundle> advanceSearchParameters;
 	
 	// TOP 10 by music musicGenres
-	public SearchRequest(int id, Priority priority, SearchType searchType, MusicGenres musicGenre) 
+	/*public SearchRequest(int id, Priority priority, SearchType searchType, MusicGenres musicGenre) 
 	{
 		this.id = id;
 		this.priority = priority;
 		this.searchType = searchType;
-		this.musicGenre = musicGenre;
+		
 	}
+	*/
 	
-	// TOP 10 by top20Type
-	public SearchRequest(int id, Priority priority, SearchType searchType, Top10Type top10Type) 
+	// TOP 10 by top10Type
+	public SearchRequest(int id, Priority priority, SearchType searchType, Top10Type top10Type, MusicGenres musicGenre) 
 	{
 		this.id = id;
 		this.priority = priority;
 		this.searchType = searchType;
 		this.top10Type = top10Type;
+		this.musicGenre = musicGenre;
 	}
 	
-	// Regular search with musicGenres and regularSearchString
-	public SearchRequest(int id, Priority priority, SearchType searchType, MusicGenres musicGenre, String regularSearchString) 
+	// Regular search  - with musicGenres and regularSearchString - why musicgenres?
+	public SearchRequest(int id, Priority priority, SearchType searchType, String regularSearchString) 
 	{
 		this.id = id;
 		this.priority = priority;
 		this.searchType = searchType;
-		this.musicGenre = musicGenre;
+		//this.musicGenre = musicGenre;
 		this.regularSearchString = regularSearchString;
 	}
 	
@@ -111,7 +113,7 @@ public class SearchRequest implements Comparable<SearchRequest>
 		return advanceSearchParameters;
 	}
 
-	
+	/*	
 	//TEMP FOR TESTING
 	public static void main(String [] args)
 	{
@@ -121,4 +123,5 @@ public class SearchRequest implements Comparable<SearchRequest>
 		System.out.println(mySearch.getSearchType());
 		System.out.println(mySearch.getMusicGenres());
 	}
+	*/
 }
