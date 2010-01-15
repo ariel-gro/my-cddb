@@ -18,6 +18,7 @@ public class MainParser extends Thread
 	String fileToParse;
 	boolean status = true;
 	String dTitle;
+	static long trackId = 0;
 
 	private File file;
 	private BufferedReader br;
@@ -186,7 +187,10 @@ public class MainParser extends Thread
 			for (int i = 0; i < tracks.length; i++)
 			{
 				if(tracks[i] != null)
-					tracksMap.put(tracks[i], new String[]{diskId+"", i+""});			
+				{
+					tracksMap.put(trackId+"", new String[]{diskId+"", tracks[i], i+""});
+					trackId++;
+				}
 			}
 			 
 		}
