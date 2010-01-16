@@ -2,6 +2,8 @@ package controller;
 import java.sql.*;
 
 
+import model.Result;
+import model.ResultsQueue;
 import model.SqlStatement;
 import model.SqlStatement.QueryType;
 
@@ -9,14 +11,15 @@ import model.SqlStatement.QueryType;
 public class DbConnector implements Runnable{
 
 	private Connection connection;	// DB connection
-
-	private PreparedStatement ps;
 	private SqlStatement stmt;
-
+	
+	private PreparedStatement ps;
+	
 
 	public DbConnector() {		
 		this.connection = null;
 		this.stmt = null;
+		this.ps = null;
 	}
 
 	public void setConnection(Connection connection) {
@@ -45,21 +48,24 @@ public class DbConnector implements Runnable{
 	public void run(){
 		
 		QueryType qt = stmt.getQueryType();
-		ResultSet result = null;
+		ResultSet resultSet = null;
 		
 		switch (qt){
 		case INSERT_BULK:
-			result = executeBulkInsert(stmt);
+			if (executeBulkInsert(stmt) == -1)
+				System.out.println("Error during bulk insert");
 			break;
 		case INSERT_SINGLE:
-			result = executeSingleInsert(stmt);
+			if (executeSingleInsert(stmt) == -1)
+				System.out.println("Error during single insert");
 			break;
 		case QUERY:
-			result = executeQuery(stmt);
+			resultSet = executeQuery(stmt);
 			break;
 		}
 		
-		connectionManager.insertToResultQueue(result);
+		Result result = new Result(this.stmt.getRequestId(), resultSet);
+		ResultsQueue.addResult(result);
 		connectionManager.insertToConnectionQueue(this.connection);
 		this.connection = null;
 	}
@@ -76,14 +82,20 @@ public class DbConnector implements Runnable{
 		}
 	}
 
-	private ResultSet executeSingleInsert(SqlStatement stmt) {
-		return null;
-		// TODO Auto-generated method stub
-		
+	private int executeSingleInsert(SqlStatement stmt) {
+		try
+		{
+			PreparedStatement ps = connection.prepareStatement(stmt.getStmt());
+			return ps.executeUpdate();
+		}
+		catch (SQLException e)
+		{
+			return -1;
+		}
 	}
 
-	private ResultSet executeBulkInsert(SqlStatement stmt) {
-		return null;
+	private int executeBulkInsert(SqlStatement stmt) {
+		return 0;
 		// TODO Auto-generated method stub
 		
 	}

@@ -32,18 +32,7 @@ public class connectionManager {
 			e.printStackTrace();
 		}
 	}
-	
-	public static synchronized void insertToResultQueue (ResultSet result){
-		if (resultQueue == null)
-			resultQueue = new LinkedBlockingQueue<ResultSet>();
 		
-		try {
-			resultQueue.put(result);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-	}
-	
 	public static synchronized void insertToConnectionQueue (Connection con){
 		if (connQueue == null)
 			connQueue = new LinkedBlockingQueue<Connection>();
