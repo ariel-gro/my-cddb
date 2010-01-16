@@ -42,7 +42,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor
 	{
 		IWorkbenchWindowConfigurer configurer = getWindowConfigurer();
 		configurer.setShowCoolBar(false);
-		configurer.setShowStatusLine(true);
+		configurer.setShowStatusLine(false);
 		configurer.setTitle(title);
 	}
 
@@ -55,8 +55,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor
 		getWindowConfigurer().getWorkbenchConfigurer().getWorkbench().getWorkbenchWindows()[0].getShell().setMaximized(true);
 		
 		// Set status line
-		IStatusLineManager statusline = getWindowConfigurer().getActionBarConfigurer().getStatusLineManager();
-		statusline.setErrorMessage("Not connected to DB");
+		//IStatusLineManager statusline = getWindowConfigurer().getActionBarConfigurer().getStatusLineManager();
+		//statusline.setErrorMessage("Not connected to DB");
 		
 		// Setup minimize feature
 		window = getWindowConfigurer().getWindow();
