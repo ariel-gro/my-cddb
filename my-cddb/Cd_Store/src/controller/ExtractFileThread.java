@@ -22,6 +22,7 @@ public class ExtractFileThread extends Thread
 	URL fileUrl = null;
 	String theCommand;
 	File tempBatch;
+	private boolean status = true;
 
 	public ExtractFileThread(String firstFileToExtract, String pathToExtractTo, boolean extractToTextFile, String textFile) 
 	{
@@ -36,8 +37,7 @@ public class ExtractFileThread extends Thread
 		try {
 			fileUrl = FileLocator.toFileURL(url);
 		} catch (IOException e) {
-			// Will happen if the file cannot be read for some reason
-			e.printStackTrace();
+			status = false;
 		}
 	}
 
@@ -54,7 +54,7 @@ public class ExtractFileThread extends Thread
 			try {
 				setContents(tempBatch, theCommand);
 			} catch (IOException e) {
-				e.printStackTrace();
+				status = false;
 			}
 			
 			theCommand = tempBatch.getPath();
@@ -66,11 +66,11 @@ public class ExtractFileThread extends Thread
 		RunProcess proc = new RunProcess();
 		try 
 		{
-			System.out.println("Running: " + theCommand);
+			//System.out.println("Running: " + theCommand);
 			String commandOutput = proc.blockedExecProcess(theCommand);
-			System.out.println(commandOutput);
+			//System.out.println(commandOutput);
 		} catch (IOException e1) {
-			e1.printStackTrace();
+			status = false;
 		}
 		
 		if(extractToTextFile)
@@ -86,4 +86,10 @@ public class ExtractFileThread extends Thread
 			output.close();
 		}
 	}
+
+	public synchronized boolean getStatus()
+	{
+		return status;
+	}
+	
 }

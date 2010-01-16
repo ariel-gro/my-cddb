@@ -94,7 +94,6 @@ public class RunProcess
 				myStdString = stdReader.getResult();
 			    myErrString = errReader.getResult();
 			    myExitValue = p.exitValue();
-				System.out.println("Got timeout while executing process");
 			}
 		}
 	    myStdString = stdReader.getResult();
