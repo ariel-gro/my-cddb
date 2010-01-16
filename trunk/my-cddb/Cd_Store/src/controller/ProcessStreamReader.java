@@ -53,12 +53,9 @@ public class ProcessStreamReader extends Thread
 			myResult = bigStr.getAsString();
 		}
 		catch (IOException e1)
-		{
-			e1.printStackTrace();
-		}
+		{}
 		
 		isFinished = true;
-		//System.out.println("reading thread exited");
 	}
 
 	/**

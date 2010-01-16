@@ -16,6 +16,7 @@ public class MainExtractFileThread extends Thread
 	String secondFileToextract;
 	String mainPath;
 	URL fileUrl = null;
+	private boolean status = true;
 
 	public MainExtractFileThread(String firstFileToExtract) 
 	{
@@ -27,8 +28,7 @@ public class MainExtractFileThread extends Thread
 		try {
 			fileUrl = FileLocator.toFileURL(url);
 		} catch (IOException e) {
-			// Will happen if the file cannot be read for some reason
-			e.printStackTrace();
+			status = false;
 		}
 	}
 
@@ -38,6 +38,8 @@ public class MainExtractFileThread extends Thread
 		ExtractFileThread myExtractFile1 = new ExtractFileThread(firstFileToExtract, mainPath, false, null);
 		myExtractFile1.start();
 		
+		long origFileSize = new File(firstFileToExtract).length();
+		
 		DbImportWizardPageTwo.updateProgress("Starting to extract first file", 1);
 		
 		int i = 0;
@@ -46,7 +48,14 @@ public class MainExtractFileThread extends Thread
 			if(i%10==0 && i<340)
 				DbImportWizardPageTwo.updateProgress("", (i/10)+1 );
 			
-			try {Thread.sleep(1000);} catch (InterruptedException e) {}
+			if(origFileSize>200000000L)
+			{
+				try {Thread.sleep(1000);} catch (InterruptedException e) {}
+			}
+			else
+			{
+				try {Thread.sleep(50);} catch (InterruptedException e) {}
+			}
 			
 			i++;
 		}
@@ -61,16 +70,33 @@ public class MainExtractFileThread extends Thread
 		
 		while(myExtractFile2.isAlive())
 		{
-			long fileSize = resultFile.length();
+			long txtFileSize = resultFile.length();
 			
-			if((double)fileSize/3000000000L<1.0)
-				DbImportWizardPageTwo.updateProgress("",  ((int)(((double)fileSize/3000000000L)*33)+1));
+			if(origFileSize>200000000L)
+			{
+				if((double)txtFileSize/3000000000L<1.0)
+					DbImportWizardPageTwo.updateProgress("",  ((int)(((double)txtFileSize/3000000000L)*33)+1));
+				else
+					DbImportWizardPageTwo.updateProgress("", 34);;
+	
+				try {Thread.sleep(5000);} catch (InterruptedException e) {}	
+			}
 			else
-				DbImportWizardPageTwo.updateProgress("", 34);;
-
-			try {Thread.sleep(5000);} catch (InterruptedException e) {}	
+			{
+				if((double)txtFileSize/60000000L<1.0)
+					DbImportWizardPageTwo.updateProgress("",  ((int)(((double)txtFileSize/60000000L)*33)+1));
+				else
+					DbImportWizardPageTwo.updateProgress("", 34);;
+	
+				try {Thread.sleep(1000);} catch (InterruptedException e) {}	
+			}
 		}
 		
 		DbImportWizardPageTwo.updateProgress("Finished extracting internal disks folders", 34);
+	}
+
+	public synchronized boolean getStatus()
+	{
+		return status;
 	}
 }
