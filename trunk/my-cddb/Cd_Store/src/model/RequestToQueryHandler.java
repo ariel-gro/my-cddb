@@ -76,7 +76,6 @@ public class RequestToQueryHandler implements Comparable<RequestToQueryHandler>
 	public RequestToQueryHandler(int id, Priority priority, QueryType theQueryType, SingleInsertType singleInsertType, String[] dualFields) 
 	{
 		this.id = id;
-		this.theQueryType = QueryType.QUERY;
 		this.priority = priority;
 		this.theQueryType = theQueryType;
 		this.singleInsertType = singleInsertType;
@@ -87,7 +86,6 @@ public class RequestToQueryHandler implements Comparable<RequestToQueryHandler>
 	public RequestToQueryHandler(int id, Priority priority, QueryType theQueryType, HashMap<String,String[]> map, MapType mapType) 
 	{
 		this.id = id;
-		this.theQueryType = QueryType.QUERY;
 		this.priority = priority;
 		this.theQueryType = theQueryType;
 		this.map = map;
@@ -148,6 +146,16 @@ public class RequestToQueryHandler implements Comparable<RequestToQueryHandler>
 		return theQueryType;
 	}
 	
+	public synchronized SingleInsertType getSingleInsertType()
+	{
+		return singleInsertType;
+	}
+
+	public synchronized String[] getDualFields()
+	{
+		return dualFields;
+	}
+
 	public synchronized HashMap<String, String[]> getMap()
 	{
 		return map;
