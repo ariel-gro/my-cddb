@@ -1,6 +1,5 @@
 package model;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -10,9 +9,8 @@ public class Disk
 	private String title;
 	private String artist;
 	private String genre;
-	private String subGenre;
-	private int year;
-	private int totalTime;
+	private String year;
+	private String totalTime;
 	private String price;
 	private int    revision;
 	private List<Track> tracks;
@@ -21,13 +19,12 @@ public class Disk
 	public Disk()
 	{}
 	
-	public Disk(String id, String title, String artist, String genre, String subGenre, int year, int totalTime, String price, String coverImage, List<Track> tracks) 
+	public Disk(String id, String title, String artist, String genre, String year, String totalTime, String price, String coverImage, List<Track> tracks) 
 	{
 		this.id = id;
 		this.title = title;
 		this.artist = artist;
 		this.genre = genre;
-		this.subGenre = subGenre;
 		this.year = year;
 		this.totalTime = totalTime;
 		this.price = price;
@@ -69,27 +66,20 @@ public class Disk
 	{
 		this.genre = genre;
 	}
-	public synchronized String getSubGenre()
-	{
-		return subGenre;
-	}
-	public synchronized void setSubGenre(String subGenre)
-	{
-		this.subGenre = subGenre;
-	}
-	public synchronized int getYear()
+	
+	public synchronized String getYear()
 	{
 		return year;
 	}
-	public synchronized void setYear(int year)
+	public synchronized void setYear(String year)
 	{
 		this.year = year;
 	}
-	public synchronized int getTotalTime()
+	public synchronized String getTotalTime()
 	{
 		return totalTime;
 	}
-	public synchronized void setTotalTime(int totalTime)
+	public synchronized void setTotalTime(String totalTime)
 	{
 		this.totalTime = totalTime;
 	}
@@ -157,7 +147,6 @@ public class Disk
 		return 	"Title: " + title + "\n" +
 				"Artist: " + artist + "\n" +
 				"Genre: " + genre + "\n" +
-				"Sub Genre: " + subGenre + "\n" +
 				"Year: " + year + "\n" +
 				"Total Time: " + totalTime + "\n" +
 				"Price: " + price + 
