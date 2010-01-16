@@ -44,17 +44,20 @@ public class MainExtractFileThread extends Thread
 		
 		int i = 0;
 		while(myExtractFile1.isAlive())
-		{
-			if(i%10==0 && i<340)
-				DbImportWizardPageTwo.updateProgress("", (i/10)+1 );
-			
+		{		
 			if(origFileSize>200000000L)
 			{
+				if(i%10==0 && i<340)
+					DbImportWizardPageTwo.updateProgress("", (i/10)+1 );
+				
 				try {Thread.sleep(1000);} catch (InterruptedException e) {}
 			}
 			else
 			{
-				try {Thread.sleep(50);} catch (InterruptedException e) {}
+				if(i<34)
+					DbImportWizardPageTwo.updateProgress("", i+1 );
+				
+				try {Thread.sleep(100);} catch (InterruptedException e) {}
 			}
 			
 			i++;
@@ -83,8 +86,8 @@ public class MainExtractFileThread extends Thread
 			}
 			else
 			{
-				if((double)txtFileSize/60000000L<1.0)
-					DbImportWizardPageTwo.updateProgress("",  ((int)(((double)txtFileSize/60000000L)*33)+1));
+				if((double)txtFileSize/58000000L<1.0)
+					DbImportWizardPageTwo.updateProgress("",  ((int)(((double)txtFileSize/58000000L)*33)+1));
 				else
 					DbImportWizardPageTwo.updateProgress("", 34);;
 	
