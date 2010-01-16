@@ -75,7 +75,7 @@ public class MainParser extends Thread
 
 					if (line.startsWith("# Disc length: "))
 					{
-						currentDisk.setTotalTime(Integer.parseInt(line.split("\\s")[3]));
+						currentDisk.setTotalTime(line.split("\\s")[3]);
 					} else if (line.startsWith("DISCID="))
 					{
 						currentDisk.setId(line.substring(line.indexOf("=") + 1).split(",")[0]);
@@ -102,14 +102,15 @@ public class MainParser extends Thread
 						int len = line.substring(6).trim().length();
 						if (len == 4)
 						{
-							currentDisk.setYear(Integer.parseInt(line.substring(line.indexOf("=") + 1).trim()));
-							if (currentDisk.getYear() > 10000)
+							int year = Integer.parseInt(line.substring(line.indexOf("=") + 1).trim());
+							currentDisk.setYear(year+"");
+							if (year > 10000)
 							{
-								currentDisk.setYear(0);
+								currentDisk.setYear(0+"");
 							}
 						} else
 						{
-							currentDisk.setYear(0);
+							currentDisk.setYear(0+"");
 						}
 					} else if (line.startsWith("DGENRE="))
 					{
@@ -181,7 +182,7 @@ public class MainParser extends Thread
 				genreId = genresMap.get(currentDisk.getGenre());
 			}
 			
-			diskMap.put(diskId, new String[]{artistId+"", currentDisk.getTitle(), currentDisk.getYear()+"", genreId+"", currentDisk.getTotalTime()+""/*, (5+Math.random()*10)+""*/});
+			diskMap.put(diskId, new String[]{artistId+"", currentDisk.getTitle(), currentDisk.getYear(), genreId+"", currentDisk.getTotalTime()+""/*, (5+Math.random()*10)+""*/});
 			
 		/*	for (int i = 0; i < tracks.length; i++)
 			{
