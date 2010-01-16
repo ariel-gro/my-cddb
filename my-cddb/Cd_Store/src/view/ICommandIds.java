@@ -13,6 +13,7 @@ public interface ICommandIds {
     public static final String CMD_OPEN_ADVANCED_QUERY_VIEW = "Cd_Store.view.commands.openAdvancedQueryViewAction";
     public static final String CMD_OPEN_MESSAGE = "Cd_Store.view.commands.openMessage";
     public static final String CMD_UPDATE_SHOPPING_CART = "Cd_Store.view.commands.updateShoppingCart";
+    public static final String CMD_UPDATE_ADVANCED_QUERY_VIEW = "Cd_Store.view.commands.updateAdvancedQueryView";
     public static final String CMD_OPEN_DB_CONFIG_DIALOG = "Cd_Store.view.commands.openDbConfigDialogAction"; 
     public static final String CMD_OPEN_DB_IMPORT_WIZARD= "Cd_Store.view.commands.openDbImportWizard";
 }
