@@ -3,10 +3,7 @@ package view.views;
 import model.RequestToQueryHandler;
 import model.SearchesPriorityQueue;
 import model.UserPassword;
-import model.RequestToQueryHandler.Priority;
-import model.RequestToQueryHandler.SingleInsertType;
 import model.SqlStatement.QueryType;
-
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
@@ -141,7 +138,7 @@ public class UserView extends ViewPart
 					
 					int dataTableId = QueryId.getId();
 					
-					RequestToQueryHandler regularSearch = new RequestToQueryHandler(dataTableId, RequestToQueryHandler.Priority.LOW_PRIORITY,
+					RequestToQueryHandler regularSearch = new RequestToQueryHandler(dataTableId, RequestToQueryHandler.Priority.HIGH_PRIORITY,
 							QueryType.INSERT_SINGLE, RequestToQueryHandler.SingleInsertType.ADD_USER, new String[]{UserPassword.getUser(), UserPassword.getPassword()});
 					SearchesPriorityQueue.addSearch(regularSearch);
 					
