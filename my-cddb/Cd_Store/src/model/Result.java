@@ -1,14 +1,16 @@
 package model;
 
+import java.sql.ResultSet;
+
 public class Result
 {
 	private int id;
-	private String[][] resultsTable;
+	private ResultSet results;
 	
-	public Result(int id, String[][] resultsTable)
+	public Result(int id, ResultSet results)
 	{
 		this.id = id;
-		this.resultsTable = resultsTable;
+		this.results = results;
 	}
 
 	public synchronized int getId()
@@ -16,8 +18,8 @@ public class Result
 		return id;
 	}
 
-	public synchronized String[][] getResultsTable()
+	public synchronized ResultSet getResultSet()
 	{
-		return resultsTable;
+		return results;
 	}
 }
