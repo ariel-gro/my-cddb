@@ -40,10 +40,11 @@ public class ShoppingCartView extends ViewPart
 
 	public void createPartControl(Composite parent)
 	{
+		Image backgroundImage = Activator.getImageDescriptor("icons/music013.gif").createImage();
+		
 		ShoppingCartContent.setContent(new ArrayList<Disk>());
 		Composite top = new Composite(parent, SWT.NONE);
-		top.setBackgroundImage(Activator.getImageDescriptor("icons/music013.gif").createImage());
-		//top.setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_WHITE));
+		top.setBackgroundImage(backgroundImage);
 		GridLayout layout = new GridLayout();
 		layout.marginHeight = 0;
 		layout.marginWidth = 0;
@@ -53,8 +54,7 @@ public class ShoppingCartView extends ViewPart
 		// paint cart image
 		Label l = new Label(top, SWT.CENTER);
 		l.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		//l.setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_WHITE));
-		l.setBackgroundImage(Activator.getImageDescriptor("icons/music013.gif").createImage());
+		l.setBackgroundImage(backgroundImage);
 		l.setImage(Activator.getImageDescriptor("icons/shop_cart.gif").createImage());
 
 		// draw line
@@ -112,7 +112,7 @@ public class ShoppingCartView extends ViewPart
 		
 		// The cart items table
 		viewer = new TableViewer(top, SWT.CHECK | SWT.FULL_SELECTION | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
-		viewer.getTable().setBackgroundImage(Activator.getImageDescriptor("icons/music013.gif").createImage());
+		viewer.getTable().setBackgroundImage(backgroundImage);
 		viewer.setContentProvider(new MyContentProvider());
 		viewer.setLabelProvider(new MyLabelProvider());
 		createColumns();

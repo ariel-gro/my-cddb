@@ -1,6 +1,7 @@
 package view.views;
 
 import model.Disk;
+import model.SearchParameters;
 import model.ShoppingCartContent;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.resource.FontDescriptor;
@@ -66,11 +67,11 @@ public class View extends ViewPart
 		l.setText("Search: ");
 		l.setFont(boldFont);
 
-		Combo categoriesCombo = new Combo(banner, SWT.NONE);
+		final Combo categoriesCombo = new Combo(banner, SWT.NONE);
 		categoriesCombo.setItems(new String[] {"All Music Genres", "Blues", "Classical", "Country", "Data", "Folk", "Jazz", "New Age", "Reggae", "Rock", "Soundtrack", "Misc"});
 		categoriesCombo.select(0);
 
-		Text text = new Text(banner, SWT.BORDER);
+		final Text text = new Text(banner, SWT.BORDER);
 		text.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
 		Button goButton = new Button(banner, SWT.PUSH);
@@ -79,6 +80,9 @@ public class View extends ViewPart
 			@Override
 			public void widgetSelected(SelectionEvent e)
 			{
+				SearchParameters.setGenre(categoriesCombo.getText());
+				SearchParameters.setSearchString(text.getText());
+				
 				IHandlerService handlerService = (IHandlerService) getSite().getService(IHandlerService.class);
 				try {
 					handlerService.executeCommand(ICommandIds.CMD_OPEN_QUERY_VIEW, null);
@@ -220,7 +224,7 @@ public class View extends ViewPart
 				}    
 			});
 			
-		}		
+		}	
 	}
 
 	private Image resize(Image image, int width, int height)
