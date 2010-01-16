@@ -28,17 +28,18 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.part.ViewPart;
 
 import controller.QueryId;
 
 import view.Activator;
 
+
 public class NavigationView extends ViewPart
 {
 	public static final String ID = "Cd_Store.navigationView";
 	private TreeViewer viewer;
+	private int dataTableId = 0;
 
 	class TreeObject
 	{
@@ -253,23 +254,23 @@ public class NavigationView extends ViewPart
 
 	private void hookDoubleClickCommand()
 	{
+		dataTableId = QueryId.getId();
 		viewer.addDoubleClickListener(new IDoubleClickListener() {
 			public void doubleClick(DoubleClickEvent event)
 			{
-				IHandlerService handlerService = (IHandlerService) getSite().getService(IHandlerService.class);
-				try 
-				{
+			//	try 
+			//	{
 					if(viewer.getTree().getSelection()[0].getParentItem() != null)
 					{
 						if(viewer.getTree().getSelection()[0].getParentItem().getText().equals("POPULAR FEATURES"))
 						{
 							if(viewer.getTree().getSelection()[0].getText().equals("Latest CDs"))
 							{
-								RequestToQueryHandler top10LatestSearch = new RequestToQueryHandler(QueryId.getId(), RequestToQueryHandler.Priority.HIGH_PRIORITY, RequestToQueryHandler.SearchType.TOP_10, RequestToQueryHandler.Top10Type.LATEST);
+								RequestToQueryHandler top10LatestSearch = new RequestToQueryHandler(dataTableId, RequestToQueryHandler.Priority.HIGH_PRIORITY, RequestToQueryHandler.SearchType.TOP_10, RequestToQueryHandler.Top10Type.LATEST);
 								SearchesPriorityQueue.addSearch(top10LatestSearch);
 							} else if (viewer.getTree().getSelection()[0].getText().equals("Most Popular CDs"))
 							{
-								RequestToQueryHandler top10PopularSearch = new RequestToQueryHandler(QueryId.getId(), RequestToQueryHandler.Priority.HIGH_PRIORITY, RequestToQueryHandler.SearchType.TOP_10, RequestToQueryHandler.Top10Type.MOST_POPULAR);
+								RequestToQueryHandler top10PopularSearch = new RequestToQueryHandler(dataTableId, RequestToQueryHandler.Priority.HIGH_PRIORITY, RequestToQueryHandler.SearchType.TOP_10, RequestToQueryHandler.Top10Type.MOST_POPULAR);
 								SearchesPriorityQueue.addSearch(top10PopularSearch);
 							}
 						}
@@ -285,19 +286,28 @@ public class NavigationView extends ViewPart
 								}
 							}
 							
-							RequestToQueryHandler top10Search = new RequestToQueryHandler(QueryId.getId(), RequestToQueryHandler.Priority.HIGH_PRIORITY, RequestToQueryHandler.SearchType.TOP_10, selectedMusicGenre);
+							RequestToQueryHandler top10Search = new RequestToQueryHandler(dataTableId, RequestToQueryHandler.Priority.HIGH_PRIORITY, RequestToQueryHandler.SearchType.TOP_10, selectedMusicGenre);
 							SearchesPriorityQueue.addSearch(top10Search);
 						}
 					}
 					
-					//handlerService.executeCommand("de.vogella.rcp.intro.editor.callEditor", null);
-					
-				} catch (Exception ex) 
+				/*	IHandlerService handlerService = (IHandlerService) getSite().getService(IHandlerService.class);
+					try 
+					{		
+						handlerService.executeCommand(ICommandIds.CMD_UPDATE_ADVANCED_QUERY_VIEW, null);
+						
+					} catch (Exception ex) 
+					{
+						ex.printStackTrace();
+						throw new RuntimeException(ICommandIds.CMD_UPDATE_ADVANCED_QUERY_VIEW + " not found");
+					}
+				*/	
+			/*	} catch (Exception ex) 
 				{
 					ex.printStackTrace();
 					//throw new RuntimeException("de.vogella.rcp.intro.editor.callEditor not found");
 				}
-			}
+			*/}
 		});
 	}
 	

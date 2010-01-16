@@ -4,11 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import model.RequestToQueryHandler;
+import model.ResultTableContentProvider;
+import model.ResultTableLabelProvider;
 import model.SearchesPriorityQueue;
 import model.advanceSearchFieldValueBundle;
-import model.tableViewsMap;
+import model.TableViewsMap;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -19,19 +22,20 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.ProgressBar;
+import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.part.ViewPart;
-
 import controller.QueryId;
 
 public class AdvancedQueryView extends ViewPart
 {
 	public static final String ID = "Cd_Store.advancedQueryView";
 	Font boldFont = JFaceResources.getFontRegistry().getBold(JFaceResources.DEFAULT_FONT);
-	private static TableViewer queryResultsViewer;
+	private TableViewer queryResultsViewer;
 	private int dataTableId = 0;
 
-	public void createPartControl(Composite parent)
+	public void createPartControl(final Composite parent)
 	{
 		Composite mainComposite = new Composite(parent, SWT.BORDER);
 		mainComposite.setLayout(new GridLayout(1, true));
@@ -104,15 +108,23 @@ public class AdvancedQueryView extends ViewPart
 		
 		Label pad5 = new Label(topQueryComposite1, SWT.NONE);
 		pad5.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		Button goButton = new Button(topQueryComposite1, SWT.PUSH);
-		goButton.setText("Go Go Go");
+		final Button goButton = new Button(topQueryComposite1, SWT.PUSH);
+		goButton.setText(" Go Go Go ");
 		goButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_CENTER));
 		Label pad6 = new Label(topQueryComposite1, SWT.NONE);
 		pad6.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		
+		final ProgressBar progressBar = new ProgressBar (mainComposite, SWT.SMOOTH);
+		progressBar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		progressBar.setMaximum(50);
+		progressBar.setVisible(false);
+		
+		
 		goButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e)
 			{
 				dataTableId = QueryId.getId();
+				TableViewsMap.addTable(dataTableId, null);
 				List<advanceSearchFieldValueBundle> advancedSearchParaeters = new ArrayList<advanceSearchFieldValueBundle>();
 				
 				if(albumText.getText().equals("")==false)
@@ -122,24 +134,114 @@ public class AdvancedQueryView extends ViewPart
 				if(artistText.getText().equals("")==false)
 					advancedSearchParaeters.add(new advanceSearchFieldValueBundle(RequestToQueryHandler.AdvancedSearchFields.ARTIST_NAME, advanceSearchFieldValueBundle.Relation.EQUALS, artistText.getText()));
 				
-				advancedSearchParaeters.add(new advanceSearchFieldValueBundle(RequestToQueryHandler.AdvancedSearchFields.GENRE, advanceSearchFieldValueBundle.Relation.EQUALS, albumText.getText()));						
+				advancedSearchParaeters.add(new advanceSearchFieldValueBundle(RequestToQueryHandler.AdvancedSearchFields.GENRE, advanceSearchFieldValueBundle.Relation.EQUALS, genreCombo.getText()));						
 				advancedSearchParaeters.add(new advanceSearchFieldValueBundle(RequestToQueryHandler.AdvancedSearchFields.YEAR, (relationCombo.getSelectionIndex()==0 ? advanceSearchFieldValueBundle.Relation.GREATER : relationCombo.getSelectionIndex()==1 ? advanceSearchFieldValueBundle.Relation.EQUALS : advanceSearchFieldValueBundle.Relation.LESSER) , yearText.getText()));
 							
 				RequestToQueryHandler advanceSearch = new RequestToQueryHandler(dataTableId, RequestToQueryHandler.Priority.LOW_PRIORITY, RequestToQueryHandler.SearchType.ADVANCED, advancedSearchParaeters);
 				SearchesPriorityQueue.addSearch(advanceSearch);
 				
-				tableViewsMap.addTable(dataTableId, new String[][]{new String[]{}});		
+				progressBar.setVisible(true);
+				goButton.setEnabled(false);
+				final int maximum = progressBar.getMaximum();
+				new Thread() {
+					public void run()
+					{
+						boolean update = TableViewsMap.getUpdate(dataTableId);
+						while(update == TableViewsMap.getUpdate(dataTableId))
+						{
+							for (final int[] i = new int[1]; i[0] <= maximum; i[0]++)
+							{
+								try
+								{
+									Thread.sleep(100);
+								} catch (Throwable th)
+								{
+								}
+								if (parent.getDisplay().isDisposed())
+									return;
+								parent.getDisplay().asyncExec(new Runnable() {
+									public void run()
+									{
+										if (progressBar.isDisposed())
+											return;
+										progressBar.setSelection(i[0]);
+									}
+								});
+							}
+						}
+						
+						parent.getDisplay().asyncExec(new Runnable() {
+							public void run()
+							{							
+								createColumns(queryResultsViewer, TableViewsMap.getData(dataTableId));
+								queryResultsViewer.setContentProvider(new ResultTableContentProvider());
+								queryResultsViewer.setLabelProvider(new ResultTableLabelProvider());
+								queryResultsViewer.setInput(TableViewsMap.getData(dataTableId));
+								queryResultsViewer.refresh();
+								
+								progressBar.setVisible(false);
+							}
+						});				
+					}
+				}.start();			
 			}
-		});
-			
+		});	
+		
+		// ********************* This whole block is Temporary
+		Label pad8 = new Label(topQueryComposite1, SWT.NONE);
+		pad8.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		final Button tempButton = new Button(topQueryComposite1, SWT.PUSH);
+		tempButton.setText(" Temp Update map ");
+		tempButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_CENTER));
+		Label pad9 = new Label(topQueryComposite1, SWT.NONE);
+		pad9.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		tempButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e)
+			{
+				String[][] temp = new String[5][];
+				for (int i = 0; i < temp.length; i++)
+				{
+					temp[i] = new String[5];
+					for (int j = 0; j < temp[i].length; j++)
+					{
+						temp[i][j] = "Cell " + dataTableId + " " + dataTableId;						
+					}
+				}
+				
+				TableViewsMap.addTable(dataTableId, temp);				
+			}
+		});		
+		
 		Composite tableComposite = new Composite(mainComposite, SWT.BORDER);
 		tableComposite.setLayout(new GridLayout(1, false));
 		tableComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
-		queryResultsViewer = new TableViewer(tableComposite, SWT.FULL_SELECTION | SWT.BORDER);
+		queryResultsViewer = new TableViewer(tableComposite, SWT.FULL_SELECTION | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
 		queryResultsViewer.getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
-		
 	}
 
+	// This will create the columns for the table
+	private void createColumns(TableViewer viewer, String[][] data) {
+
+		if(data != null)
+		{			
+			for (int i = 0; i < data[0].length; i++) {
+				TableViewerColumn column = new TableViewerColumn(viewer, SWT.NONE);
+				column.getColumn().setText(data[0][i]);
+				column.getColumn().setWidth(data[0][i].length()*8);
+				column.getColumn().setResizable(true);
+				column.getColumn().setMoveable(true);
+			}
+			Table table = viewer.getTable();
+			table.setHeaderVisible(true);
+			table.setLinesVisible(true);
+		}
+	} 
+
+	public TableViewer getViewer() 
+	{
+		return queryResultsViewer;
+	}
+		
 	public void setFocus()
 	{
 	}
