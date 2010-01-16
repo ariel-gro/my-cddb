@@ -16,9 +16,10 @@ import model.Disk;
 public class MainParser extends Thread
 {
 	String fileToParse;
-	boolean status = true;
+	private boolean status = true;
 	String dTitle;
-	static long trackId = 0;
+	
+	static long tempNumOfDisks = 0;
 
 	private File file;
 	private BufferedReader br;
@@ -26,13 +27,12 @@ public class MainParser extends Thread
 	boolean jumpToNextDisk = false;
 
 	Disk currentDisk = null;
-	//List<Track> tracks;
 	private String[] tracks;
 	
-	private HashMap<String,String[]> diskMap = new HashMap<String,String[]>(10000);
-	private HashMap<String,String[]> genresMap = new HashMap<String,String[]>(500);
-	private HashMap<String,String[]> artistMap = new HashMap<String,String[]>(1000);
-	private HashMap<String,String[]> tracksMap = new HashMap<String,String[]>(10000);
+	private HashMap<Long,String[]> diskMap = new HashMap<Long,String[]>(1200000, 0.95f);
+	private HashMap<String,Integer> genresMap = new HashMap<String,Integer>(2000, 0.9f);
+	private HashMap<String,Integer> artistMap = new HashMap<String,Integer>(150000, 0.9f);
+	//private HashMap<Long,String[]> tracksMap = new HashMap<Long,String[]>(300000, 0.9f);
 	
 	public MainParser(String fileToParse)
 	{
@@ -126,7 +126,6 @@ public class MainParser extends Thread
 					line = null;
 				} catch (Exception e)
 				{
-					e.printStackTrace();
 					currentDisk = null;
 					jumpToNextDisc();
 				}
@@ -137,11 +136,10 @@ public class MainParser extends Thread
 			System.out.println("Num Of Disks: " + diskMap.size());
 			System.out.println("Num Of Artists: " + artistMap.size());
 			System.out.println("Num Of Genres: " + genresMap.size());
-			System.out.println("Num Of Tracks: " + tracksMap.size());
+			//System.out.println("Num Of Tracks: " + tracksMap.size());
 
 		} catch (Exception e)
 		{
-			e.printStackTrace();
 			status = false;
 		} finally
 		{
@@ -158,39 +156,47 @@ public class MainParser extends Thread
 		long diskId;
 		int artistId;
 		int genreId;
+		long trackId;
 		
 		diskId = Long.parseLong(currentDisk.getId(), 16); 
-		if(diskMap.containsKey(diskId+"") == false)
+		if(diskMap.containsKey(diskId) == false)
 		{
 			if(artistMap.containsKey(currentDisk.getArtist()) == false)
 			{
 				artistId = artistMap.size();
-				artistMap.put(currentDisk.getArtist(), new String[]{artistId+""});
+				artistMap.put(currentDisk.getArtist(), artistId);
 			}
 			else
 			{
-				artistId = Integer.parseInt(artistMap.get(currentDisk.getArtist())[0]);
+				artistId = artistMap.get(currentDisk.getArtist());
 			}
 			
 			if(genresMap.containsKey(currentDisk.getGenre()) == false)
 			{
 				genreId = genresMap.size();
-				genresMap.put(currentDisk.getGenre(), new String[]{genreId+""});
+				genresMap.put(currentDisk.getGenre(), genreId);
 			}
 			else
 			{
-				genreId = Integer.parseInt(genresMap.get(currentDisk.getGenre())[0]);
+				genreId = genresMap.get(currentDisk.getGenre());
 			}
 			
-			diskMap.put(diskId+"", new String[]{artistId+"", currentDisk.getTitle(), currentDisk.getYear()+"", genreId+"", currentDisk.getTotalTime()+"", (5+Math.random()*10)+""});
+			diskMap.put(diskId, new String[]{artistId+"", currentDisk.getTitle(), currentDisk.getYear()+"", genreId+"", currentDisk.getTotalTime()+""/*, (5+Math.random()*10)+""*/});
 			
-			for (int i = 0; i < tracks.length; i++)
+		/*	for (int i = 0; i < tracks.length; i++)
 			{
 				if(tracks[i] != null)
 				{
-					tracksMap.put(trackId+"", new String[]{diskId+"", tracks[i], i+""});
-					trackId++;
+					trackId = tracksMap.size();
+					tracksMap.put(trackId, new String[]{diskId+"", tracks[i], i+""});
 				}
+			}
+		*/	
+			
+			tempNumOfDisks++;
+			if(tempNumOfDisks%1000 == 0)
+			{
+				System.out.println("Num Of Disks = " + tempNumOfDisks);
 			}
 		}
 	}
@@ -225,11 +231,9 @@ public class MainParser extends Thread
 					return true;
 			} catch (FileNotFoundException e)
 			{
-				e.printStackTrace();
 				return false;
 			} catch (IOException e)
 			{
-				e.printStackTrace();
 				return false;
 			}
 
@@ -256,12 +260,23 @@ public class MainParser extends Thread
 	{
 		return (checkFormat(line, "US-ASCII"));
 	}
-/*
-	public static void main(String args[])
+
+	public synchronized boolean getStatus()
 	{
-		MainParser test = new MainParser("C:\\FreeDB_Files_Temp\\allDisks.txt");
-		test.run();
-		
+		return status;
 	}
-*/
+	
+	public static void main (String args[])
+	{
+		MainParser myParser = new MainParser("C:\\FreeDB_Files_Temp\\allDisks.txt");
+		myParser.start();
+		
+		try
+		{
+			myParser.join();
+		} catch (InterruptedException e)
+		{
+			e.printStackTrace();
+		}
+	}
 }
