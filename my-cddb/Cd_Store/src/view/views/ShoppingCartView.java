@@ -1,8 +1,16 @@
 package view.views;
 
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 import model.Disk;
+import model.RequestToQueryHandler;
+import model.SearchesPriorityQueue;
 import model.ShoppingCartContent;
+import model.UserPassword;
+import model.SqlStatement.QueryType;
+
 import org.eclipse.jface.resource.FontDescriptor;
 import org.eclipse.jface.resource.FontRegistry;
 import org.eclipse.jface.viewers.ColumnPixelData;
@@ -28,6 +36,8 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.part.ViewPart;
+
+import controller.QueryId;
 
 import view.Activator;
 
@@ -60,7 +70,7 @@ public class ShoppingCartView extends ViewPart
 		// draw line
 		Label shadow_sep = new Label(top, SWT.SEPARATOR | SWT.SHADOW_OUT | SWT.HORIZONTAL);
 		shadow_sep.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
+	
 		Button proceedToCheckoutButton = new Button(top, SWT.PUSH);
 		proceedToCheckoutButton.setImage(resize(Activator.getImageDescriptor("icons/proceed-to-checkout.gif").createImage(), 180, 28));
 		proceedToCheckoutButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_CENTER));
@@ -68,6 +78,17 @@ public class ShoppingCartView extends ViewPart
 		{
 			public void widgetSelected(SelectionEvent e)
 			{
+				List<Disk> shoppingCartList = ShoppingCartContent.getContent();
+				for (Iterator<Disk> iterator = shoppingCartList.iterator(); iterator.hasNext();)
+				{
+					Disk disk = (Disk) iterator.next();
+					int dataTableId = QueryId.getId();
+					
+					RequestToQueryHandler regularSearch = new RequestToQueryHandler(dataTableId, RequestToQueryHandler.Priority.HIGH_PRIORITY,
+							QueryType.INSERT_SINGLE, RequestToQueryHandler.SingleInsertType.ADD_SALE, new String[]{UserPassword.getId()+"", disk.getId()});
+					SearchesPriorityQueue.addSearch(regularSearch);
+				}		
+				
 				ShoppingCartContent.clearContent();
 				viewer.refresh();
 			}
