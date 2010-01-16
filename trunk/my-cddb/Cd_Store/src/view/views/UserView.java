@@ -1,6 +1,11 @@
 package view.views;
 
+import model.RequestToQueryHandler;
+import model.SearchesPriorityQueue;
 import model.UserPassword;
+import model.RequestToQueryHandler.Priority;
+import model.RequestToQueryHandler.SingleInsertType;
+import model.SqlStatement.QueryType;
 
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.JFaceResources;
@@ -15,6 +20,8 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.ui.part.ViewPart;
+
+import controller.QueryId;
 
 public class UserView extends ViewPart
 {
@@ -95,9 +102,9 @@ public class UserView extends ViewPart
 					UserPassword.setPassword(loginDialog.getPassword());
 					
 				} catch (Exception connectionProblem) {
-					MessageDialog.openInformation(null, "Could not Connect", connectionProblem.toString());
+					MessageDialog.openInformation(null, "Could not login user", connectionProblem.toString());
 
-					return false; // Should prompt user here.
+					return false;
 				}
 			} else {
 				return false; // user cancelled
@@ -132,12 +139,17 @@ public class UserView extends ViewPart
 					UserPassword.setUser(newUserDialog.getUser());
 					UserPassword.setPassword(newUserDialog.getPassword());
 					
+					int dataTableId = QueryId.getId();
+					
+					RequestToQueryHandler regularSearch = new RequestToQueryHandler(dataTableId, RequestToQueryHandler.Priority.LOW_PRIORITY,
+							QueryType.INSERT_SINGLE, RequestToQueryHandler.SingleInsertType.ADD_USER, new String[]{UserPassword.getUser(), UserPassword.getPassword()});
+					SearchesPriorityQueue.addSearch(regularSearch);
+					
 					return true;
 					
 				} catch (Exception connectionProblem) {
 					MessageDialog.openInformation(null, "Could not Add User", connectionProblem.toString());
-
-					return false; // Should prompt user here.
+					return false;
 				}
 			} else {
 				return false; // user canceled
