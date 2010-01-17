@@ -12,6 +12,11 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.util.HashMap;
 import model.Disk;
+import model.RequestToQueryHandler;
+import model.SearchesPriorityQueue;
+import model.RequestToQueryHandler.MapType;
+import model.RequestToQueryHandler.Priority;
+import model.SqlStatement.QueryType;
 
 public class MainParser extends Thread
 {
@@ -29,10 +34,10 @@ public class MainParser extends Thread
 	Disk currentDisk = null;
 	private String[] tracks;
 	
-	private HashMap<Long,String[]> diskMap = new HashMap<Long,String[]>(1200000, 0.95f);
-	private HashMap<String,Integer> genresMap = new HashMap<String,Integer>(2000, 0.9f);
-	private HashMap<String,Integer> artistMap = new HashMap<String,Integer>(150000, 0.9f);
-	//private HashMap<Long,String[]> tracksMap = new HashMap<Long,String[]>(300000, 0.9f);
+	private HashMap<String,String[]> diskMap = new HashMap<String,String[]>(80000, 0.9f);
+	private HashMap<String,String[]> genresMap = new HashMap<String,String[]>(3000, 0.9f);
+	private HashMap<String,String[]> artistMap = new HashMap<String,String[]>(100000, 0.8f);
+	private HashMap<String,String[]> tracksMap = new HashMap<String,String[]>(80000, 0.9f);
 	
 	public MainParser(String fileToParse)
 	{
@@ -60,6 +65,11 @@ public class MainParser extends Thread
 						if (currentDisk != null)
 						{
 							updateMaps(currentDisk);
+							if (diskMap.size() >= 50000)
+							{
+								sendDiskBulk();
+								sendTracksBulk();
+							}
 						}
 
 						currentDisk = new Disk();
@@ -137,8 +147,12 @@ public class MainParser extends Thread
 			System.out.println("Num Of Disks: " + diskMap.size());
 			System.out.println("Num Of Artists: " + artistMap.size());
 			System.out.println("Num Of Genres: " + genresMap.size());
-			//System.out.println("Num Of Tracks: " + tracksMap.size());
+			System.out.println("Num Of Tracks: " + tracksMap.size());
 
+			sendDiskBulk();
+			sendTracksBulk();
+			sendOtherBulk();
+			
 		} catch (Exception e)
 		{
 			status = false;
@@ -152,47 +166,83 @@ public class MainParser extends Thread
 		}
 	}
 
+	private void sendTracksBulk() {
+		RequestToQueryHandler trackReq = new RequestToQueryHandler(QueryId.getId(), 
+				RequestToQueryHandler.Priority.LOW_PRIORITY, 
+				QueryType.INSERT_BULK, 
+				this.tracksMap, 
+				MapType.TRACKS);
+		SearchesPriorityQueue.addSearch(trackReq);
+		tracksMap = new HashMap<String,String[]>(80000, 0.9f);
+	}
+
+	private void sendOtherBulk() 
+	{
+		RequestToQueryHandler artistReq = new RequestToQueryHandler(QueryId.getId(), 
+				RequestToQueryHandler.Priority.LOW_PRIORITY, 
+				QueryType.INSERT_BULK, 
+				this.artistMap, 
+				MapType.ARTISTS);
+		SearchesPriorityQueue.addSearch(artistReq);
+		
+		RequestToQueryHandler genreReq = new RequestToQueryHandler(QueryId.getId(), 
+				RequestToQueryHandler.Priority.LOW_PRIORITY, 
+				QueryType.INSERT_BULK, 
+				this.genresMap, 
+				MapType.GENRES);
+		SearchesPriorityQueue.addSearch(genreReq);
+	}
+
+	private void sendDiskBulk() {
+		RequestToQueryHandler diskReq = new RequestToQueryHandler(QueryId.getId(), 
+																RequestToQueryHandler.Priority.HIGH_PRIORITY, 
+																QueryType.INSERT_BULK, 
+																this.diskMap, 
+																MapType.ALBUMS);
+		SearchesPriorityQueue.addSearch(diskReq);
+		diskMap = new HashMap<String,String[]>(80000, 0.9f);
+	}
+
 	private void updateMaps(Disk currentDisk)
 	{
-		long diskId;
-		int artistId;
-		int genreId;
-		long trackId;
+		String diskId;
+		String artistId;
+		String genreId;
+		String trackId;
 		
-		diskId = Long.parseLong(currentDisk.getId(), 16); 
+		diskId = Long.parseLong(currentDisk.getId(), 16)+""; 
 		if(diskMap.containsKey(diskId) == false)
 		{
 			if(artistMap.containsKey(currentDisk.getArtist()) == false)
 			{
-				artistId = artistMap.size();
-				artistMap.put(currentDisk.getArtist(), artistId);
+				artistId = artistMap.size()+"";
+				artistMap.put(currentDisk.getArtist(), new String[]{artistId+""});
 			}
 			else
 			{
-				artistId = artistMap.get(currentDisk.getArtist());
+				artistId = artistMap.get(currentDisk.getArtist())+"";
 			}
 			
 			if(genresMap.containsKey(currentDisk.getGenre()) == false)
 			{
-				genreId = genresMap.size();
-				genresMap.put(currentDisk.getGenre(), genreId);
+				genreId = genresMap.size()+"";
+				genresMap.put(currentDisk.getGenre(), new String[]{genreId+""});
 			}
 			else
 			{
-				genreId = genresMap.get(currentDisk.getGenre());
+				genreId = genresMap.get(currentDisk.getGenre())+"";
 			}
 			
 			diskMap.put(diskId, new String[]{artistId+"", currentDisk.getTitle(), currentDisk.getYear(), genreId+"", currentDisk.getTotalTime()+""/*, (5+Math.random()*10)+""*/});
 			
-		/*	for (int i = 0; i < tracks.length; i++)
+			for (int i = 0; i < tracks.length; i++)
 			{
 				if(tracks[i] != null)
 				{
-					trackId = tracksMap.size();
+					trackId = tracksMap.size()+"";
 					tracksMap.put(trackId, new String[]{diskId+"", tracks[i], i+""});
 				}
 			}
-		*/	
 			
 			tempNumOfDisks++;
 			if(tempNumOfDisks%1000 == 0)
