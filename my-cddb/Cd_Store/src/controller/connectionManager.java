@@ -2,11 +2,9 @@ package controller;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Vector;
 import java.util.concurrent.*;
-
 
 import model.DbConfiguration;
 import model.SqlStatement;
@@ -17,7 +15,6 @@ public class connectionManager {
 	private static LinkedBlockingQueue<Connection> connQueue;
 	private Vector<Connection> conVector;
 	private static LinkedBlockingQueue<SqlStatement> queryQueue = null;
-	private static LinkedBlockingQueue<ResultSet> resultQueue = null;
 	private int numOfConnections = 0;
 	
 	private boolean timeToQuit = false;
@@ -63,6 +60,14 @@ public class connectionManager {
 		
 		while (!timeToQuit){
 			//threads are working
+			try
+			{
+				Thread.sleep(200);
+			} catch (InterruptedException e)
+			{
+				// TODO refactor w/o thread
+				e.printStackTrace();
+			}
 		}
 		
 		//end work and threads
@@ -91,7 +96,6 @@ public class connectionManager {
 		catch (ClassNotFoundException e)
 		{
 			System.out.println("Unable to load the Oracle JDBC driver..");
-			java.lang.System.exit(0); 
 		}
 		System.out.println("Driver loaded successfully");
 
@@ -114,7 +118,6 @@ public class connectionManager {
 		catch (SQLException e)
 		{
 			System.out.println("Unable to connect - " + e.toString());
-			java.lang.System.exit(0); 
 		}
 		catch (Exception e)
 		{
@@ -127,12 +130,12 @@ public class connectionManager {
 
 		public synchronized void run() {
 			SqlStatement stmt;
-			DbConnector con = new DbConnector();
 			while (!timeToQuit){
 				try {
 					stmt = queryQueue.take();
 					if ((numOfConnections < 10) && connQueue.isEmpty())
 						openConnection();
+					DbConnector con = new DbConnector();
 					con.setConnection(connQueue.take());
 					con.setStatement(stmt);
 					connThreads.execute(con);
@@ -143,6 +146,4 @@ public class connectionManager {
 			}
 		}
 	}
-
-	//TODO: handle threads, handle queue extraction
 }

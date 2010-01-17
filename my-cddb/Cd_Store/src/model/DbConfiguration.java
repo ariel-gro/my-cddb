@@ -6,7 +6,7 @@ public class DbConfiguration
 	private static int port = 0;
 	private static String user = "";
 	private static String password = "";
-	private static String db = "";
+	private static String db = "MyCDDBStore";
 	private static String fileToImport = "";
 	
 	public static synchronized String getUser()

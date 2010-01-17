@@ -20,6 +20,7 @@ public class DbConnector implements Runnable{
 		this.connection = null;
 		this.stmt = null;
 		this.ps = null;
+		//TODO refactor - get vals here and not setters
 	}
 
 	public void setConnection(Connection connection) {
