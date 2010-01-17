@@ -52,7 +52,10 @@ public class View extends ViewPart
 		Font headerBoldFont = header_fdesc.createFont(registry.defaultFont().getDevice());
 		
 		FontDescriptor content_fdesc=FontDescriptor.createFrom("Tahoma",12,SWT.BOLD); 
-		Font contentBoldFont = content_fdesc.createFont(registry.defaultFont().getDevice());
+		final Font contentBoldFont = content_fdesc.createFont(registry.defaultFont().getDevice());
+		
+		FontDescriptor recordsHeadr_fdesc=FontDescriptor.createFrom("Tahoma",14,SWT.BOLD); 
+		final Font recordsHeadr_BoldFont = recordsHeadr_fdesc.createFont(registry.defaultFont().getDevice());
 		
 		Image backgroundImage = Activator.getImageDescriptor("icons/music013.gif").createImage();
 
@@ -176,7 +179,7 @@ public class View extends ViewPart
 		layout.numColumns = 1;
 		mainRecordsCoversArea.setLayout(layout);
 		
-		createRecordsArea(boldFont, mainRecordsCoversArea, MainViewSearchId.getId());	
+		createRecordsArea(boldFont, mainRecordsCoversArea, MainViewSearchId.getId(), recordsHeadr_BoldFont);	
 
 		final ProgressBar progressBar = new ProgressBar(mainArea, SWT.SMOOTH);
 		progressBar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -233,7 +236,7 @@ public class View extends ViewPart
 					mainArea.getDisplay().asyncExec(new Runnable() {
 						public void run()
 						{
-							createRecordsArea(boldFont, mainRecordsCoversArea, dataTableId);
+							createRecordsArea(boldFont, mainRecordsCoversArea, dataTableId, recordsHeadr_BoldFont);
 							progressBar.setVisible(false);
 						}
 					});
@@ -245,12 +248,21 @@ public class View extends ViewPart
 		}.start();
 	}
 
-	private void createRecordsArea(Font boldFont, Composite mainRecordsCoversArea, int searchId)
+	private void createRecordsArea(Font boldFont, Composite mainRecordsCoversArea, int searchId, Font font)
 	{
 		Disk[] dummyDisks = getDisks(searchId);
 		
 		if(recordsCoversArea!=null && recordsCoversArea.isDisposed() == false)
 			recordsCoversArea.dispose();
+	/*	
+		Label recordsHaeadeLabel = new Label(mainRecordsCoversArea, SWT.WRAP);
+		recordsHaeadeLabel.setText("Bla Bla Bla");	
+		recordsHaeadeLabel.setFont(font);
+		//recordsHaeadeLabel.setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_DARK_CYAN));
+		GridData rhlgd = new GridData(GridData.HORIZONTAL_ALIGN_CENTER);
+		rhlgd.horizontalSpan = 1;
+		recordsHaeadeLabel.setLayoutData(rhlgd);
+	*/
 		
 		GridLayout layout;
 		recordsCoversArea = new Composite(mainRecordsCoversArea, SWT.CENTER);
