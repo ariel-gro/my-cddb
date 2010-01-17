@@ -13,6 +13,8 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
+import controller.connectionManager;
+
 public class DbConfigDialog extends MessageDialog
 {
 	String serverIp = "";
@@ -83,8 +85,28 @@ public class DbConfigDialog extends MessageDialog
 			userText.setText(DbConfiguration.getUser());
 		if(DbConfiguration.getPassword().equals("") == false)
 			passwordText.setText(DbConfiguration.getPassword());
-		
+			
 		return null;
+	}
+
+	protected void buttonPressed(int buttonId)
+	{
+		setReturnCode(buttonId);
+		
+		switch (buttonId) {
+		case 0:
+			//connectionManager.start();		
+			break;
+		case 1:
+			//connectionManager.start();	
+			break;
+		case 2:
+			break;
+		default:
+			break;
+		}
+
+		close();	
 	}
 
 	public synchronized String getServerIp()
