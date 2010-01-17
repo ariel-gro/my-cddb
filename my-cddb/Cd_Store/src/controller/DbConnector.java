@@ -16,22 +16,21 @@ public class DbConnector implements Runnable{
 	private PreparedStatement ps;
 	
 
-	public DbConnector() {		
-		this.connection = null;
-		this.stmt = null;
+	public DbConnector(Connection connection, SqlStatement statement) {		
+		this.connection = connection;
+		this.stmt = statement;
 		this.ps = null;
-		//TODO refactor - get vals here and not setters
 	}
 
-	public void setConnection(Connection connection) {
+	public synchronized void setConnection(Connection connection) {
 		this.connection = connection;
 	}
 
-	public void setStatement(SqlStatement stmt){
+	public synchronized void setStatement(SqlStatement stmt){
 		this.stmt = stmt;
 	}
 		
-	public void run(){
+	public synchronized void run(){
 		
 		QueryType qt = stmt.getQueryType();
 		ResultSet resultSet = null;
@@ -49,20 +48,24 @@ public class DbConnector implements Runnable{
 			resultSet = executeQuery(stmt);
 			break;
 		}
-		
+		try {
+			if (!this.ps.isClosed())
+				this.ps.close();
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
 		Result result = new Result(this.stmt.getRequestId(), resultSet);
 		ResultsQueue.addResult(result);
 		connectionManager.insertToConnectionQueue(this.connection);
 		this.connection = null;
 	}
 
-	private ResultSet executeQuery(SqlStatement stmt) {
+	private synchronized ResultSet executeQuery(SqlStatement stmt) {
 		try
 		{
-			PreparedStatement ps = connection.prepareStatement(stmt.getStmt());
-			ResultSet retVal = ps.executeQuery();
-			ps.close();
-			return retVal;
+			ps = connection.prepareStatement(stmt.getStmt());
+			return ps.executeQuery();
 		}
 		catch (SQLException e)
 		{
@@ -70,13 +73,11 @@ public class DbConnector implements Runnable{
 		}
 	}
 
-	private int executeSingleInsert(SqlStatement stmt) {
+	private synchronized int executeSingleInsert(SqlStatement stmt) {
 		try
 		{
-			PreparedStatement ps = connection.prepareStatement(stmt.getStmt());
-			int retVal = ps.executeUpdate();
-			ps.close();
-			return retVal;
+			ps = connection.prepareStatement(stmt.getStmt());
+			return ps.executeUpdate();
 		}
 		catch (SQLException e)
 		{
@@ -84,14 +85,14 @@ public class DbConnector implements Runnable{
 		}
 	}
 
-	private int executeBulkInsert(SqlStatement stmt) {
+	private synchronized int executeBulkInsert(SqlStatement stmt) {
 		try {
-			PreparedStatement ps = connection.prepareStatement(stmt.getStmt());
+			ps = connection.prepareStatement(stmt.getStmt());
 			
-			int bulkSize = stmt.getTuples().length;
-			int tupleSize = stmt.getTuples()[0].length;
+			int tupleSize, bulkSize = stmt.getTuples().length;
 			for(int row=0; row<bulkSize; row++) {
 				String[] currentTuple = stmt.getTuples()[row];
+				tupleSize = currentTuple.length;
 				for (int col=0; col<tupleSize; col++) {
 					ps.setString(col, currentTuple[col]);
 				}
@@ -99,7 +100,6 @@ public class DbConnector implements Runnable{
 			}
 			
 			int[] returnedVals = ps.executeBatch();
-			ps.close();
 			for (int i=0; i<returnedVals.length; i++) {
 				if (returnedVals[i] == PreparedStatement.EXECUTE_FAILED)
 					return PreparedStatement.EXECUTE_FAILED;
