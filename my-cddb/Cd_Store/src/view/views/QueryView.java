@@ -119,6 +119,12 @@ public class QueryView extends ViewPart
 		progressBar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		progressBar.setMaximum(30);
 		progressBar.setVisible(false);
+		
+		Label message = new Label(mainComposite, SWT.NONE);
+		message.setText("* After the search is complete, double click on the disk you want to add to the Shopping Cart");
+		GridData seperatorGd3 = new GridData();
+		seperatorGd3.horizontalSpan = 3;
+		message.setLayoutData(seperatorGd3);
 
 		MusicGenres selectedGenre = null;
 		MusicGenres[] allGenres = RequestToQueryHandler.MusicGenres.values();

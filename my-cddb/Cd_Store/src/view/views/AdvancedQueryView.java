@@ -154,6 +154,11 @@ public class AdvancedQueryView extends ViewPart
 		progressBar.setMaximum(50);
 		progressBar.setVisible(false);
 		
+		Label message = new Label(mainComposite, SWT.NONE);
+		message.setText("* After the search is complete, double click on the disk you want to add to the Shopping Cart");
+		GridData seperatorGd3 = new GridData();
+		seperatorGd3.horizontalSpan = 3;
+		message.setLayoutData(seperatorGd3);
 		
 		goButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e)
