@@ -11,13 +11,13 @@ import model.SqlStatement;
 
 public class connectionManager {
 
-	private Executor connThreads;
+	private static Executor connThreads;
 	private static LinkedBlockingQueue<Connection> connQueue;
-	private Vector<Connection> conVector;
+	private static Vector<Connection> conVector;
 	private static LinkedBlockingQueue<SqlStatement> queryQueue = null;
-	private int numOfConnections = 0;
+	private static int numOfConnections = 0;
 	
-	private boolean timeToQuit = false;
+	private static boolean timeToQuit = false;
 
 	public static synchronized void insertToQueue (SqlStatement sqlStatment){
 		if (queryQueue == null)
@@ -41,10 +41,10 @@ public class connectionManager {
 		}
 	}
 
-	public synchronized void start() {
+	public static synchronized void start() {
 		//initialize class fields
-		if (this.connThreads == null)
-			this.connThreads = Executors.newFixedThreadPool(10);
+		if (connThreads == null)
+			connThreads = Executors.newFixedThreadPool(10);
 
 		if (queryQueue == null)
 			queryQueue = new LinkedBlockingQueue<SqlStatement>();
@@ -52,7 +52,7 @@ public class connectionManager {
 		if (connQueue == null){
 			connQueue = new LinkedBlockingQueue<Connection>();
 			conVector = new Vector<Connection>(10);
-			this.openConnection();
+			openConnection();
 		}
 		
 		SqlStatement stmt;
@@ -80,11 +80,11 @@ public class connectionManager {
 		}
 	}
 	
-	public synchronized void quit(){
-		this.timeToQuit = true;
+	public static synchronized void quit(){
+		timeToQuit = true;
 	}
 	
-	private synchronized void openConnection()
+	private static synchronized void openConnection()
 	{
 
 		// loading the driver
@@ -111,7 +111,7 @@ public class connectionManager {
 				DriverManager.getConnection(jdbcurl, DbConfiguration.getUser(), DbConfiguration.getPassword());
 			
 			insertToConnectionQueue(connection);
-			this.conVector.add(numOfConnections, connection);
+			conVector.add(numOfConnections, connection);
 			numOfConnections++;
 		}
 		catch (SQLException e)
