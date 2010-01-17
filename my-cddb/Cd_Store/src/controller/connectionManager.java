@@ -6,6 +6,8 @@ import java.sql.SQLException;
 import java.util.Vector;
 import java.util.concurrent.*;
 
+import org.eclipse.jface.dialogs.MessageDialog;
+
 import model.DbConfiguration;
 import model.SqlStatement;
 
@@ -114,14 +116,11 @@ public class connectionManager {
 			conVector.add(numOfConnections, connection);
 			numOfConnections++;
 		}
-		catch (SQLException e)
-		{
-			System.out.println("Unable to connect - " + e.toString());
-		}
 		catch (Exception e)
 		{
-			System.err.println("ERROR: " + e);
+			MessageDialog.openError(null, "Error", "Error occured");
 		}
+		
 		System.out.println("Connected!");
 	}
 }
