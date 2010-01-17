@@ -8,7 +8,7 @@ import model.SqlStatement.QueryType;
 public class RequestToQueryHandler implements Comparable<RequestToQueryHandler>
 {
 	public enum Priority {HIGH_PRIORITY, LOW_PRIORITY}
-	public enum SearchType {TOP_10, REGULAR, ADVANCED}	
+	public enum SearchType {TOP_10, REGULAR, ADVANCED, GET_USERS}	
 	public enum Top10Type {LATEST, MOST_POPULAR};	
 	public enum MusicGenres {ALL, BLUES, CLASSICAL, COUNTRY, DATA, FOLK, JAZZ, NEWAGE, REGGAE, ROCK, SOUNDTRACK, MISC};
 	public enum AdvancedSearchFields {ALBUM_TITLE, ARTIST_NAME, TRACK_TITLE, GENRE, YEAR};
@@ -105,6 +105,14 @@ public class RequestToQueryHandler implements Comparable<RequestToQueryHandler>
         return 0;
 	}
 	
+	// Get Users 
+	public RequestToQueryHandler(int id, Priority priority, SearchType searchType) 
+	{
+		this.id = id;
+		this.theQueryType = QueryType.QUERY;
+		this.priority = priority;
+		this.searchType = searchType;	
+	}
 	
 	public synchronized int getId()
 	{
