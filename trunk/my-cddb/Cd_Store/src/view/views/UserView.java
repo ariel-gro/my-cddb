@@ -2,7 +2,9 @@ package view.views;
 
 import model.RequestToQueryHandler;
 import model.SearchesPriorityQueue;
+import model.TableViewsMap;
 import model.UserPassword;
+import model.RequestToQueryHandler.SearchType;
 import model.SqlStatement.QueryType;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.JFaceResources;
@@ -23,6 +25,9 @@ import controller.QueryId;
 public class UserView extends ViewPart
 {
 	public static final String ID = "Cd_Store.UserView";
+	Link loginLink;
+	Label textLabel;
+	Link newCustomerLink;
 	
 	@Override
 	public void createPartControl(Composite parent)
@@ -48,12 +53,12 @@ public class UserView extends ViewPart
 		layout.numColumns = 4;
 		banner.setLayout(layout);
 		
-		Label l = new Label(banner, SWT.WRAP);
-		l.setText("Hello.");
-		l.setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_WHITE));
-		l.setFont(boldHeaderFont);
+		textLabel = new Label(banner, SWT.WRAP);
+		textLabel.setText("Hello.");
+		textLabel.setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_WHITE));
+		textLabel.setFont(boldHeaderFont);
     
-		final Link loginLink = new Link(banner, SWT.NONE);
+		loginLink = new Link(banner, SWT.NONE);
 		loginLink.setText("<a>Sign in</a>");
 		loginLink.setFont(boldDefaultFont);
 		loginLink.setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_WHITE));
@@ -63,12 +68,12 @@ public class UserView extends ViewPart
 			}    
 		});
 		
-		l = new Label(banner, SWT.NONE);
-		l.setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_WHITE));
-		l.setText("to get personalized recommendations. New customer?");
+		textLabel = new Label(banner, SWT.NONE);
+		textLabel.setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_WHITE));
+		textLabel.setText("to get personalized recommendations. New customer?");
 		//l.setFont(boldFont);
 		
-		final Link newCustomerLink = new Link(banner, SWT.WRAP);
+		newCustomerLink = new Link(banner, SWT.WRAP);
 		newCustomerLink.setText("<a>Start here.</a>");
 		newCustomerLink.setFont(boldDefaultFont);
 		newCustomerLink.setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_WHITE));
@@ -81,29 +86,69 @@ public class UserView extends ViewPart
 
 	public boolean checkLogin()
 	{
+		final int dataTableId = QueryId.getId();
+		TableViewsMap.addTable(dataTableId, null);
+		RequestToQueryHandler regularSearch = new RequestToQueryHandler(dataTableId, RequestToQueryHandler.Priority.HIGH_PRIORITY, SearchType.GET_USERS);
+		SearchesPriorityQueue.addSearch(regularSearch);
+		final boolean update = TableViewsMap.getUpdate(dataTableId);
+		
 		LoginDialog loginDialog = new LoginDialog("Sign in", "Please login to the CD Store:");
-
+		
 		boolean login = false;
 		while (!login) {
 			int result = loginDialog.open();
 			if (result == MessageDialog.OK) {
-				try {
-					
-					/* login = Client.getDefault().login( loginDialog.getUser(), loginDialog.getPassword() );
-					if (!login) 
+				try 
+				{	
+					if(loginDialog.getUser().equals("") || loginDialog.getPassword().equals(""))
 					{
-						loginDialog.setMessage("Could not login - please try again");
+						MessageDialog.openInformation(null, "Could not login user", "User or Password cannot be empty - please try again");
 					}
-					*/
-					UserPassword.setUser(loginDialog.getUser());
-					UserPassword.setPassword(loginDialog.getPassword());
-					
+					else
+					{	
+						int time=0;
+						while (update == TableViewsMap.getUpdate(dataTableId))
+						{
+							Thread.sleep(100);
+							time++;
+							
+							if(time==50)
+								break;
+						}
+							
+						if(time<50)
+						{
+							String[][] allUsers = TableViewsMap.getData(dataTableId);
+							for (int i = 0; i < allUsers.length; i++)
+							{
+								if(allUsers[i][1].toLowerCase().equals(loginDialog.getUser().toLowerCase()))
+									if(allUsers[i][2].toLowerCase().equals(loginDialog.getPassword().toLowerCase()))
+									{
+										login = true;
+										UserPassword.setId(Integer.parseInt(allUsers[i][0]));
+										UserPassword.setUser(loginDialog.getUser());
+										UserPassword.setPassword(loginDialog.getPassword());
+										loginLink.setText("<a>" + UserPassword.getUser() + "</a>");
+										textLabel.setText("");
+										newCustomerLink.setText("");
+									}
+							}
+							
+							if(!login)
+								MessageDialog.openInformation(null, "Could not login user", "Could not login - please try again");
+						}
+						else
+						{
+							MessageDialog.openInformation(null, "Timed Out", "Timed out while trying to authenticate user - please try again");
+						}
+					}
 				} catch (Exception connectionProblem) {
 					MessageDialog.openInformation(null, "Could not login user", connectionProblem.toString());
 
 					return false;
 				}
-			} else {
+			} else 
+			{
 				return false; // user cancelled
 			}
 		}
@@ -120,29 +165,29 @@ public class UserView extends ViewPart
 			if (result == MessageDialog.OK) {
 				try 
 				{	
-					if(newUserDialog.getPassword().equals(newUserDialog.getVerifyPassword()) == false)
+					if(newUserDialog.getUser().equals("") || newUserDialog.getPassword().equals("") || newUserDialog.getVerifyPassword().equals(""))
 					{
-						MessageDialog.openError(null, "Passwords don't match", "The passwords you've entered do not match. Please try again.");
-						continue;
+						MessageDialog.openInformation(null, "Could not Add User", "User or Password cannot be empty - please try again");
 					}
-					
-					/*login = Client.getDefault().login( newUserDialog.getUser(), newUserDialog.getPassword() );		
-					if (!login) 
-					{
-						newUserDialog.setMessage("Could not login - please try again");
+					else
+					{	
+						if(newUserDialog.getPassword().equals(newUserDialog.getVerifyPassword()) == false)
+						{
+							MessageDialog.openError(null, "Passwords don't match", "The passwords you've entered do not match. Please try again.");
+							continue;
+						}
+						
+						UserPassword.setUser(newUserDialog.getUser());
+						UserPassword.setPassword(newUserDialog.getPassword());
+						
+						int dataTableId = QueryId.getId();
+						
+						RequestToQueryHandler regularSearch = new RequestToQueryHandler(dataTableId, RequestToQueryHandler.Priority.HIGH_PRIORITY,
+								QueryType.INSERT_SINGLE, RequestToQueryHandler.SingleInsertType.ADD_USER, new String[]{UserPassword.getUser(), UserPassword.getPassword()});
+						SearchesPriorityQueue.addSearch(regularSearch);
+						
+						return true;
 					}
-					*/
-					
-					UserPassword.setUser(newUserDialog.getUser());
-					UserPassword.setPassword(newUserDialog.getPassword());
-					
-					int dataTableId = QueryId.getId();
-					
-					RequestToQueryHandler regularSearch = new RequestToQueryHandler(dataTableId, RequestToQueryHandler.Priority.HIGH_PRIORITY,
-							QueryType.INSERT_SINGLE, RequestToQueryHandler.SingleInsertType.ADD_USER, new String[]{UserPassword.getUser(), UserPassword.getPassword()});
-					SearchesPriorityQueue.addSearch(regularSearch);
-					
-					return true;
 					
 				} catch (Exception connectionProblem) {
 					MessageDialog.openInformation(null, "Could not Add User", connectionProblem.toString());
