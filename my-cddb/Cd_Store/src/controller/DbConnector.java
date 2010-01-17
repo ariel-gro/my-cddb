@@ -29,22 +29,7 @@ public class DbConnector implements Runnable{
 	public void setStatement(SqlStatement stmt){
 		this.stmt = stmt;
 	}
-	
-
-	/**
-	 * Execute the prepared statement.
-	 */
-	public ResultSet executeQuery() {
-		try {
-			return ps.executeQuery();
-		} catch (SQLException e) {
-			System.err.println("ERROR: (executeQuery). " + e);
-		}
-
-		return null;
-	}
-
-	
+		
 	public void run(){
 		
 		QueryType qt = stmt.getQueryType();
@@ -52,11 +37,11 @@ public class DbConnector implements Runnable{
 		
 		switch (qt){
 		case INSERT_BULK:
-			if (executeBulkInsert(stmt) == -1)
+			if (executeBulkInsert(stmt) == PreparedStatement.EXECUTE_FAILED)
 				System.out.println("Error during bulk insert");
 			break;
 		case INSERT_SINGLE:
-			if (executeSingleInsert(stmt) == -1)
+			if (executeSingleInsert(stmt) == PreparedStatement.EXECUTE_FAILED)
 				System.out.println("Error during single insert");
 			break;
 		case QUERY:
@@ -74,7 +59,9 @@ public class DbConnector implements Runnable{
 		try
 		{
 			PreparedStatement ps = connection.prepareStatement(stmt.getStmt());
-			return ps.executeQuery();
+			ResultSet retVal = ps.executeQuery();
+			ps.close();
+			return retVal;
 		}
 		catch (SQLException e)
 		{
@@ -86,17 +73,41 @@ public class DbConnector implements Runnable{
 		try
 		{
 			PreparedStatement ps = connection.prepareStatement(stmt.getStmt());
-			return ps.executeUpdate();
+			int retVal = ps.executeUpdate();
+			ps.close();
+			return retVal;
 		}
 		catch (SQLException e)
 		{
-			return -1;
+			return PreparedStatement.EXECUTE_FAILED;
 		}
 	}
 
 	private int executeBulkInsert(SqlStatement stmt) {
-		return 0;
-		// TODO Auto-generated method stub
-		
+		try {
+			PreparedStatement ps = connection.prepareStatement(stmt.getStmt());
+			
+			int bulkSize = stmt.getTuples().length;
+			int tupleSize = stmt.getTuples()[0].length;
+			for(int row=0; row<bulkSize; row++) {
+				String[] currentTuple = stmt.getTuples()[row];
+				for (int col=0; col<tupleSize; col++) {
+					ps.setString(col, currentTuple[col]);
+				}
+				ps.addBatch();
+			}
+			
+			int[] returnedVals = ps.executeBatch();
+			ps.close();
+			for (int i=0; i<returnedVals.length; i++) {
+				if (returnedVals[i] == PreparedStatement.EXECUTE_FAILED)
+					return PreparedStatement.EXECUTE_FAILED;
+			}
+			return 1;
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+			return PreparedStatement.EXECUTE_FAILED;
+		}	
 	}
 }
