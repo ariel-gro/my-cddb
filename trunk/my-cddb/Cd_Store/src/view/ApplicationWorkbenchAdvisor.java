@@ -7,6 +7,8 @@ import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchAdvisor;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 
+import controller.connectionManager;
+
 /**
  * This workbench advisor creates the window advisor, and specifies
  * the perspective id for the initial window.
@@ -26,7 +28,16 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 		Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();  
 		String dialogBoxTitle = "Question";  
 		String question = "Are you sure you want to close the CD Store application?";  
-		return MessageDialog.openQuestion(shell, dialogBoxTitle, question);  
+		
+		if(MessageDialog.openQuestion(shell, dialogBoxTitle, question))
+		{
+			connectionManager.quit();
+			return true;
+		}
+		else
+		{
+			return false;
+		}	  
 	} 
 	
 }
