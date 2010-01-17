@@ -2,8 +2,10 @@ package view.views;
 
 import java.util.ArrayList;
 
+import model.MainViewSearchId;
 import model.RequestToQueryHandler;
 import model.SearchesPriorityQueue;
+import model.TableViewsMap;
 import model.RequestToQueryHandler.MusicGenres;
 
 import org.eclipse.jface.resource.FontDescriptor;
@@ -160,7 +162,7 @@ public class NavigationView extends ViewPart
 		@Override
 		public Font getFont(Object obj, int columnIndex)
 		{
-			FontDescriptor header_fdesc=FontDescriptor.createFrom("Tahoma",12,SWT.BOLD); 
+			FontDescriptor header_fdesc=FontDescriptor.createFrom("Tahoma",11,SWT.BOLD); 
 			FontDescriptor regular_fdesc=FontDescriptor.createFrom("Tahoma",10,SWT.BOLD);
 			
 			if(obj instanceof TreeParent)
@@ -197,7 +199,7 @@ public class NavigationView extends ViewPart
 		p1.addChild(to1);
 		p1.addChild(to2);
 		
-		TreeParent p2 = new TreeParent("MUSIC GENRES");
+		TreeParent p2 = new TreeParent("LATEST BY MUSIC GENRES");
 		TreeObject to3 = new TreeObject("Blues");
 		TreeObject to4 = new TreeObject("Classical");
 		TreeObject to5 = new TreeObject("Country");
@@ -254,60 +256,48 @@ public class NavigationView extends ViewPart
 
 	private void hookDoubleClickCommand()
 	{
-		dataTableId = QueryId.getId();
 		viewer.addDoubleClickListener(new IDoubleClickListener() {
 			public void doubleClick(DoubleClickEvent event)
 			{
-			//	try 
-			//	{
-					if(viewer.getTree().getSelection()[0].getParentItem() != null)
-					{
-						if(viewer.getTree().getSelection()[0].getParentItem().getText().equals("POPULAR FEATURES"))
-						{
-							if(viewer.getTree().getSelection()[0].getText().equals("Latest CDs"))
-							{
-								RequestToQueryHandler top10LatestSearch = new RequestToQueryHandler(dataTableId, RequestToQueryHandler.Priority.HIGH_PRIORITY, RequestToQueryHandler.SearchType.TOP_10, RequestToQueryHandler.Top10Type.LATEST);
-								SearchesPriorityQueue.addSearch(top10LatestSearch);
-							} else if (viewer.getTree().getSelection()[0].getText().equals("Most Popular CDs"))
-							{
-								RequestToQueryHandler top10PopularSearch = new RequestToQueryHandler(dataTableId, RequestToQueryHandler.Priority.HIGH_PRIORITY, RequestToQueryHandler.SearchType.TOP_10, RequestToQueryHandler.Top10Type.MOST_POPULAR);
-								SearchesPriorityQueue.addSearch(top10PopularSearch);
-							}
-						}
-						else if(viewer.getTree().getSelection()[0].getParentItem().getText().equals("MUSIC GENRES"))
-						{					
-							MusicGenres selectedMusicGenre = null;
-							MusicGenres[] allMusicGenresd = RequestToQueryHandler.MusicGenres.values();
-							for (int i = 0; i < allMusicGenresd.length; i++)
-							{
-								if(allMusicGenresd[i].toString().equals(viewer.getTree().getSelection()[0].getText()))
-								{
-									selectedMusicGenre = allMusicGenresd[i];
-								}
-							}
-							
-							RequestToQueryHandler top10Search = new RequestToQueryHandler(dataTableId, RequestToQueryHandler.Priority.HIGH_PRIORITY, RequestToQueryHandler.SearchType.TOP_10, selectedMusicGenre);
-							SearchesPriorityQueue.addSearch(top10Search);
-						}
-					}
-					
-				/*	IHandlerService handlerService = (IHandlerService) getSite().getService(IHandlerService.class);
-					try 
-					{		
-						handlerService.executeCommand(ICommandIds.CMD_UPDATE_ADVANCED_QUERY_VIEW, null);
-						
-					} catch (Exception ex) 
-					{
-						ex.printStackTrace();
-						throw new RuntimeException(ICommandIds.CMD_UPDATE_ADVANCED_QUERY_VIEW + " not found");
-					}
-				*/	
-			/*	} catch (Exception ex) 
+				dataTableId = QueryId.getId();
+				TableViewsMap.addTable(dataTableId, null);
+				MainViewSearchId.setId(dataTableId);
+				
+				if (viewer.getTree().getSelection()[0].getParentItem() != null)
 				{
-					ex.printStackTrace();
-					//throw new RuntimeException("de.vogella.rcp.intro.editor.callEditor not found");
+					if (viewer.getTree().getSelection()[0].getParentItem().getText().equals("POPULAR FEATURES"))
+					{
+						if (viewer.getTree().getSelection()[0].getText().equals("Latest CDs"))
+						{
+							RequestToQueryHandler top10LatestSearch = new RequestToQueryHandler(dataTableId,
+									RequestToQueryHandler.Priority.HIGH_PRIORITY, RequestToQueryHandler.SearchType.TOP_10,
+									RequestToQueryHandler.Top10Type.LATEST);
+							SearchesPriorityQueue.addSearch(top10LatestSearch);
+						} else if (viewer.getTree().getSelection()[0].getText().equals("Most Popular CDs"))
+						{
+							RequestToQueryHandler top10PopularSearch = new RequestToQueryHandler(dataTableId,
+									RequestToQueryHandler.Priority.HIGH_PRIORITY, RequestToQueryHandler.SearchType.TOP_10,
+									RequestToQueryHandler.Top10Type.MOST_POPULAR);
+							SearchesPriorityQueue.addSearch(top10PopularSearch);
+						}
+					} else if (viewer.getTree().getSelection()[0].getParentItem().getText().equals("LATEST BY MUSIC GENRES"))
+					{
+						MusicGenres selectedMusicGenre = null;
+						MusicGenres[] allMusicGenresd = RequestToQueryHandler.MusicGenres.values();
+						for (int i = 0; i < allMusicGenresd.length; i++)
+						{
+							if (allMusicGenresd[i].toString().equals(viewer.getTree().getSelection()[0].getText()))
+							{
+								selectedMusicGenre = allMusicGenresd[i];
+							}
+						}
+
+						RequestToQueryHandler top10Search = new RequestToQueryHandler(dataTableId, RequestToQueryHandler.Priority.HIGH_PRIORITY,
+								RequestToQueryHandler.SearchType.TOP_10, selectedMusicGenre);
+						SearchesPriorityQueue.addSearch(top10Search);
+					}
 				}
-			*/}
+			}
 		});
 	}
 	

@@ -1,8 +1,11 @@
 package view.views;
 
 import model.Disk;
+import model.MainViewSearchId;
 import model.SearchParameters;
 import model.ShoppingCartContent;
+import model.TableViewsMap;
+
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.resource.FontDescriptor;
 import org.eclipse.jface.resource.FontRegistry;
@@ -23,27 +26,33 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
+import org.eclipse.swt.widgets.ProgressBar;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.part.ViewPart;
 
 import view.Activator;
+import view.FindAndDownloadCdImage;
 import view.ICommandIds;
 
 public class View extends ViewPart
 {
-
+	Composite recordsCoversArea = null;
+	
 	public static final String ID = "Cd_Store.view";
 
 	public void createPartControl(Composite parent)
 	{
 
 		// Fonts
-		Font boldFont = JFaceResources.getFontRegistry().getBold(JFaceResources.DEFAULT_FONT);
+		final Font boldFont = JFaceResources.getFontRegistry().getBold(JFaceResources.DEFAULT_FONT);
 		
 		FontRegistry registry = new FontRegistry();
 		FontDescriptor header_fdesc=FontDescriptor.createFrom("Tahoma",16,SWT.BOLD); 
 		Font headerBoldFont = header_fdesc.createFont(registry.defaultFont().getDevice());
+		
+		FontDescriptor content_fdesc=FontDescriptor.createFrom("Tahoma",12,SWT.BOLD); 
+		Font contentBoldFont = content_fdesc.createFont(registry.defaultFont().getDevice());
 		
 		Image backgroundImage = Activator.getImageDescriptor("icons/music013.gif").createImage();
 
@@ -100,7 +109,6 @@ public class View extends ViewPart
 		Link loginLink = new Link(banner, SWT.NONE);
 		loginLink.setText("<a>Advanced Search</a>");
 		loginLink.setFont(boldFont);
-		//loginLink.setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_WHITE));
 		loginLink.addSelectionListener(new SelectionAdapter() {    
 			public void widgetSelected(SelectionEvent e) 
 			{
@@ -114,7 +122,7 @@ public class View extends ViewPart
 		});
 		
 		// Main area
-		Composite mainArea = new Composite(top, SWT.BORDER);
+		final Composite mainArea = new Composite(top, SWT.BORDER);
 		mainArea.setLayoutData(new GridData(GridData.FILL_BOTH));
 		mainArea.setBackgroundImage(backgroundImage);
 		layout = new GridLayout();
@@ -132,99 +140,216 @@ public class View extends ViewPart
 		
 		Label textLabel = new Label(mainArea, SWT.WRAP);
 		textLabel.setBackgroundImage(backgroundImage);
-		textLabel.setText("\nBla Bla \nBla Bla\nBla Bla\n\n\n\n\n");	
-		textLabel.setFont(boldFont);
+		textLabel.setText("\n Choose some predifined searches on your left.\n Create your own simple or advanced searches above.\n When you find your CD, you can add it to the Shopping Cart on your right just by clicking it.\n\n");	
+		textLabel.setFont(contentBoldFont);
 		textLabel.setLayoutData(new GridData(GridData.FILL_BOTH));
 		
 		
-/*		Composite recordsArea = new Composite(mainArea, SWT.BORDER);
-		recordsArea.setLayoutData(new GridData(GridData.FILL_BOTH));
-		recordsArea.setBackgroundImage(backgroundImage);
+		// ********************* This whole block is Temporary ******************************//
+		final Button tempButton = new Button(mainArea, SWT.PUSH);
+		tempButton.setText(" Temp Update map ");
+		tempButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_CENTER));
+		tempButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e)
+			{
+				String[][] temp = new String[10][];
+				temp[0] = new String[]{"id"+0, "Susan Boyle", "I Dreamed A Dream", "2009", "Rap", "2019", "9.99"};		
+				temp[1] = new String[]{"id"+1, "Glee Cast", "Glee: The Music", "2009", "Rap", "2019", "9.99"};
+				temp[2] = new String[]{"id"+2, "Vampire Weekend", "Contra", "2009", "Rap", "2019", "9.99"};
+				temp[3] = new String[]{"id"+3, "Michael Buble", "Crazy Love", "2009", "Rap", "2019", "9.99"};
+				temp[4] = new String[]{"id"+4, "Andrea Bocelli", "My Christmas", "2009", "Rap", "2019", "9.99"};
+				temp[5] = new String[]{"id"+5, "The Beatles", "The Beatles Stereo Box Set", "2009", "Rap", "2019", "9.99"};
+				temp[6] = new String[]{"id"+6, "Norah Jones", "The Fall", "2009", "Rap", "2019", "9.99"};
+				temp[7] = new String[]{"id"+7, "Alicia Keys", "The Element of Freedom", "2009", "Rap", "2019", "9.99"};
+				temp[8] = new String[]{"id"+8, "Taylor Swift", "Fearless", "2009", "Rap", "2019", "9.99"};
+				temp[9] = new String[]{"id"+9, "Lady Antebellum", "Need You Now", "2009", "Rap", "2019", "9.99"};
+
+				TableViewsMap.addTable(MainViewSearchId.getId(), temp);
+			}
+		});
+		
+		
+		final Composite mainRecordsCoversArea = new Composite(mainArea, SWT.CENTER);
+		mainRecordsCoversArea.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, true));
+		mainRecordsCoversArea.setBackgroundImage(backgroundImage);
 		layout = new GridLayout();
-		layout.marginHeight = 0;
-		layout.marginWidth = 0;
 		layout.numColumns = 1;
-		recordsArea.setLayout(layout);
-	*/	
-		Composite recordsCoversArea = new Composite(mainArea, SWT.CENTER);
-		recordsCoversArea.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, true));
-		recordsCoversArea.setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_BLUE));
+		mainRecordsCoversArea.setLayout(layout);
+		
+		createRecordsArea(boldFont, mainRecordsCoversArea, MainViewSearchId.getId());	
+
+		final ProgressBar progressBar = new ProgressBar(mainArea, SWT.SMOOTH);
+		progressBar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		progressBar.setMaximum(30);
+		progressBar.setVisible(false);
+
+		final int maximum = progressBar.getMaximum();
+		new Thread() {
+			public void run()
+			{
+				while (true)
+				{
+					while (MainViewSearchId.getId() == -1)
+					{
+						try
+						{
+							Thread.sleep(200);
+						} catch (Throwable th)
+						{}
+					}
+
+					mainArea.getDisplay().asyncExec(new Runnable() {
+						public void run()
+						{		
+							progressBar.setVisible(true);
+						}
+					});
+								
+					final int dataTableId = MainViewSearchId.getId();
+					boolean update = TableViewsMap.getUpdate(dataTableId);
+					while (update == TableViewsMap.getUpdate(dataTableId))
+					{
+						for (final int[] i = new int[1]; i[0] <= maximum; i[0]++)
+						{
+							try
+							{
+								Thread.sleep(100);
+							} catch (Throwable th)
+							{
+							}
+							if (mainArea.getDisplay().isDisposed())
+								return;
+							mainArea.getDisplay().asyncExec(new Runnable() {
+								public void run()
+								{
+									if (progressBar.isDisposed())
+										return;
+									progressBar.setSelection(i[0]);
+								}
+							});
+						}
+					}
+						
+					mainArea.getDisplay().asyncExec(new Runnable() {
+						public void run()
+						{
+							createRecordsArea(boldFont, mainRecordsCoversArea, dataTableId);
+							progressBar.setVisible(false);
+						}
+					});
+					
+					if(dataTableId == MainViewSearchId.getId())
+						MainViewSearchId.setId(-1);
+				}
+			}
+		}.start();
+	}
+
+	private void createRecordsArea(Font boldFont, Composite mainRecordsCoversArea, int searchId)
+	{
+		Disk[] dummyDisks = getDisks(searchId);
+		
+		if(recordsCoversArea!=null && recordsCoversArea.isDisposed() == false)
+			recordsCoversArea.dispose();
+		
+		GridLayout layout;
+		recordsCoversArea = new Composite(mainRecordsCoversArea, SWT.CENTER);
+		recordsCoversArea.setLayoutData(new GridData(GridData.FILL_BOTH));
+		recordsCoversArea.setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_DARK_CYAN));
 		layout = new GridLayout();
 		layout.numColumns = 5;	
 		layout.makeColumnsEqualWidth = true;
 		recordsCoversArea.setLayout(layout);
+		recordsCoversArea.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, true));
 		
-		Disk[] dummyDisks = getDummyDisks();
 		for (int i = 0; i < dummyDisks.length; i++) 
 		{
 			Composite recordComposite = new Composite(recordsCoversArea, SWT.NONE);
-			recordsCoversArea.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, true));
 			layout = new GridLayout();
 			recordComposite.setLayout(layout);
+			recordComposite.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, true));
 			
 			Label lab = new Label(recordComposite, SWT.CENTER);
-			lab.setImage(resize(Activator.getImageDescriptor(dummyDisks[i].getCoverImage()).createImage(), 110, 110));
-			lab.setToolTipText(dummyDisks[i].getTitle() + "\n" + dummyDisks[i].getArtist());
-			lab.setData(dummyDisks[i]);
-			lab.addMouseListener(new MouseListener() {
-				@Override
-				public void mouseDoubleClick(MouseEvent e)
-				{}
-
-				@Override
-				public void mouseDown(MouseEvent e)
-				{		
-				}
-
-				@Override
-				public void mouseUp(MouseEvent e)
-				{
-					Label selectedLabel = (Label) e.getSource();
-					Disk selectedDisk = (Disk)selectedLabel.getData();
-					if(new CustomMessageDialog(getSite().getShell(), "Add disk to Shopping Cart?", resize(Activator.getImageDescriptor(selectedDisk.getCoverImage()).createImage(), 140, 140), "Would you like to add the following disk to your Shopping Cart?\n\n" + selectedDisk.toString()).open() == IDialogConstants.YES_ID)
-					{
-						IHandlerService handlerService = (IHandlerService) getSite().getService(IHandlerService.class);
-						ShoppingCartContent.addToContent(selectedDisk);
-						try 
-						{		
-							handlerService.executeCommand(ICommandIds.CMD_UPDATE_SHOPPING_CART, null);
-							
-						} catch (Exception ex) 
-						{
-							throw new RuntimeException(ICommandIds.CMD_UPDATE_SHOPPING_CART + " not found");
-						}
-					}	
-				}
-			});
+			Image image;
+			try
+			{
+				image = Activator.getImageDescriptor(dummyDisks[i].getCoverImage()).createImage();
+			}
+			catch (Exception e) 
+			{
+				image = Activator.getImageDescriptor("album covers/empty_disk.jpg").createImage();
+			}
+				
+			lab.setImage(resize(image, 110, 110));
 			
-			Link recordLink = new Link(recordComposite, SWT.NONE);
-			recordLink.setText("<a>" + dummyDisks[i].getTitle() + "</a>");
-			recordLink.setFont(boldFont);
-			recordLink.setData(dummyDisks[i]);
-			recordLink.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, true));
-			recordLink.addSelectionListener(new SelectionAdapter() {    
-				public void widgetSelected(SelectionEvent e) 
-				{			
-					IHandlerService handlerService = (IHandlerService) getSite().getService(IHandlerService.class);
-					Link selectedLink = (Link) e.getSource();
-					Disk selectedDisk = (Disk)selectedLink.getData();
-
-					if(new CustomMessageDialog(getSite().getShell(), "Add disk to Shopping Cart?", resize(Activator.getImageDescriptor(selectedDisk.getCoverImage()).createImage(), 140, 140), "Would you like to add the following disk to your Shopping Cart?\n\n" + selectedDisk.toString()).open() == IDialogConstants.YES_ID)
-					{
-						ShoppingCartContent.addToContent(selectedDisk);
-						try 
-						{		
-							handlerService.executeCommand("Cd_Store.updateShoppingCart", null);
-							
-						} catch (Exception ex) 
-						{
-							throw new RuntimeException("Cd_Store.updateShoppingCart not found");
-						}
+			if(searchId != -1)
+			{
+				lab.setToolTipText("Title: " + dummyDisks[i].getTitle() + "\nArtist: " + dummyDisks[i].getArtist());
+				lab.setData(dummyDisks[i]);
+				lab.addMouseListener(new MouseListener() {
+					@Override
+					public void mouseDoubleClick(MouseEvent e)
+					{}
+	
+					@Override
+					public void mouseDown(MouseEvent e)
+					{		
 					}
-				}    
-			});
+	
+					@Override
+					public void mouseUp(MouseEvent e)
+					{
+						Label selectedLabel = (Label) e.getSource();
+						Disk selectedDisk = (Disk)selectedLabel.getData();
+						if(new CustomMessageDialog(getSite().getShell(), "Add disk to Shopping Cart?", resize(Activator.getImageDescriptor(selectedDisk.getCoverImage()).createImage(), 140, 140), "Would you like to add the following disk to your Shopping Cart?\n\n" + selectedDisk.toString()).open() == IDialogConstants.YES_ID)
+						{
+							IHandlerService handlerService = (IHandlerService) getSite().getService(IHandlerService.class);
+							ShoppingCartContent.addToContent(selectedDisk);
+							try 
+							{		
+								handlerService.executeCommand(ICommandIds.CMD_UPDATE_SHOPPING_CART, null);
+								
+							} catch (Exception ex) 
+							{
+								throw new RuntimeException(ICommandIds.CMD_UPDATE_SHOPPING_CART + " not found");
+							}
+						}	
+					}
+				});
+				
+				Link recordLink = new Link(recordComposite, SWT.NONE);
+				recordLink.setText("<a>" + dummyDisks[i].getTitle() + "</a>");
+				recordLink.setFont(boldFont);
+				recordLink.setData(dummyDisks[i]);
+				recordLink.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, true));
+				recordLink.addSelectionListener(new SelectionAdapter() {    
+					public void widgetSelected(SelectionEvent e) 
+					{			
+						IHandlerService handlerService = (IHandlerService) getSite().getService(IHandlerService.class);
+						Link selectedLink = (Link) e.getSource();
+						Disk selectedDisk = (Disk)selectedLink.getData();
+	
+						if(new CustomMessageDialog(getSite().getShell(), "Add disk to Shopping Cart?", resize(Activator.getImageDescriptor(selectedDisk.getCoverImage()).createImage(), 140, 140), "Would you like to add the following disk to your Shopping Cart?\n\n" + selectedDisk.toString()).open() == IDialogConstants.YES_ID)
+						{
+							ShoppingCartContent.addToContent(selectedDisk);
+							try 
+							{		
+								handlerService.executeCommand("Cd_Store.updateShoppingCart", null);
+								
+							} catch (Exception ex) 
+							{
+								throw new RuntimeException("Cd_Store.updateShoppingCart not found");
+							}
+						}
+					}    
+				});	
+			}
 			
-		}	
+			recordComposite.layout();
+		}
+
+		mainRecordsCoversArea.layout();
+		recordsCoversArea.layout();
 	}
 
 	private Image resize(Image image, int width, int height)
@@ -239,13 +364,40 @@ public class View extends ViewPart
 		return scaled;
 	}
 
-	private Disk[] getDummyDisks()
+	private Disk[] getDisks(int searchId)
 	{
 		Disk[] myDisks = new Disk[10];
 		
-		for (int i = 0; i < myDisks.length; i++) 
+		if(searchId == -1)
 		{
-			myDisks[i] = new Disk("id" + i,"title" + i, "artist" + i, "genre" + i, "subGenre" + i, 1978, 1000, "price" + i, "album covers/images_" + i + ".jpg", null);
+			for (int i = 0; i < myDisks.length; i++) 
+			{
+				myDisks[i] = new Disk("","", "", "", "", "", "", "album covers/empty_disk.jpg", null);
+			}
+		}
+		else
+		{
+			String[][] allDisksAsString = TableViewsMap.getData(searchId);
+			FindAndDownloadCdImage[] searchImage = new FindAndDownloadCdImage[10];
+			for (int i = 0; i < 10; i++) 
+			{
+				searchImage[i] = new FindAndDownloadCdImage("\"" + allDisksAsString[i][1] + "\" + \"" +  allDisksAsString[i][2]  + "\"", allDisksAsString[i][0] + ".jpg");
+				searchImage[i].start();
+			}
+			
+			for (int i = 0; i < 10; i++) 
+			{
+				try
+				{
+					searchImage[i].join();
+				} catch (InterruptedException e)
+				{}
+			}	
+			
+			for (int i = 0; i < 10; i++) 
+			{
+				myDisks[i] = new Disk(allDisksAsString[i][0], allDisksAsString[i][2], allDisksAsString[i][1], allDisksAsString[i][4], allDisksAsString[i][3], allDisksAsString[i][5], allDisksAsString[i][6], "album covers/" + allDisksAsString[i][0] + ".jpg", null);
+			}
 		}
 			
 		return myDisks;	
