@@ -55,22 +55,21 @@ public class connectionManager {
 			this.openConnection();
 		}
 		
-		Thread queryListner = new Thread(new HandleQueryQueue());
-		queryListner.start();
-		
+		SqlStatement stmt;
 		while (!timeToQuit){
-			//threads are working
-			try
-			{
-				Thread.sleep(200);
-			} catch (InterruptedException e)
-			{
-				// TODO refactor w/o thread
+			try {
+				stmt = queryQueue.take();
+				if ((numOfConnections < 10) && connQueue.isEmpty())
+					openConnection();
+				DbConnector con = new DbConnector(connQueue.take(), stmt);
+				connThreads.execute(con);
+			}
+			catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 		}
 		
-		//end work and threads
+		//close all connections to DB
 		for (int i=0; i < numOfConnections; i++) {
 			try {
 				conVector.elementAt(i).close();
@@ -124,26 +123,5 @@ public class connectionManager {
 			System.err.println("ERROR: " + e);
 		}
 		System.out.println("Connected!");
-	}
-
-	private class HandleQueryQueue implements Runnable {
-
-		public synchronized void run() {
-			SqlStatement stmt;
-			while (!timeToQuit){
-				try {
-					stmt = queryQueue.take();
-					if ((numOfConnections < 10) && connQueue.isEmpty())
-						openConnection();
-					DbConnector con = new DbConnector();
-					con.setConnection(connQueue.take());
-					con.setStatement(stmt);
-					connThreads.execute(con);
-				}
-				catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
-		}
 	}
 }
