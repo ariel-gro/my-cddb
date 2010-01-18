@@ -20,10 +20,12 @@ public class DbImportWizardPageOne extends WizardPage
 {
 	private Text text;
 	private Composite container;
+	private boolean isUpdate;
 
-	public DbImportWizardPageOne() {
+	public DbImportWizardPageOne(boolean isUpdate) {
 		super("Import DB - First Page");
-		setTitle("Import DB");
+		this.isUpdate = isUpdate;
+		setTitle((isUpdate?"Update":"Import") + " DB");
 		setDescription("This wizard imports the archived freeDB file to the Database");
 	}
 

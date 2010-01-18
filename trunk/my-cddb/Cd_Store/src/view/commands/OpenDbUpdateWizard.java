@@ -8,13 +8,13 @@ import org.eclipse.ui.handlers.HandlerUtil;
 
 import view.views.DbImportWizardMain;
 
-public class OpenDbImportWizard extends AbstractHandler
+public class OpenDbUpdateWizard extends AbstractHandler
 {
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException
 	{
-		DbImportWizardMain wizard = new DbImportWizardMain(false);
+		DbImportWizardMain wizard = new DbImportWizardMain(true);
 		WizardDialog dialog = new WizardDialog(HandlerUtil.getActiveShell(event), wizard);
 		dialog.open();
 		return null;
