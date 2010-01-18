@@ -32,6 +32,11 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 		if(MessageDialog.openQuestion(shell, dialogBoxTitle, question))
 		{
 			connectionManager.quit();
+			try
+			{
+				Thread.sleep(1000);
+			} catch (InterruptedException e)
+			{}
 			return true;
 		}
 		else
