@@ -21,12 +21,14 @@ public class DbImportWizardPageTwo extends WizardPage
 	private static TableViewer v;
 	private static Composite parent;
 	private static ProgressBar bar;
+	private boolean isUpdate;
 	final static ArrayList<String> messages = new ArrayList<String>();
 
-	public DbImportWizardPageTwo() 
+	public DbImportWizardPageTwo(boolean isUpdate) 
 	{
 		super("Import DB - Second Page");
-		setTitle("Import DB");
+		this.isUpdate = isUpdate;
+		setTitle((isUpdate?"Update":"Import") + " DB");
 		setDescription("This wizard imports the archived freeDB file to the Database");
 	}
 
@@ -88,7 +90,7 @@ public class DbImportWizardPageTwo extends WizardPage
 					e1.printStackTrace();
 				}
 
-				MainParser myParse = new MainParser(fileToImport.substring(0, fileToImport.lastIndexOf("\\")+1)+"allDisks.txt");
+				MainParser myParse = new MainParser(fileToImport.substring(0, fileToImport.lastIndexOf("\\")+1)+"allDisks.txt", isUpdate);
 				myParse.start();
 				
 				try {

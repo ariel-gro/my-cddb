@@ -16,4 +16,5 @@ public interface ICommandIds {
     public static final String CMD_UPDATE_ADVANCED_QUERY_VIEW = "Cd_Store.view.commands.updateAdvancedQueryView";
     public static final String CMD_OPEN_DB_CONFIG_DIALOG = "Cd_Store.view.commands.openDbConfigDialogAction"; 
     public static final String CMD_OPEN_DB_IMPORT_WIZARD= "Cd_Store.view.commands.openDbImportWizard";
+    public static final String CMD_OPEN_DB_UPDATE_WIZARD= "Cd_Store.view.commands.openDbUpdateWizard";
 }
