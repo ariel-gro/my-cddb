@@ -44,12 +44,12 @@ public class queryHandler
 						sqlStmt = new SqlStatement(QueryType.QUERY,
 								"SELECT TOP 10 * FROM (SELECT * FROM Albums ORDERBY Albums.year) WHERE Albums.genre = "
 										+ this.searchReq.getMusicGenre().toString(), null, this.searchReq.getId());
-						connectionManager.insertToQueue(sqlStmt);
+						connectionManager.insertToQueryQueue(sqlStmt);
 					} else
 					{
 						sqlStmt = new SqlStatement(QueryType.QUERY, "SELECT TOP 10 * FROM (SELECT * FROM Albums ORDERBY Albums.year)", null,
 								this.searchReq.getId());
-						connectionManager.insertToQueue(sqlStmt);
+						connectionManager.insertToQueryQueue(sqlStmt);
 					}
 					break;
 				case MOST_POPULAR:
@@ -59,14 +59,14 @@ public class queryHandler
 								QueryType.QUERY,
 								"SELECT TOP 10 Albums.* FROM Albums, (SELECT id, COUNT(id) FROM Sales GROUP BY id ORDER BY COUNT(id) DESC) WHERE Sales.id = Albums.id AND Albums.genre = "
 										+ this.searchReq.getMusicGenre().toString(), null, this.searchReq.getId());
-						connectionManager.insertToQueue(sqlStmt);
+						connectionManager.insertToQueryQueue(sqlStmt);
 					} else
 					{
 						sqlStmt = new SqlStatement(
 								QueryType.QUERY,
 								"SELECT TOP 10 Albums.* FROM Albums, (SELECT id, COUNT(id) FROM Sales GROUP BY id ORDER BY COUNT(id) DESC) WHERE Sales.id = Albums.id",
 								null, this.searchReq.getId());
-						connectionManager.insertToQueue(sqlStmt);
+						connectionManager.insertToQueryQueue(sqlStmt);
 					}
 					break;
 				default:
@@ -76,7 +76,7 @@ public class queryHandler
 				sqlStmt = new SqlStatement(QueryType.QUERY, "SELECT Albums.* FROM Albums, Artists WHERE (Albums.title LIKE '%"
 						+ this.searchReq.getRegularSearchString() + "%') OR (Artists.name LIKE '%" + this.searchReq.getRegularSearchString()
 						+ "%') GROUP BY Albums.id", null, this.searchReq.getId());
-				connectionManager.insertToQueue(sqlStmt);
+				connectionManager.insertToQueryQueue(sqlStmt);
 
 			case ADVANCED:
 				// why use advanceSearchFieldValueBundle ? need just a list of
@@ -118,7 +118,7 @@ public class queryHandler
 				query += "GROUP BY Albums.id";
 
 				sqlStmt = new SqlStatement(QueryType.QUERY, query, null, this.searchReq.getId());
-				connectionManager.insertToQueue(sqlStmt);
+				connectionManager.insertToQueryQueue(sqlStmt);
 
 			default:
 				break;
@@ -192,6 +192,6 @@ public class queryHandler
 
 	public void passQueryToConnectionManager()
 	{
-		connectionManager.insertToQueue(sqlStmt);
+		connectionManager.insertToQueryQueue(sqlStmt);
 	}
 }
