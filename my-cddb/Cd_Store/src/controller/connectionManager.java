@@ -11,7 +11,7 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import model.DbConfiguration;
 import model.SqlStatement;
 
-public class connectionManager {
+public class connectionManager implements Runnable{
 
 	private static Executor connThreads;
 	private static LinkedBlockingQueue<Connection> connQueue;
@@ -21,14 +21,16 @@ public class connectionManager {
 	
 	private static boolean timeToQuit = false;
 
-	public static synchronized void insertToQueue (SqlStatement sqlStatment){
+	public static synchronized void insertToQueryQueue (SqlStatement sqlStatment){
 		if (queryQueue == null)
 			queryQueue = new LinkedBlockingQueue<SqlStatement>();
 		
 		try {
 			queryQueue.put(sqlStatment);
 		} catch (InterruptedException e) {
-			e.printStackTrace();
+			MessageDialog.openError(null, "Error", 
+					"Error during connection maneger initialization:\n"+
+					e.getMessage());
 		}
 	}
 		
@@ -39,11 +41,13 @@ public class connectionManager {
 		try {
 			connQueue.put(con);
 		} catch (InterruptedException e) {
-			e.printStackTrace();
+			MessageDialog.openError(null, "Error", 
+					"Error during connection maneger initialization:\n"+
+					e.getMessage());
 		}
 	}
 
-	public static synchronized void start() {
+	public synchronized void run() {
 		//initialize class fields
 		if (connThreads == null)
 			connThreads = Executors.newFixedThreadPool(10);
@@ -57,7 +61,7 @@ public class connectionManager {
 			openConnection();
 		}
 		
-		SqlStatement stmt;
+		SqlStatement stmt = null;
 		while (!timeToQuit){
 			try {
 				stmt = queryQueue.take();
@@ -67,7 +71,9 @@ public class connectionManager {
 				connThreads.execute(con);
 			}
 			catch (InterruptedException e) {
-				e.printStackTrace();
+				MessageDialog.openError(null, "Error",
+						"Connection manager was intrrupted.\n"
+						+e.getMessage());
 			}
 		}
 		
@@ -77,7 +83,9 @@ public class connectionManager {
 				conVector.elementAt(i).close();
 			}
 			catch (SQLException e) {
-				System.err.println("ERROR: Couldn't close connection to SQL-server. " + e);
+				MessageDialog.openError(null, "Error", 
+						"Couldn't close connection #"+i+" of "+numOfConnections+
+						" to SQL-server.\n"+ e.getMessage());
 			}
 		}
 	}
@@ -96,31 +104,30 @@ public class connectionManager {
 		}
 		catch (ClassNotFoundException e)
 		{
-			System.out.println("Unable to load the Oracle JDBC driver..");
+			MessageDialog.openError(null, "Error",
+					"Unable to load the Oracle JDBC driver");
 		}
-		System.out.println("Driver loaded successfully");
-
 
 		// creating the connection
-		System.out.print("Trying to connect.. ");
 		try
 		{
-			String jdbcurl =
+			String jdbcURL =
 				"jdbc:oracle:thin:" + DbConfiguration.getIpAddress()+":" + DbConfiguration.getPort() +
 				"/" + DbConfiguration.getDb();
 			
 			Connection connection =
-				DriverManager.getConnection(jdbcurl, DbConfiguration.getUser(), DbConfiguration.getPassword());
+				DriverManager.getConnection(jdbcURL,
+					DbConfiguration.getUser(), DbConfiguration.getPassword());
 			
 			insertToConnectionQueue(connection);
 			conVector.add(numOfConnections, connection);
 			numOfConnections++;
 		}
-		catch (Exception e)
+		catch (SQLException e)
 		{
-			MessageDialog.openError(null, "Error", "Error occured");
+			MessageDialog.openError(null, "Error",
+				"An error occured while trying to connect to the DB.\n\n"+
+				e.getMessage());
 		}
-		
-		System.out.println("Connected!");
 	}
 }

@@ -1,6 +1,8 @@
 package controller;
 import java.sql.*;
 
+import org.eclipse.jface.dialogs.MessageDialog;
+
 
 import model.Result;
 import model.ResultsQueue;
@@ -38,14 +40,20 @@ public class DbConnector implements Runnable{
 		switch (qt){
 		case INSERT_BULK:
 			if (executeBulkInsert(stmt) == PreparedStatement.EXECUTE_FAILED)
-				System.out.println("Error during bulk insert");
+				MessageDialog.openError(null, "Error",
+						"Error during bulk insert");
 			break;
 		case INSERT_SINGLE:
 			if (executeSingleInsert(stmt) == PreparedStatement.EXECUTE_FAILED)
-				System.out.println("Error during single insert");
+				MessageDialog.openError(null, "Error",
+						"Error during single insert");
 			break;
 		case QUERY:
 			resultSet = executeQuery(stmt);
+			if (resultSet == null) {
+				MessageDialog.openError(null, "Error",
+						"DB access error occurred while executing a query.\n\n");
+			}
 			break;
 		}
 		try {
@@ -53,7 +61,9 @@ public class DbConnector implements Runnable{
 				this.ps.close();
 		}
 		catch (SQLException e) {
-			e.printStackTrace();
+			MessageDialog.openError(null, "Error",
+					"DB access error occurred while closing a statement.\n\n"+
+					e.getMessage());
 		}
 		Result result = new Result(this.stmt.getRequestId(), resultSet);
 		ResultsQueue.addResult(result);
@@ -107,7 +117,6 @@ public class DbConnector implements Runnable{
 			return 1;
 		}
 		catch (SQLException e) {
-			e.printStackTrace();
 			return PreparedStatement.EXECUTE_FAILED;
 		}	
 	}
