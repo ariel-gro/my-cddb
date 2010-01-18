@@ -11,7 +11,7 @@ import model.SqlStatement;
 import model.advanceSearchFieldValueBundle;
 import model.SqlStatement.QueryType;
 
-// ***************** ADD Break AND INSERTtoque *********************//
+// ***************** ADD Break AND INSERTtoqueue put in the end *********************//
 // ***************** Search how to add index automaticaly for users and sales *****************/
 
 public class queryHandler
@@ -33,9 +33,7 @@ public class queryHandler
 		if (searchReq.getTheQueryType() == SqlStatement.QueryType.QUERY)
 		{
 			switch (searchReq.getSearchType()) {
-			// this.searchReq.getMusicGenre() - doing tostring, so need the enum
-			// to be lowercase?
-
+		
 			case TOP_10:
 				switch (searchReq.getTop10Type()) {
 				case LATEST:
@@ -53,21 +51,11 @@ public class queryHandler
 					}
 					break;
 				case MOST_POPULAR:
-					if (searchReq.getMusicGenre() != null)
-					{
-						sqlStmt = new SqlStatement(
-								QueryType.QUERY,
-								"SELECT TOP 10 Albums.* FROM Albums, (SELECT id, COUNT(id) FROM Sales GROUP BY id ORDER BY COUNT(id) DESC) WHERE Sales.id = Albums.id AND Albums.genre = "
-										+ this.searchReq.getMusicGenre().toString(), null, this.searchReq.getId());
-						connectionManager.insertToQueryQueue(sqlStmt);
-					} else
-					{
-						sqlStmt = new SqlStatement(
-								QueryType.QUERY,
-								"SELECT TOP 10 Albums.* FROM Albums, (SELECT id, COUNT(id) FROM Sales GROUP BY id ORDER BY COUNT(id) DESC) WHERE Sales.id = Albums.id",
-								null, this.searchReq.getId());
-						connectionManager.insertToQueryQueue(sqlStmt);
-					}
+					sqlStmt = new SqlStatement(
+							QueryType.QUERY,
+							"SELECT TOP 10 Albums.* FROM Albums, (SELECT id, COUNT(id) FROM Sales GROUP BY id ORDER BY COUNT(id) DESC) WHERE Sales.id = Albums.id",
+							null, this.searchReq.getId());
+					connectionManager.insertToQueryQueue(sqlStmt);
 					break;
 				default:
 					break;
@@ -77,12 +65,8 @@ public class queryHandler
 						+ this.searchReq.getRegularSearchString() + "%') OR (Artists.name LIKE '%" + this.searchReq.getRegularSearchString()
 						+ "%') GROUP BY Albums.id", null, this.searchReq.getId());
 				connectionManager.insertToQueryQueue(sqlStmt);
-
+				break;
 			case ADVANCED:
-				// why use advanceSearchFieldValueBundle ? need just a list of
-				// string in a pre-determined order, and put them instead of the
-				// question marks.
-				// what if some are null?
 				List<advanceSearchFieldValueBundle> params = searchReq.getAdvanceSearchParameters();
 				query += "SELECT Albums.* FROM Albums, Artists, Genres, tracks WHERE ";
 
@@ -114,18 +98,34 @@ public class queryHandler
 						break;
 					}
 				}
-
 				query += "GROUP BY Albums.id";
-
 				sqlStmt = new SqlStatement(QueryType.QUERY, query, null, this.searchReq.getId());
 				connectionManager.insertToQueryQueue(sqlStmt);
-
+			case GET_USERS:
+				sqlStmt = new SqlStatement(QueryType.QUERY, "SELECT * FROM Users", null, this.searchReq.getId());
+				connectionManager.insertToQueryQueue(sqlStmt);
+				break;
 			default:
 				break;
 			}
 		} else if (searchReq.getTheQueryType() == SqlStatement.QueryType.INSERT_SINGLE)
 		{
-			
+			switch (searchReq.getSingleInsertType()){
+			case ADD_USER:
+				String[] fields1 = this.searchReq.getDualFields();
+				String UID1 = UniqueID();
+				sqlStmt = new SqlStatement(QueryType.INSERT_SINGLE, "INSERT INTO Users (UserId, UserName, Password) VALUES (" 
+						+ UID1 + ", " + fields1[0] + ", " + fields1[1] + ")", null, this.searchReq.getId());
+				connectionManager.insertToQueryQueue(sqlStmt);
+				break;
+			case ADD_SALE:
+				String[] fields2 = this.searchReq.getDualFields();
+				String UID2 = UniqueID();
+				sqlStmt = new SqlStatement(QueryType.INSERT_SINGLE, "INSERT INTO Sales (OrderId, UserId, DiscId) VALUES (" 
+						+ UID2 + ", " + fields2[0] + ", " + fields2[1] + ")", null, this.searchReq.getId());
+				connectionManager.insertToQueryQueue(sqlStmt);
+				break;
+			}
 		} else // Insert Bulk
 		{
 			map = searchReq.getMap();
@@ -135,7 +135,6 @@ public class queryHandler
 			switch (searchReq.getMapType()) 
 			{
 			case ALBUMS:
-				
 				while(sizeOfMap>0)
 				{
 					if(sizeOfMap>sizeOfBulk)
@@ -147,41 +146,115 @@ public class queryHandler
 						attributes = new String[sizeOfMap][];                        
 						sizeOfMap = 0;
 					}
-					
 					for (Entry<String, String[]> e : map.entrySet())
 					{
 						attributes[num] = new String[7];
-						
 						attributes[num][0] = e.getKey();
-						
 						String[] values = e.getValue();
 						for (int i = 1; i <= values.length; i++)
 						{
 							attributes[num][i] = values[i-1];
 						}
-		
 						num++;
-						
 						if(num > sizeOfBulk)
 						{
-							// need to send it send it to ariel.
+							sqlStmt = new SqlStatement(QueryType.INSERT_BULK, "INSERT INTO Albums (DiscId, ArtistId, Title, Year, Genre, TotalTime, Price) " +
+									"VALUES (?, ?, ?, ?, ?, ?, "+ (5+Math.random()*10) +")", attributes, this.searchReq.getId());
+							connectionManager.insertToQueryQueue(sqlStmt);
 							num = 0;
-							// NEED TO COMPLETE
 						}
-							
-						
-						
 					}
 				}
 				break;
 			case ARTISTS:
-				
+				while(sizeOfMap>0)
+				{
+					if(sizeOfMap>sizeOfBulk)
+					{
+						attributes = new String[sizeOfBulk][];                        
+						sizeOfMap =  sizeOfMap - sizeOfBulk;                    
+					} else
+					{
+						attributes = new String[sizeOfMap][];                        
+						sizeOfMap = 0;
+					}
+					for (Entry<String, String[]> e : map.entrySet())
+					{
+						attributes[num] = new String[2]; 
+						attributes[num][0] = e.getKey();
+						attributes[num][1] = e.getValue()[0];
+						num++;
+						if(num > sizeOfBulk)
+						{								//fix artistId - send query Select count(*) from Artists
+							sqlStmt = new SqlStatement(QueryType.INSERT_BULK, "INSERT INTO Artists (Name, ArtistId) " +
+									"VALUES (?, ?)", attributes, this.searchReq.getId());
+							connectionManager.insertToQueryQueue(sqlStmt);
+							num = 0;
+							
+						}
+					}
+				}
 				break;
 			case GENRES:
-	
+				while(sizeOfMap>0)
+				{
+					if(sizeOfMap>sizeOfBulk)
+					{
+						attributes = new String[sizeOfBulk][];                        
+						sizeOfMap =  sizeOfMap - sizeOfBulk;                    
+					} else
+					{
+						attributes = new String[sizeOfMap][];                        
+						sizeOfMap = 0;
+					}
+					for (Entry<String, String[]> e : map.entrySet())
+					{
+						attributes[num] = new String[2]; 
+						attributes[num][0] = e.getKey();
+						attributes[num][1] = e.getValue()[0];
+						num++;
+						if(num > sizeOfBulk)
+						{								//fix genreId - send query Select count(*) from Genres
+							sqlStmt = new SqlStatement(QueryType.INSERT_BULK, "INSERT INTO Genres (Genre, GenreId) " +
+									"VALUES (?, ?)", attributes, this.searchReq.getId());
+							connectionManager.insertToQueryQueue(sqlStmt);
+							num = 0;
+							
+						}
+					}
+				}
 				break;
 			case TRACKS:
-	
+				while(sizeOfMap>0)
+				{
+					if(sizeOfMap>sizeOfBulk)
+					{
+						attributes = new String[sizeOfBulk][];                        
+						sizeOfMap =  sizeOfMap - sizeOfBulk;                    
+					} else
+					{
+						attributes = new String[sizeOfMap][];                        
+						sizeOfMap = 0;
+					}
+					for (Entry<String, String[]> e : map.entrySet())
+					{
+						attributes[num] = new String[4]; 
+						attributes[num][0] = e.getKey();
+						String[] values = e.getValue();
+						for (int i = 1; i <= values.length; i++)
+						{
+							attributes[num][i] = values[i-1];
+						}
+						num++;
+						if(num > sizeOfBulk)
+						{						//fix trackId - send query Select count(*) from Tracks 
+							sqlStmt = new SqlStatement(QueryType.INSERT_BULK, "INSERT INTO Tracks (TrackId, DiscID, Number, TrackTitle) " +
+									"VALUES (?, ?, ?, ?)", attributes, this.searchReq.getId());
+							connectionManager.insertToQueryQueue(sqlStmt);
+							num = 0;
+						}
+					}
+				}
 				break;
 			default:
 				break;
@@ -189,9 +262,32 @@ public class queryHandler
 			
 		}
 	}
-
+	//i will use this later
 	public void passQueryToConnectionManager()
 	{
 		connectionManager.insertToQueryQueue(sqlStmt);
 	}
+	
+	public String UniqueID() {
+		  Long current= System.currentTimeMillis();
+		  return current.toString();
+		}
+
+	
+	public void createTables(){
+		//TODO query to get table names, then checking if each table exists. if not, create it.
+		sqlStmt = new SqlStatement(null, "SELECT * FROM all_tables", null, 0);
+		connectionManager.insertToQueryQueue(sqlStmt);
+		String AlbumsTable = "CREATE TABLE Albums(DiscId BIGINT, ArtistId INT, " +
+				"Title VARCHAR(50), Year SMALLINT, Genre VARCHAR(50), TotalTime SMALLINT, Price FLOAT)";
+		String TracksTable = "CREATE TABLE Tracks(TrackId INT, DiscID BIGINT, Number TINYINT, TrackTitle VARCHAR(50))";
+		String ArtistsTable = "CREATE TABLE Artists(Name VARCHAR(50), ArtistId INT)";
+		String GenresTable = "CREATE TABLE Genres(Genre VARCHAR(50), GenreId INT)";
+		String UsersTable = "CREATE TABLE Users(UserId INT, UserName VARCHAR(20), Password VARCHAR(20))";
+		String SalesTable = "CREATE TABLE Sales(OrderId INT, UserId INT, DiscId BIGINT)";
+		
+	      
+	    
+	}
+	
 }
