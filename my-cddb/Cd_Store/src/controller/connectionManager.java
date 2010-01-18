@@ -6,7 +6,7 @@ import java.sql.SQLException;
 import java.util.Vector;
 import java.util.concurrent.*;
 
-import org.eclipse.jface.dialogs.MessageDialog;
+import view.views.View;
 
 import model.DbConfiguration;
 import model.SqlStatement;
@@ -28,8 +28,7 @@ public class connectionManager implements Runnable{
 		try {
 			queryQueue.put(sqlStatment);
 		} catch (InterruptedException e) {
-			MessageDialog.openError(null, "Error", 
-					"Error during connection maneger initialization:\n"+
+			View.displayErroMessage("Error during connection maneger initialization:\n"+
 					e.getMessage());
 		}
 	}
@@ -41,8 +40,7 @@ public class connectionManager implements Runnable{
 		try {
 			connQueue.put(con);
 		} catch (InterruptedException e) {
-			MessageDialog.openError(null, "Error", 
-					"Error during connection maneger initialization:\n"+
+			View.displayErroMessage("Error during connection maneger initialization:\n"+
 					e.getMessage());
 		}
 	}
@@ -71,8 +69,7 @@ public class connectionManager implements Runnable{
 				connThreads.execute(con);
 			}
 			catch (InterruptedException e) {
-				MessageDialog.openError(null, "Error",
-						"Connection manager was intrrupted.\n"
+				View.displayErroMessage("Connection manager was intrrupted.\n"
 						+e.getMessage());
 			}
 		}
@@ -83,8 +80,7 @@ public class connectionManager implements Runnable{
 				conVector.elementAt(i).close();
 			}
 			catch (SQLException e) {
-				MessageDialog.openError(null, "Error", 
-						"Couldn't close connection #"+i+" of "+numOfConnections+
+				View.displayErroMessage("Couldn't close connection #"+i+" of "+numOfConnections+
 						" to SQL-server.\n"+ e.getMessage());
 			}
 		}
@@ -104,8 +100,7 @@ public class connectionManager implements Runnable{
 		}
 		catch (ClassNotFoundException e)
 		{
-			MessageDialog.openError(null, "Error",
-					"Unable to load the Oracle JDBC driver");
+			View.displayErroMessage("Unable to load the Oracle JDBC driver");
 		}
 
 		// creating the connection
@@ -125,9 +120,7 @@ public class connectionManager implements Runnable{
 		}
 		catch (SQLException e)
 		{
-			MessageDialog.openError(null, "Error",
-				"An error occured while trying to connect to the DB.\n\n"+
-				e.getMessage());
+			View.displayErroMessage("An error occured while trying to connect to the DB.\n\n"+e.getMessage());
 		}
 	}
 }
