@@ -7,6 +7,7 @@ import model.ShoppingCartContent;
 import model.TableViewsMap;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.FontDescriptor;
 import org.eclipse.jface.resource.FontRegistry;
 import org.eclipse.jface.resource.JFaceResources;
@@ -27,7 +28,9 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.ProgressBar;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.part.ViewPart;
 
@@ -37,7 +40,7 @@ import view.ICommandIds;
 
 public class View extends ViewPart
 {
-	Composite recordsCoversArea = null;
+	static Composite recordsCoversArea = null;
 	
 	public static final String ID = "Cd_Store.view";
 
@@ -246,6 +249,18 @@ public class View extends ViewPart
 				}
 			}
 		}.start();
+	}
+	
+	public static void displayErroMessage(final String errorMessage)
+	{
+		recordsCoversArea.getDisplay().asyncExec(new Runnable() {
+			public void run()
+			{
+				Shell theShell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
+				MessageDialog.openError(theShell, "Error", errorMessage);
+			}
+		});
+		
 	}
 
 	private void createRecordsArea(Font boldFont, Composite mainRecordsCoversArea, int searchId, Font font)
