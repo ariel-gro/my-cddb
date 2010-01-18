@@ -23,7 +23,7 @@ public class DbConfigDialog extends MessageDialog
 	String password = "";
 
 	public DbConfigDialog(String title, String dialogMessage) {
-		super(null, title, null, dialogMessage, INFORMATION, new String[] { "OK", "Test Connection", "Exit",}, 0);
+		super(null, title, null, dialogMessage, INFORMATION, new String[] { "OK", "Exit",}, 0);
 	}
 
 	protected Control createCustomArea(Composite parent)
@@ -95,12 +95,11 @@ public class DbConfigDialog extends MessageDialog
 		
 		switch (buttonId) {
 		case 0:
-			//connectionManager.start();		
+			connectionManager con = new connectionManager();
+			Thread t = new Thread(con);
+			t.start();	
 			break;
 		case 1:
-			//connectionManager.start();	
-			break;
-		case 2:
 			break;
 		default:
 			break;
