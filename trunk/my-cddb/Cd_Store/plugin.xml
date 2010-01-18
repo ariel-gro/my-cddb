@@ -111,6 +111,13 @@
             id="Cd_Store.view.commands.updateAdvancedQueryView"
             name="updateAdvancedQueryView">
       </command>
+      <command
+            categoryId="Cd_Store.category"
+            defaultHandler="view.commands.OpenDbUpdateWizard"
+            description="Open DB Update Wizard"
+            id="Cd_Store.view.commands.openDbUpdateWizard"
+            name="Open DB Update Wizard">
+      </command>
    </extension>
    <extension
          id="product"
@@ -188,6 +195,11 @@
             <command
                   commandId="Cd_Store.view.commands.openDbImportWizard"
                   label="Import DB"
+                  style="push">
+            </command>
+            <command
+                  commandId="Cd_Store.view.commands.openDbUpdateWizard"
+                  label="Update DB"
                   style="push">
             </command>
          </menu>
