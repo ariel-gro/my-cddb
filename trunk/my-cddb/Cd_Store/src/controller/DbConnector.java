@@ -1,7 +1,6 @@
 package controller;
 import java.sql.*;
-
-import org.eclipse.jface.dialogs.MessageDialog;
+import view.views.View;
 
 
 import model.Result;
@@ -40,19 +39,16 @@ public class DbConnector implements Runnable{
 		switch (qt){
 		case INSERT_BULK:
 			if (executeBulkInsert(stmt) == PreparedStatement.EXECUTE_FAILED)
-				MessageDialog.openError(null, "Error",
-						"Error during bulk insert");
+				View.displayErroMessage("Error during bulk insert");
 			break;
 		case INSERT_SINGLE:
 			if (executeSingleInsert(stmt) == PreparedStatement.EXECUTE_FAILED)
-				MessageDialog.openError(null, "Error",
-						"Error during single insert");
+				View.displayErroMessage("Error during single insert");
 			break;
 		case QUERY:
 			resultSet = executeQuery(stmt);
 			if (resultSet == null) {
-				MessageDialog.openError(null, "Error",
-						"DB access error occurred while executing a query.\n\n");
+				View.displayErroMessage("DB access error occurred while executing a query.\n\n");
 			}
 			break;
 		}
@@ -61,8 +57,7 @@ public class DbConnector implements Runnable{
 				this.ps.close();
 		}
 		catch (SQLException e) {
-			MessageDialog.openError(null, "Error",
-					"DB access error occurred while closing a statement.\n\n"+
+			View.displayErroMessage("DB access error occurred while closing a statement.\n\n"+
 					e.getMessage());
 		}
 		Result result = new Result(this.stmt.getRequestId(), resultSet);
