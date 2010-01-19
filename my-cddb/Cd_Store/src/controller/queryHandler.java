@@ -268,6 +268,14 @@ public class queryHandler
 		connectionManager.insertToQueryQueue(sqlStmt);
 	}
 	
+	public static String[][] getAllArtistsName() {
+		// TODO Auto-generated method stub
+	}
+
+	public static String[][] getAllGenresName() {
+		// TODO Auto-generated method stub
+	}
+	
 	public String UniqueID() {
 		  Long current= System.currentTimeMillis();
 		  return current.toString();

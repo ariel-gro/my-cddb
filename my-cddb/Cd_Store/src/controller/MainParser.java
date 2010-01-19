@@ -21,6 +21,7 @@ import model.SqlStatement.QueryType;
 public class MainParser extends Thread
 {
 	String fileToParse;
+	boolean updateFile = false;
 	private boolean status = true;
 	String dTitle;
 	
@@ -38,10 +39,13 @@ public class MainParser extends Thread
 	private HashMap<String,String[]> genresMap = new HashMap<String,String[]>(3000, 0.9f);
 	private HashMap<String,String[]> artistMap = new HashMap<String,String[]>(100000, 0.8f);
 	private HashMap<String,String[]> tracksMap = new HashMap<String,String[]>(80000, 0.9f);
+	HashMap<String,String> oldArtistMap;
+	HashMap<String,String> oldGenresMap;
 	
-	public MainParser(String fileToParse)
+	public MainParser(String fileToParse, boolean updateFile)
 	{
 		this.fileToParse = fileToParse;
+		this.updateFile = updateFile;
 	}
 
 	public void run()
@@ -50,6 +54,24 @@ public class MainParser extends Thread
 		{
 			file = new File(fileToParse);
 			br = new BufferedReader(new FileReader(file));
+			if (updateFile == true)
+			{
+				this.oldGenresMap = new HashMap<String,String>(3000, 0.9f);
+				this.oldArtistMap = new HashMap<String,String>(100000, 0.8f);
+				
+				String[][] reqGenres = queryHandler.getAllGenresName();
+				String[][] reqArtists = queryHandler.getAllArtistsName();
+				
+				for (int i = 0; i<reqArtists.length; i++)
+				{
+					oldArtistMap.put(reqArtists[i][0], reqArtists[i][1]);
+				}
+				
+				for (int i = 0; i<reqGenres.length; i++)
+				{
+					oldGenresMap.put(reqGenres[i][0], reqGenres[i][1]);
+				}
+			}
 
 			// Read the file
 			int track_index = 0;
@@ -215,18 +237,33 @@ public class MainParser extends Thread
 		{
 			if(artistMap.containsKey(currentDisk.getArtist()) == false)
 			{
-				artistId = artistMap.size()+"";
-				artistMap.put(currentDisk.getArtist(), new String[]{artistId+""});
+				if (this.updateFile == false || this.oldArtistMap.containsKey(currentDisk.getArtist()) == false)
+				{
+					artistId = artistMap.size()+"";
+					artistMap.put(currentDisk.getArtist(), new String[]{artistId+""});
+				}
+				else
+				{
+					artistId = oldArtistMap.get(currentDisk.getArtist())+"";
+				}
 			}
 			else
 			{
+				
 				artistId = artistMap.get(currentDisk.getArtist())+"";
 			}
 			
 			if(genresMap.containsKey(currentDisk.getGenre()) == false)
 			{
-				genreId = genresMap.size()+"";
-				genresMap.put(currentDisk.getGenre(), new String[]{genreId+""});
+				if (this.updateFile == false || this.oldGenresMap.containsKey(currentDisk.getGenre()) == false)
+				{
+					genreId = genresMap.size()+"";
+					genresMap.put(currentDisk.getGenre(), new String[]{genreId+""});
+				}
+				else
+				{
+					genreId = oldGenresMap.get(currentDisk.getGenre())+"";
+				}
 			}
 			else
 			{
@@ -317,17 +354,17 @@ public class MainParser extends Thread
 		return status;
 	}
 	
-	public static void main (String args[])
-	{
-		MainParser myParser = new MainParser("C:\\FreeDB_Files_Temp\\allDisks.txt");
-		myParser.start();
-		
-		try
-		{
-			myParser.join();
-		} catch (InterruptedException e)
-		{
-			e.printStackTrace();
-		}
-	}
+//	public static void main (String args[])
+//	{
+//		MainParser myParser = new MainParser("C:\\FreeDB_Files_Temp\\allDisks.txt");
+//		myParser.start();
+//		
+//		try
+//		{
+//			myParser.join();
+//		} catch (InterruptedException e)
+//		{
+//			e.printStackTrace();
+//		}
+//	}
 }
