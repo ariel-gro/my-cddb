@@ -237,7 +237,7 @@ public class QueryView extends ViewPart
 				{
 					FindAndDownloadCdImage find = new FindAndDownloadCdImage("\"" + temp[1] + "\" + \"" +  temp[2]  + "\"", temp[0] + ".jpg");
 					find.start();	
-					try{ find.join(); } catch (InterruptedException e){}
+					try{ find.join(4000); } catch (InterruptedException e){}
 				}
 	
 				Disk selectedDisk;

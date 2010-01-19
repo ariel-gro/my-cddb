@@ -1,11 +1,18 @@
 package view.views;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.util.Collections;
+
 import model.Disk;
 import model.MainViewSearchId;
 import model.SearchParameters;
 import model.ShoppingCartContent;
 import model.TableViewsMap;
 
+import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.FontDescriptor;
@@ -33,6 +40,7 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.part.ViewPart;
+import org.osgi.framework.Bundle;
 
 import view.Activator;
 import view.FindAndDownloadCdImage;
@@ -287,16 +295,16 @@ public class View extends ViewPart
 		layout.numColumns = 5;	
 		layout.makeColumnsEqualWidth = true;
 		recordsCoversArea.setLayout(layout);
-		recordsCoversArea.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, true));
+		recordsCoversArea.setLayoutData(new GridData(GridData.FILL_BOTH));
 		
 		for (int i = 0; i < dummyDisks.length; i++) 
 		{
 			Composite recordComposite = new Composite(recordsCoversArea, SWT.NONE);
 			layout = new GridLayout();
 			recordComposite.setLayout(layout);
-			recordComposite.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, true));
+			recordComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
 			
-			Label lab = new Label(recordComposite, SWT.CENTER);
+			Label lab = new Label(recordComposite, SWT.NONE);
 			Image image;
 			try
 			{
@@ -308,6 +316,7 @@ public class View extends ViewPart
 			}
 				
 			lab.setImage(resize(image, 110, 110));
+			lab.setLayoutData(new GridData(GridData.FILL_BOTH));
 			
 			if(searchId != -1)
 			{
@@ -348,7 +357,7 @@ public class View extends ViewPart
 				recordLink.setText("<a>" + dummyDisks[i].getTitle() + "</a>");
 				recordLink.setFont(boldFont);
 				recordLink.setData(dummyDisks[i]);
-				recordLink.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, true));
+				recordLink.setLayoutData(new GridData(GridData.FILL));;
 				recordLink.addSelectionListener(new SelectionAdapter() {    
 					public void widgetSelected(SelectionEvent e) 
 					{			
@@ -372,11 +381,15 @@ public class View extends ViewPart
 				});	
 			}
 			
-			recordComposite.layout();
-		}
-
-		mainRecordsCoversArea.layout();
+			//recordComposite.pack();
+			recordComposite.layout();	
+		}	
+		
 		recordsCoversArea.layout();
+		//recordsCoversArea.pack();
+		
+		mainRecordsCoversArea.layout();
+		//mainRecordsCoversArea.pack();
 	}
 
 	private Image resize(Image image, int width, int height)
@@ -393,7 +406,20 @@ public class View extends ViewPart
 
 	private Disk[] getDisks(int searchId)
 	{
+		URL fileUrl = null;
 		Disk[] myDisks = new Disk[10];
+		
+		Bundle bundle = Activator.getDefault().getBundle();
+		Path path = new Path("album covers/empty_disk.jpg");
+		URL localUrl = FileLocator.find(bundle, path, Collections.EMPTY_MAP);	
+		try 
+		{
+			fileUrl = FileLocator.toFileURL(localUrl);
+		} catch (IOException e) {}
+		String localPath = fileUrl.getPath();
+		localPath = localPath.substring(1);
+		localPath = localPath.substring(0, localPath.lastIndexOf("/"));
+		final String localPathFinal = localPath;
 		
 		if(searchId == -1)
 		{
@@ -416,14 +442,17 @@ public class View extends ViewPart
 			{
 				try
 				{
-					searchImage[i].join();
+					searchImage[i].join(700);
 				} catch (InterruptedException e)
 				{}
 			}	
 			
 			for (int i = 0; i < 10; i++) 
 			{
-				myDisks[i] = new Disk(allDisksAsString[i][0], allDisksAsString[i][2], allDisksAsString[i][1], allDisksAsString[i][4], allDisksAsString[i][3], allDisksAsString[i][5], allDisksAsString[i][6], "album covers/" + allDisksAsString[i][0] + ".jpg", null);
+				if(new File(localPathFinal + "/" + allDisksAsString[i][0] + ".jpg").exists())		
+					myDisks[i] = new Disk(allDisksAsString[i][0], allDisksAsString[i][2], allDisksAsString[i][1], allDisksAsString[i][4], allDisksAsString[i][3], allDisksAsString[i][5], allDisksAsString[i][6], "album covers/" + allDisksAsString[i][0] + ".jpg", null);
+				else
+					myDisks[i] = new Disk(allDisksAsString[i][0], allDisksAsString[i][2], allDisksAsString[i][1], allDisksAsString[i][4], allDisksAsString[i][3], allDisksAsString[i][5], allDisksAsString[i][6], "album covers\\empty_disk.jpg", null);				
 			}
 		}
 			
