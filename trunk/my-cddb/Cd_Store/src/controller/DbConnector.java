@@ -38,20 +38,28 @@ public class DbConnector implements Runnable{
 		
 		switch (qt){
 		case INSERT_BULK:
-			if (executeBulkInsert(stmt) == PreparedStatement.EXECUTE_FAILED)
+			if (executeBulkInsert(stmt) == PreparedStatement.EXECUTE_FAILED) {
 				View.displayErroMessage("Error during bulk insert");
+			}
 			break;
 		case INSERT_SINGLE:
-			if (executeSingleInsert(stmt) == PreparedStatement.EXECUTE_FAILED)
+			if (executeSingleInsert(stmt) == PreparedStatement.EXECUTE_FAILED) {
 				View.displayErroMessage("Error during single insert");
-			break;
+			}
+			return;
 		case QUERY:
 			resultSet = executeQuery(stmt);
 			if (resultSet == null) {
 				View.displayErroMessage("DB access error occurred while executing a query.\n\n");
 			}
+			else {
+				Result result = new Result(this.stmt.getRequestId(), resultSet);
+				ResultsQueue.addResult(result);
+			}
 			break;
 		}
+		
+		//close ps and give connection back to connectionManager
 		try {
 			if (!this.ps.isClosed())
 				this.ps.close();
@@ -60,11 +68,15 @@ public class DbConnector implements Runnable{
 			View.displayErroMessage("DB access error occurred while closing a statement.\n\n"+
 					e.getMessage());
 		}
-		Result result = new Result(this.stmt.getRequestId(), resultSet);
-		ResultsQueue.addResult(result);
+		giveBackConnection();
+		
+	}
+
+	private synchronized void giveBackConnection() {
 		connectionManager.insertToConnectionQueue(this.connection);
 		this.connection = null;
 	}
+	
 
 	private synchronized ResultSet executeQuery(SqlStatement stmt) {
 		try
