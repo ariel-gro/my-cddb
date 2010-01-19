@@ -13,9 +13,10 @@ import model.SqlStatement;
 
 public class connectionManager implements Runnable{
 
-	private static Executor connThreads;
-	private static LinkedBlockingQueue<Connection> connQueue;
-	private static Vector<Connection> conVector;
+	private static Executor connThreads = null;
+	private static final int numOfThreads = 10;
+	private static LinkedBlockingQueue<Connection> connQueue = null;
+	private static Vector<Connection> conVector = null;
 	private static LinkedBlockingQueue<SqlStatement> queryQueue = null;
 	private static int numOfConnections = 0;
 	
@@ -30,6 +31,8 @@ public class connectionManager implements Runnable{
 		} catch (InterruptedException e) {
 			View.displayErroMessage("Error during connection maneger initialization:\n"+
 					e.getMessage());
+			timeToQuit = true;
+			return;
 		}
 	}
 		
@@ -42,20 +45,29 @@ public class connectionManager implements Runnable{
 		} catch (InterruptedException e) {
 			View.displayErroMessage("Error during connection maneger initialization:\n"+
 					e.getMessage());
+			timeToQuit = true;
+			return;
 		}
+	}
+	
+	private static void insertToConVector(int index, Connection con) {
+		if (conVector == null)
+			conVector = new Vector<Connection>(numOfThreads);
+		
+		conVector.add(index, con);
 	}
 
 	public synchronized void run() {
 		//initialize class fields
 		if (connThreads == null)
-			connThreads = Executors.newFixedThreadPool(10);
+			connThreads = Executors.newFixedThreadPool(numOfThreads);
 
 		if (queryQueue == null)
 			queryQueue = new LinkedBlockingQueue<SqlStatement>();
 
 		if (connQueue == null){
 			connQueue = new LinkedBlockingQueue<Connection>();
-			conVector = new Vector<Connection>(10);
+			conVector = new Vector<Connection>(numOfThreads);
 			openConnection();
 		}
 		
@@ -63,7 +75,7 @@ public class connectionManager implements Runnable{
 		while (!timeToQuit){
 			try {
 				stmt = queryQueue.take();
-				if ((numOfConnections < 10) && connQueue.isEmpty())
+				if ((numOfConnections < numOfThreads) && connQueue.isEmpty())
 					openConnection();
 				DbConnector con = new DbConnector(connQueue.take(), stmt);
 				connThreads.execute(con);
@@ -71,6 +83,7 @@ public class connectionManager implements Runnable{
 			catch (InterruptedException e) {
 				View.displayErroMessage("Connection manager was intrrupted.\n"
 						+e.getMessage());
+				return;
 			}
 		}
 		
@@ -96,11 +109,14 @@ public class connectionManager implements Runnable{
 		// loading the driver
 		try
 		{
-			Class.forName("oracle.jdbc.driver.OracleDriver");
+			Class.forName("oracle.jdbc.OracleDriver");
 		}
 		catch (ClassNotFoundException e)
 		{
 			View.displayErroMessage("Unable to load the Oracle JDBC driver");
+			e.printStackTrace();
+			timeToQuit = true;
+			return;
 		}
 
 		// creating the connection
@@ -115,12 +131,56 @@ public class connectionManager implements Runnable{
 					DbConfiguration.getUser(), DbConfiguration.getPassword());
 			
 			insertToConnectionQueue(connection);
-			conVector.add(numOfConnections, connection);
+			insertToConVector(numOfConnections, connection);
 			numOfConnections++;
 		}
 		catch (SQLException e)
 		{
 			View.displayErroMessage("An error occured while trying to connect to the DB.\n\n"+e.getMessage());
+			e.printStackTrace();
+			timeToQuit = true;
+			return;
 		}
 	}
+	
+//	public static void main (String[] args) {
+//		// loading the driver
+//		Class cc = null;
+//		Connection connection = null;
+//		try
+//		{
+//			cc = Class.forName("oracle.jdbc.OracleDriver");
+//		}
+//		catch (ClassNotFoundException e)
+//		{
+//			System.out.println("Unable to load the Oracle JDBC driver");
+//			timeToQuit = true;
+//		}
+//		
+//		System.out.println(cc.toString());
+//
+//		// creating the connection
+//		boolean closed;
+//		try
+//		{
+//			connection =
+//				DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:XE","system","12341234");
+//			
+//			closed = connection.isClosed();
+//			System.out.println(connection.isClosed());
+//			insertToConnectionQueue(connection);
+//			insertToConVector(numOfConnections, connection);
+//			numOfConnections++;
+//			if (!connection.isClosed())
+//				connection.close();
+//			closed = connection.isClosed();
+//			System.out.println(closed);
+//		}
+//		catch (SQLException e)
+//		{
+//			System.out.println("An error occured while trying to connect to the DB.\n\n"+e.getMessage());
+//			timeToQuit = true;
+//		}
+//		
+//	}
 }
