@@ -1,6 +1,7 @@
 package controller;
 
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -12,6 +13,7 @@ import java.util.Map.Entry;
 
 import view.views.View;
 
+import model.DbConfiguration;
 import model.RequestToQueryHandler;
 import model.ResultTableContentProvider;
 import model.ResultTableLabelProvider;
@@ -288,6 +290,36 @@ public class queryHandler
 								"SELECT name, id FROM Artists",
 								null, 
 								-1);
+		
+		// loading the driver
+		try
+		{
+			Class.forName("oracle.jdbc.OracleDriver");
+		}
+		catch (ClassNotFoundException e)
+		{
+			View.displayErroMessage("Unable to load the Oracle JDBC driver");
+			e.printStackTrace();
+			return null;
+		}
+		
+		// creating the connection
+		try
+		{
+			String jdbcURL =
+				"jdbc:oracle:thin:@" + DbConfiguration.getIpAddress()+":" + DbConfiguration.getPort() +
+				"/" + DbConfiguration.getDb();
+			
+			connection =
+				DriverManager.getConnection(jdbcURL,
+					DbConfiguration.getUser(), DbConfiguration.getPassword());
+		}
+		catch (SQLException e)
+		{
+			View.displayErroMessage("An error occured while trying to connect to the DB.\n\n"+e.getMessage());
+			e.printStackTrace();
+			return null;
+		}
 
 		try
 		{
@@ -314,31 +346,7 @@ public class queryHandler
 
 	public static String[][] getAllGenresName() 
 	{
-		String[][] results = null;;
 		
-		// send request here
-		
-		new Thread() {
-			public void run()
-			{
-				while (true)
-				{
-				 // wait for result here
-					
-					
-					
-					try
-					{
-						Thread.sleep(200);
-					} catch (InterruptedException e)
-					{}
-				}
-			}
-		}.start();
-		
-		//convert to String[][]
-		
-		return results;
 	}
 	
 	public String UniqueID() {
