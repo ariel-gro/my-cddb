@@ -279,70 +279,7 @@ public class queryHandler
 		connectionManager.insertToQueryQueue(sqlStmt);
 	}
 	
-	public static String[][] getStringResults(String table)
-	{
-		String[][] results = new String[2][];
-		Connection connection;	// DB connection
-		PreparedStatement ps;
-		ResultSet queryResult;
-		SqlStatement stmt = new SqlStatement(
-								QueryType.QUERY,
-								"SELECT name, id FROM " + table,
-								null, 
-								-1);
-		
-		// loading the driver
-		try
-		{
-			Class.forName("oracle.jdbc.OracleDriver");
-		}
-		catch (ClassNotFoundException e)
-		{
-			View.displayErroMessage("Unable to load the Oracle JDBC driver");
-			e.printStackTrace();
-			return null;
-		}
-		
-		// creating the connection
-		try
-		{
-			String jdbcURL =
-				"jdbc:oracle:thin:@" + DbConfiguration.getIpAddress()+":" + DbConfiguration.getPort() +
-				"/" + DbConfiguration.getDb();
-			
-			connection =
-				DriverManager.getConnection(jdbcURL,
-					DbConfiguration.getUser(), DbConfiguration.getPassword());
-		}
-		catch (SQLException e)
-		{
-			View.displayErroMessage("An error occured while trying to connect to the DB.\n\n"+e.getMessage());
-			e.printStackTrace();
-			return null;
-		}
-
-		try
-		{
-			ps = connection.prepareStatement(stmt.getStmt());
-			queryResult = ps.executeQuery();
-		}
-		catch (SQLException e)
-		{
-			View.displayErroMessage("error retriving artists name and id from DB.\n"
-					+e.getMessage());
-			return null;
-		}
-		
-		try {
-			results[0] = (String[]) queryResult.getArray(1).getArray();
-			results[1] = (String[]) queryResult.getArray(2).getArray();
-		} catch (SQLException e) {
-			View.displayErroMessage("error retriving artists name and id from DB.\n"
-					+e.getMessage());
-		}
-		
-		return results;
-	}
+	
 	
 	public String UniqueID() {
 		  Long current= System.currentTimeMillis();
