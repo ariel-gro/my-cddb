@@ -105,7 +105,6 @@ public class connectionManager implements Runnable{
 	
 	private static synchronized void openConnection()
 	{
-
 		// loading the driver
 		try
 		{
@@ -118,12 +117,12 @@ public class connectionManager implements Runnable{
 			timeToQuit = true;
 			return;
 		}
-
+		
 		// creating the connection
 		try
 		{
 			String jdbcURL =
-				"jdbc:oracle:thin:" + DbConfiguration.getIpAddress()+":" + DbConfiguration.getPort() +
+				"jdbc:oracle:thin:@" + DbConfiguration.getIpAddress()+":" + DbConfiguration.getPort() +
 				"/" + DbConfiguration.getDb();
 			
 			Connection connection =
@@ -143,6 +142,8 @@ public class connectionManager implements Runnable{
 		}
 	}
 	
+//	for testing purposes only
+//
 //	public static void main (String[] args) {
 //		// loading the driver
 //		Class cc = null;
