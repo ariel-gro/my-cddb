@@ -7,7 +7,10 @@ import java.util.Set;
 import java.util.Map.Entry;
 
 import model.RequestToQueryHandler;
+import model.ResultTableContentProvider;
+import model.ResultTableLabelProvider;
 import model.SqlStatement;
+import model.TableViewsMap;
 import model.advanceSearchFieldValueBundle;
 import model.SqlStatement.QueryType;
 
@@ -268,12 +271,62 @@ public class queryHandler
 		connectionManager.insertToQueryQueue(sqlStmt);
 	}
 	
-	public static String[][] getAllArtistsName() {
-		// TODO Auto-generated method stub
+	public static String[][] getAllArtistsName() 
+	{
+		String[][] results = null;;
+		
+		// send request here
+		
+		new Thread() {
+			public void run()
+			{
+				while (true)
+				{
+				 // wait for result here
+					
+					
+					
+					try
+					{
+						Thread.sleep(200);
+					} catch (InterruptedException e)
+					{}
+				}
+			}
+		}.start();
+		
+		//convert to String[][]
+		
+		return results;
 	}
 
-	public static String[][] getAllGenresName() {
-		// TODO Auto-generated method stub
+	public static String[][] getAllGenresName() 
+	{
+		String[][] results = null;;
+		
+		// send request here
+		
+		new Thread() {
+			public void run()
+			{
+				while (true)
+				{
+				 // wait for result here
+					
+					
+					
+					try
+					{
+						Thread.sleep(200);
+					} catch (InterruptedException e)
+					{}
+				}
+			}
+		}.start();
+		
+		//convert to String[][]
+		
+		return results;
 	}
 	
 	public String UniqueID() {
