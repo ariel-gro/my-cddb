@@ -10,10 +10,19 @@ import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.HashMap;
+
+import view.views.View;
+import model.DbConfiguration;
 import model.Disk;
 import model.RequestToQueryHandler;
 import model.SearchesPriorityQueue;
+import model.SqlStatement;
 import model.RequestToQueryHandler.MapType;
 import model.RequestToQueryHandler.Priority;
 import model.SqlStatement.QueryType;
@@ -59,8 +68,8 @@ public class MainParser extends Thread
 				this.oldGenresMap = new HashMap<String,String>(3000, 0.9f);
 				this.oldArtistMap = new HashMap<String,String>(100000, 0.8f);
 				
-				String[][] reqGenres = queryHandler.getStringResults("Genres");
-				String[][] reqArtists = queryHandler.getStringResults("Artists");
+				String[][] reqGenres = getStringResults("Genres");
+				String[][] reqArtists = getStringResults("Artists");
 				
 				for (int i = 0; i<reqArtists.length; i++)
 				{
@@ -352,6 +361,71 @@ public class MainParser extends Thread
 	public synchronized boolean getStatus()
 	{
 		return status;
+	}
+	
+	private String[][] getStringResults(String table)
+	{
+		String[][] results = new String[2][];
+		Connection connection;	// DB connection
+		PreparedStatement ps;
+		ResultSet queryResult;
+		SqlStatement stmt = new SqlStatement(
+								QueryType.QUERY,
+								"SELECT name, id FROM " + table,
+								null, 
+								-1);
+		
+		// loading the driver
+		try
+		{
+			Class.forName("oracle.jdbc.OracleDriver");
+		}
+		catch (ClassNotFoundException e)
+		{
+			View.displayErroMessage("Unable to load the Oracle JDBC driver");
+			e.printStackTrace();
+			return null;
+		}
+		
+		// creating the connection
+		try
+		{
+			String jdbcURL =
+				"jdbc:oracle:thin:@" + DbConfiguration.getIpAddress()+":" + DbConfiguration.getPort() +
+				"/" + DbConfiguration.getDb();
+			
+			connection =
+				DriverManager.getConnection(jdbcURL,
+					DbConfiguration.getUser(), DbConfiguration.getPassword());
+		}
+		catch (SQLException e)
+		{
+			View.displayErroMessage("An error occured while trying to connect to the DB.\n\n"+e.getMessage());
+			e.printStackTrace();
+			return null;
+		}
+
+		try
+		{
+			ps = connection.prepareStatement(stmt.getStmt());
+			queryResult = ps.executeQuery();
+		}
+		catch (SQLException e)
+		{
+			View.displayErroMessage("error retriving artists name and id from DB.\n"
+					+e.getMessage());
+			return null;
+		}
+		
+		try {
+			results[0] = (String[]) queryResult.getArray(1).getArray();
+			results[1] = (String[]) queryResult.getArray(2).getArray();
+		} catch (SQLException e) {
+			View.displayErroMessage("error retriving artists name and id from DB.\n"
+					+e.getMessage());
+		}
+		
+		return results;
 	}
 	
 //	public static void main (String args[])
