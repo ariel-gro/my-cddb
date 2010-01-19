@@ -68,8 +68,10 @@ public class MainParser extends Thread
 				this.oldGenresMap = new HashMap<String,String>(3000, 0.9f);
 				this.oldArtistMap = new HashMap<String,String>(100000, 0.8f);
 				
-				String[][] reqGenres = getStringResults("Genres");
-				String[][] reqArtists = getStringResults("Artists");
+				String[][] reqGenres = getStringResults("SELECT genre, id FROM Genre");
+				String[][] reqArtists = getStringResults("SELECT name, id FROM Artists");
+				if (reqArtists == null || reqGenres == null)
+					return;
 				
 				for (int i = 0; i<reqArtists.length; i++)
 				{
@@ -175,10 +177,10 @@ public class MainParser extends Thread
 
 			updateMaps(currentDisk);
 			
-			System.out.println("Num Of Disks: " + diskMap.size());
-			System.out.println("Num Of Artists: " + artistMap.size());
-			System.out.println("Num Of Genres: " + genresMap.size());
-			System.out.println("Num Of Tracks: " + tracksMap.size());
+//			System.out.println("Num Of Disks: " + diskMap.size());
+//			System.out.println("Num Of Artists: " + artistMap.size());
+//			System.out.println("Num Of Genres: " + genresMap.size());
+//			System.out.println("Num Of Tracks: " + tracksMap.size());
 
 			sendDiskBulk();
 			sendTracksBulk();
@@ -363,17 +365,12 @@ public class MainParser extends Thread
 		return status;
 	}
 	
-	private String[][] getStringResults(String table)
+	private String[][] getStringResults(String query)
 	{
 		String[][] results = new String[2][];
 		Connection connection;	// DB connection
 		PreparedStatement ps;
 		ResultSet queryResult;
-		SqlStatement stmt = new SqlStatement(
-								QueryType.QUERY,
-								"SELECT name, id FROM " + table,
-								null, 
-								-1);
 		
 		// loading the driver
 		try
@@ -401,13 +398,12 @@ public class MainParser extends Thread
 		catch (SQLException e)
 		{
 			View.displayErroMessage("An error occured while trying to connect to the DB.\n\n"+e.getMessage());
-			e.printStackTrace();
 			return null;
 		}
 
 		try
 		{
-			ps = connection.prepareStatement(stmt.getStmt());
+			ps = connection.prepareStatement(query);
 			queryResult = ps.executeQuery();
 		}
 		catch (SQLException e)
