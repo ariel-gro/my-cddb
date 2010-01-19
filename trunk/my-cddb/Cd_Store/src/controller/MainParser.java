@@ -59,8 +59,8 @@ public class MainParser extends Thread
 				this.oldGenresMap = new HashMap<String,String>(3000, 0.9f);
 				this.oldArtistMap = new HashMap<String,String>(100000, 0.8f);
 				
-				String[][] reqGenres = queryHandler.getAllGenresName();
-				String[][] reqArtists = queryHandler.getAllArtistsName();
+				String[][] reqGenres = queryHandler.getStringResults("Genres");
+				String[][] reqArtists = queryHandler.getStringResults("Artists");
 				
 				for (int i = 0; i<reqArtists.length; i++)
 				{

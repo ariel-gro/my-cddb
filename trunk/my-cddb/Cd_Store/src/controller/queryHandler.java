@@ -279,7 +279,7 @@ public class queryHandler
 		connectionManager.insertToQueryQueue(sqlStmt);
 	}
 	
-	public static String[][] getAllArtistsName() 
+	public static String[][] getStringResults(String table)
 	{
 		String[][] results = new String[2][];
 		Connection connection;	// DB connection
@@ -287,7 +287,7 @@ public class queryHandler
 		ResultSet queryResult;
 		SqlStatement stmt = new SqlStatement(
 								QueryType.QUERY,
-								"SELECT name, id FROM Artists",
+								"SELECT name, id FROM " + table,
 								null, 
 								-1);
 		
@@ -340,13 +340,8 @@ public class queryHandler
 			View.displayErroMessage("error retriving artists name and id from DB.\n"
 					+e.getMessage());
 		}
-
-		return results;
-	}
-
-	public static String[][] getAllGenresName() 
-	{
 		
+		return results;
 	}
 	
 	public String UniqueID() {
