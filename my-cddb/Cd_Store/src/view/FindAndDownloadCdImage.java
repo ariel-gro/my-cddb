@@ -42,7 +42,9 @@ public class FindAndDownloadCdImage extends Thread
 		URL localUrl = FileLocator.find(bundle, path, Collections.EMPTY_MAP);	
 		try {
 			fileUrl = FileLocator.toFileURL(localUrl);
-		} catch (IOException e) {}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 
 		try 
 		{
@@ -51,8 +53,7 @@ public class FindAndDownloadCdImage extends Thread
 			String actualPath = fileUrl.getPath();
 			actualPath = actualPath.substring(1);
 			actualPath = actualPath.substring(0, actualPath.lastIndexOf("/"));
-			
-			
+
 			fos = new FileOutputStream(actualPath + "/" + localFileName);
 			
 			int oneChar, count = 0;
@@ -62,7 +63,9 @@ public class FindAndDownloadCdImage extends Thread
 			}
 			is.close();
 			fos.close();
-		} catch (Exception e) {}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	public static URL getImageUrl(String urlToSearchString)
@@ -80,15 +83,20 @@ public class FindAndDownloadCdImage extends Thread
 				image = m.group(1);
 				imageUrl = new URL(image);
 			}
-		} catch (Exception e) {}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 
 		return imageUrl;
 	}
 
 	public static String getURLContent(String urlToSearchString) throws IOException
 	{
+		//System.out.println("Getting url content");
 		URL url = new URL(urlToSearchString);
+		//System.out.println("Openning connection");
 		URLConnection conn = url.openConnection();
+		//System.out.println("Getting encoding");
 		String encoding = conn.getContentEncoding();
 		if (encoding == null)
 			encoding = "ISO-8859-1";
@@ -97,6 +105,7 @@ public class FindAndDownloadCdImage extends Thread
 		StringBuilder sb = new StringBuilder(16384);
 		try 
 		{
+			//System.out.println("Reading content");
 			String line;
 			while ((line = br.readLine()) != null) {
 				sb.append(line);
