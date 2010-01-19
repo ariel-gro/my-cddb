@@ -1,10 +1,16 @@
 package controller;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.Map.Entry;
+
+import view.views.View;
 
 import model.RequestToQueryHandler;
 import model.ResultTableContentProvider;
@@ -273,30 +279,36 @@ public class queryHandler
 	
 	public static String[][] getAllArtistsName() 
 	{
-		String[][] results = null;;
+		String[][] results = new String[2][];
+		Connection connection;	// DB connection
+		PreparedStatement ps;
+		ResultSet queryResult;
+		SqlStatement stmt = new SqlStatement(
+								QueryType.QUERY,
+								"SELECT name, id FROM Artists",
+								null, 
+								-1);
+
+		try
+		{
+			ps = connection.prepareStatement(stmt.getStmt());
+			queryResult = ps.executeQuery();
+		}
+		catch (SQLException e)
+		{
+			View.displayErroMessage("error retriving artists name and id from DB.\n"
+					+e.getMessage());
+			return null;
+		}
 		
-		// send request here
-		
-		new Thread() {
-			public void run()
-			{
-				while (true)
-				{
-				 // wait for result here
-					
-					
-					
-					try
-					{
-						Thread.sleep(200);
-					} catch (InterruptedException e)
-					{}
-				}
-			}
-		}.start();
-		
-		//convert to String[][]
-		
+		try {
+			results[0] = (String[]) queryResult.getArray(1).getArray();
+			results[1] = (String[]) queryResult.getArray(2).getArray();
+		} catch (SQLException e) {
+			View.displayErroMessage("error retriving artists name and id from DB.\n"
+					+e.getMessage());
+		}
+
 		return results;
 	}
 
