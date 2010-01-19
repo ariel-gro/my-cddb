@@ -113,7 +113,6 @@ public class connectionManager implements Runnable{
 		catch (ClassNotFoundException e)
 		{
 			View.displayErroMessage("Unable to load the Oracle JDBC driver");
-			e.printStackTrace();
 			timeToQuit = true;
 			return;
 		}
@@ -136,7 +135,6 @@ public class connectionManager implements Runnable{
 		catch (SQLException e)
 		{
 			View.displayErroMessage("An error occured while trying to connect to the DB.\n\n"+e.getMessage());
-			e.printStackTrace();
 			timeToQuit = true;
 			return;
 		}
