@@ -14,16 +14,18 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
 import controller.connectionManager;
+import controller.queryHandler;
 
 public class DbConfigDialog extends MessageDialog
 {
 	String serverIp = "";
 	String serverPortString = "";
+	String dbNameString = "";
 	String user = "";
 	String password = "";
 
 	public DbConfigDialog(String title, String dialogMessage) {
-		super(null, title, null, dialogMessage, INFORMATION, new String[] { "OK", "Exit",}, 0);
+		super(null, title, null, dialogMessage, INFORMATION, new String[] { "Connect", "Exit",}, 0);
 	}
 
 	protected Control createCustomArea(Composite parent)
@@ -55,6 +57,17 @@ public class DbConfigDialog extends MessageDialog
 		});
 		
 		label = new Label(composite, SWT.NULL);
+		label.setText("DB Name:");
+		final Text dbName = new Text(composite, SWT.BORDER);
+		dbName.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		dbName.addModifyListener(new ModifyListener() {
+			public void modifyText(ModifyEvent e)
+			{
+				dbNameString = dbName.getText();
+			}
+		});
+		
+		label = new Label(composite, SWT.NULL);
 		label.setText("User:");	
 		final Text userText = new Text(composite, SWT.BORDER);
 		userText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -81,6 +94,8 @@ public class DbConfigDialog extends MessageDialog
 			serverIpText.setText(DbConfiguration.getIpAddress());
 		if(DbConfiguration.getPort() != 0)
 			serverPort.setText(DbConfiguration.getPort() + "");
+		if(DbConfiguration.getDb().equals("") == false)
+			dbName.setText(DbConfiguration.getDb());
 		if(DbConfiguration.getUser().equals("") == false)
 			userText.setText(DbConfiguration.getUser());
 		if(DbConfiguration.getPassword().equals("") == false)
@@ -96,8 +111,11 @@ public class DbConfigDialog extends MessageDialog
 		switch (buttonId) {
 		case 0:
 			connectionManager con = new connectionManager();
-			Thread t = new Thread(con);
-			t.start();	
+			Thread conT = new Thread(con);
+			conT.start();
+			queryHandler query = new queryHandler();
+			Thread queryT = new Thread(query);
+			queryT.start();
 			break;
 		case 1:
 			break;
