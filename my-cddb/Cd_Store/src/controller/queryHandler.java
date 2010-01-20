@@ -20,8 +20,7 @@ import model.TableViewsMap;
 import model.advanceSearchFieldValueBundle;
 import model.SqlStatement.QueryType;
 
-// ***************** ADD Break AND INSERTtoqueue put in the end *********************//
-// ***************** Search how to add index automaticaly for users and sales *****************/
+
 
 public class queryHandler implements Runnable
 {
@@ -51,18 +50,36 @@ public class queryHandler implements Runnable
 		return current.toString();
 	}
 
-
+	//this method checks if tables exist i nthe DB. if not - creates all tables.
 	public synchronized void createTables(){
 		//TODO query to get table names, then checking if each table exists. if not, create it.
-		SqlStatement sqlStmt = new SqlStatement(null, "SELECT * FROM all_tables", null, 0);
+		SqlStatement sqlStmt = new SqlStatement(null, "SELECT table_name FROM all_tables ORDER BY table_name", null, 0);
 		connectionManager.insertToQueryQueue(sqlStmt);
-		String AlbumsTable = "CREATE TABLE Albums(DiscId BIGINT, ArtistId INT, " +
-		"Title VARCHAR(50), Year SMALLINT, Genre VARCHAR(50), TotalTime SMALLINT, Price FLOAT)";
-		String TracksTable = "CREATE TABLE Tracks(TrackId INT, DiscID BIGINT, Number TINYINT, TrackTitle VARCHAR(50))";
-		String ArtistsTable = "CREATE TABLE Artists(Name VARCHAR(50), ArtistId INT)";
-		String GenresTable = "CREATE TABLE Genres(Genre VARCHAR(50), GenreId INT)";
-		String UsersTable = "CREATE TABLE Users(UserId INT, UserName VARCHAR(20), Password VARCHAR(20))";
-		String SalesTable = "CREATE TABLE Sales(OrderId INT, UserId INT, DiscId BIGINT)";
+		boolean waitforanswer = false;
+		Result myResult = null;
+		while (!waitforanswer) {
+			myResult = ResultsQueue.peek();
+			//this should mean that there are no tables in the DB. but it might also mean we didn't get a result yet?
+			if ((myResult.getId() == 0) && (myResult == null)) { 
+				myResult = ResultsQueue.getResult();
+				//need to check the create succeeded? if yes - i'll change the code.
+				SqlStatement[] create_stmt = new SqlStatement[6];
+				create_stmt[0] = new SqlStatement(null, "CREATE TABLE Albums(DiscId BIGINT, ArtistId INT, " +
+						"Title VARCHAR(50), Year SMALLINT, Genre VARCHAR(50), TotalTime SMALLINT, Price FLOAT)", null, 0);
+				create_stmt[1] = new SqlStatement(null, "CREATE TABLE Tracks(TrackId INT, DiscID BIGINT, " +
+						"Number TINYINT, TrackTitle VARCHAR(50))", null, 0);
+				create_stmt[2] = new SqlStatement(null, "CREATE TABLE Artists(Name VARCHAR(50), ArtistId INT)", null, 0);
+				create_stmt[3] = new SqlStatement(null, "CREATE TABLE Genres(Genre VARCHAR(50), GenreId INT)", null, 0);
+				create_stmt[4] = new SqlStatement(null, "CREATE TABLE Users(UserId INT, UserName VARCHAR(20), Password VARCHAR(20))", null, 0);
+				create_stmt[5] = new SqlStatement(null, "CREATE TABLE Sales(OrderId INT, UserId INT, DiscId BIGINT)", null, 0);
+				for (int i=0;i<6;i++) {
+					connectionManager.insertToQueryQueue(create_stmt[i]);
+				}
+				waitforanswer = true;
+			}
+			
+		}
+		
 
 	}
 
