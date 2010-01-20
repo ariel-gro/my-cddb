@@ -37,4 +37,12 @@ public class ResultsQueue
 
 		return theResultsQueue.isEmpty();
 	}
+	
+	public synchronized static Result peek()
+	{
+		if (theResultsQueue == null)
+			theResultsQueue = new LinkedList<Result>();
+		
+		return theResultsQueue.peek();
+	}
 }
