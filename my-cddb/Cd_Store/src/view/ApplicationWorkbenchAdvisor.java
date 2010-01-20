@@ -8,6 +8,7 @@ import org.eclipse.ui.application.WorkbenchAdvisor;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 
 import controller.connectionManager;
+import controller.queryHandler;
 
 /**
  * This workbench advisor creates the window advisor, and specifies
@@ -32,9 +33,10 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 		if(MessageDialog.openQuestion(shell, dialogBoxTitle, question))
 		{
 			connectionManager.quit();
+			queryHandler.quit();
 			try
 			{
-				Thread.sleep(1000);
+				Thread.sleep(1500);
 			} catch (InterruptedException e)
 			{}
 			return true;
