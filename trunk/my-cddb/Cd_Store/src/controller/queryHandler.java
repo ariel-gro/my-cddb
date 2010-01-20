@@ -16,6 +16,7 @@ import model.Result;
 import model.ResultsQueue;
 import model.SearchesPriorityQueue;
 import model.SqlStatement;
+import model.TableViewsMap;
 import model.advanceSearchFieldValueBundle;
 import model.SqlStatement.QueryType;
 
@@ -95,7 +96,7 @@ public class queryHandler implements Runnable
 					ResultSet rs = myResult.getResultSet();
 					String[][] table = resultSetInto2DStringArray(rs);
 					if (table != null) {
-						//TODO return table back to GUI
+						TableViewsMap.addTable(this.searchReq.getId(), table);
 						return;
 					}
 					else {
