@@ -351,9 +351,9 @@ public class queryHandler implements Runnable
 				String[][] table = new String[rowCount][colCount];
 				rs.first();
 				while (!rs.isAfterLast()) {
-					int row = rs.getRow();
-					for (int col=1; col<=colCount; col++) {
-						table[row][col] = rs.getString(col);
+					int row = rs.getRow()-1;
+					for (int col=0; col<colCount; col++) {
+						table[row][col] = rs.getString(col+1);
 					}
 					rs.next();
 				}
