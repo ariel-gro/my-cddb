@@ -2,8 +2,8 @@ package model;
 
 public class DbConfiguration
 {
-	private static String ipAddress = "";
-	private static int port = 0;
+	private static String ipAddress = "127.0.0.1";
+	private static int port = 1521;
 	private static String user = "";
 	private static String password = "";
 	private static String db = "MyCDDBStore";
