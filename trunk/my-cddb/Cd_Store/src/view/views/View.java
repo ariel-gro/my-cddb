@@ -355,6 +355,7 @@ public class View extends ViewPart
 				
 				Link recordLink = new Link(recordComposite, SWT.NONE);
 				recordLink.setText("<a>" + dummyDisks[i].getTitle() + "</a>");
+				recordLink.setToolTipText(dummyDisks[i].getTitle());
 				recordLink.setFont(boldFont);
 				recordLink.setData(dummyDisks[i]);
 				recordLink.setLayoutData(new GridData(GridData.FILL));;
