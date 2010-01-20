@@ -180,11 +180,19 @@ public class QueryView extends ViewPart
 				parent.getDisplay().asyncExec(new Runnable() {
 					public void run()
 					{
-						createColumns(queryResultsViewer, TableViewsMap.getData(dataTableId));
-						queryResultsViewer.setContentProvider(new ResultTableContentProvider());
-						queryResultsViewer.setLabelProvider(new ResultTableLabelProvider());
-						queryResultsViewer.setInput(TableViewsMap.getData(dataTableId));
-						queryResultsViewer.refresh();
+						String[][] results = TableViewsMap.getData(dataTableId);
+						if(results != null)
+						{
+							createColumns(queryResultsViewer, results);
+							queryResultsViewer.setContentProvider(new ResultTableContentProvider());
+							queryResultsViewer.setLabelProvider(new ResultTableLabelProvider());
+							queryResultsViewer.setInput(results);
+							queryResultsViewer.refresh();
+						}
+						else
+						{
+							View.displayErroMessage("Encountered problem with the requested search. Please try again.");
+						}
 
 						progressBar.setVisible(false);
 					}

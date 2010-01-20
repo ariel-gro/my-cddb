@@ -103,16 +103,22 @@ public class View extends ViewPart
 			@Override
 			public void widgetSelected(SelectionEvent e)
 			{
-				SearchParameters.setGenre(categoriesCombo.getText());
-				SearchParameters.setSearchString(text.getText());
-				
-				IHandlerService handlerService = (IHandlerService) getSite().getService(IHandlerService.class);
-				try {
-					handlerService.executeCommand(ICommandIds.CMD_OPEN_QUERY_VIEW, null);
-				} catch (Exception ex) {
-					throw new RuntimeException(ICommandIds.CMD_OPEN_QUERY_VIEW + " command not found");
+				if(text.getText().equals(""))
+				{
+					View.displayErroMessage("Search string cannot be empty !!!");
 				}
-
+				else
+				{
+					SearchParameters.setGenre(categoriesCombo.getText());
+					SearchParameters.setSearchString(text.getText());
+					
+					IHandlerService handlerService = (IHandlerService) getSite().getService(IHandlerService.class);
+					try {
+						handlerService.executeCommand(ICommandIds.CMD_OPEN_QUERY_VIEW, null);
+					} catch (Exception ex) {
+						throw new RuntimeException(ICommandIds.CMD_OPEN_QUERY_VIEW + " command not found");
+					}
+				}
 			}
 		});
 
@@ -266,6 +272,18 @@ public class View extends ViewPart
 			{
 				Shell theShell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
 				MessageDialog.openError(theShell, "Error", errorMessage);
+			}
+		});
+		
+	}
+	
+	public static void displayInfoMessage(final String infoMessage)
+	{
+		recordsCoversArea.getDisplay().asyncExec(new Runnable() {
+			public void run()
+			{
+				Shell theShell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
+				MessageDialog.openInformation(theShell, "Message", infoMessage);
 			}
 		});
 		

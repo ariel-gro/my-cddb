@@ -91,6 +91,8 @@ public class ShoppingCartView extends ViewPart
 				
 				ShoppingCartContent.clearContent();
 				viewer.refresh();
+				
+				View.displayInfoMessage("You order has been approved and registered in the DB.\nYou should expect delivery within 14 days.\n\nThank you for shopping at our CD Store :)");
 			}
 		});
 		

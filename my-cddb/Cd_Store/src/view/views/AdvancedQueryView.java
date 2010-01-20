@@ -163,67 +163,84 @@ public class AdvancedQueryView extends ViewPart
 		goButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e)
 			{
-				dataTableId = QueryId.getId();
-				TableViewsMap.addTable(dataTableId, null);
-				List<advanceSearchFieldValueBundle> advancedSearchParaeters = new ArrayList<advanceSearchFieldValueBundle>();
-				
-				if(albumText.getText().equals("")==false)
-					advancedSearchParaeters.add(new advanceSearchFieldValueBundle(RequestToQueryHandler.AdvancedSearchFields.ALBUM_TITLE, advanceSearchFieldValueBundle.Relation.EQUALS, albumText.getText()));
-				if(trackText.getText().equals("")==false)
-					advancedSearchParaeters.add(new advanceSearchFieldValueBundle(RequestToQueryHandler.AdvancedSearchFields.TRACK_TITLE, advanceSearchFieldValueBundle.Relation.EQUALS, trackText.getText()));
-				if(artistText.getText().equals("")==false)
-					advancedSearchParaeters.add(new advanceSearchFieldValueBundle(RequestToQueryHandler.AdvancedSearchFields.ARTIST_NAME, advanceSearchFieldValueBundle.Relation.EQUALS, artistText.getText()));
-				
-				advancedSearchParaeters.add(new advanceSearchFieldValueBundle(RequestToQueryHandler.AdvancedSearchFields.GENRE, advanceSearchFieldValueBundle.Relation.EQUALS, genreCombo.getText()));						
-				advancedSearchParaeters.add(new advanceSearchFieldValueBundle(RequestToQueryHandler.AdvancedSearchFields.YEAR, (relationCombo.getSelectionIndex()==0 ? advanceSearchFieldValueBundle.Relation.GREATER : relationCombo.getSelectionIndex()==1 ? advanceSearchFieldValueBundle.Relation.EQUALS : advanceSearchFieldValueBundle.Relation.LESSER) , yearText.getText()));
-							
-				RequestToQueryHandler advanceSearch = new RequestToQueryHandler(dataTableId, RequestToQueryHandler.Priority.LOW_PRIORITY, RequestToQueryHandler.SearchType.ADVANCED, advancedSearchParaeters);
-				SearchesPriorityQueue.addSearch(advanceSearch);
-				
-				progressBar.setVisible(true);
-				goButton.setEnabled(false);
-				final int maximum = progressBar.getMaximum();
-				new Thread() {
-					public void run()
-					{
-						boolean update = TableViewsMap.getUpdate(dataTableId);
-						while(update == TableViewsMap.getUpdate(dataTableId))
-						{
-							for (final int[] i = new int[1]; i[0] <= maximum; i[0]++)
-							{
-								try
-								{
-									Thread.sleep(100);
-								} catch (Throwable th)
-								{
-								}
-								if (parent.getDisplay().isDisposed())
-									return;
-								parent.getDisplay().asyncExec(new Runnable() {
-									public void run()
-									{
-										if (progressBar.isDisposed())
-											return;
-										progressBar.setSelection(i[0]);
-									}
-								});
-							}
-						}
-						
-						parent.getDisplay().asyncExec(new Runnable() {
-							public void run()
-							{							
-								createColumns(queryResultsViewer, TableViewsMap.getData(dataTableId));
-								queryResultsViewer.setContentProvider(new ResultTableContentProvider());
-								queryResultsViewer.setLabelProvider(new ResultTableLabelProvider());
-								queryResultsViewer.setInput(TableViewsMap.getData(dataTableId));
-								queryResultsViewer.refresh();
+				if(albumText.getText().equals("") && trackText.getText().equals("") && artistText.getText().equals("") && yearText.getText().equals(""))
+				{
+					View.displayErroMessage("You must fill at least one of the search criteria !!!");
+				}
+				else
+				{
+					dataTableId = QueryId.getId();
+					TableViewsMap.addTable(dataTableId, null);
+					List<advanceSearchFieldValueBundle> advancedSearchParaeters = new ArrayList<advanceSearchFieldValueBundle>();
+					
+					if(albumText.getText().equals("")==false)
+						advancedSearchParaeters.add(new advanceSearchFieldValueBundle(RequestToQueryHandler.AdvancedSearchFields.ALBUM_TITLE, advanceSearchFieldValueBundle.Relation.EQUALS, albumText.getText()));
+					if(trackText.getText().equals("")==false)
+						advancedSearchParaeters.add(new advanceSearchFieldValueBundle(RequestToQueryHandler.AdvancedSearchFields.TRACK_TITLE, advanceSearchFieldValueBundle.Relation.EQUALS, trackText.getText()));
+					if(artistText.getText().equals("")==false)
+						advancedSearchParaeters.add(new advanceSearchFieldValueBundle(RequestToQueryHandler.AdvancedSearchFields.ARTIST_NAME, advanceSearchFieldValueBundle.Relation.EQUALS, artistText.getText()));
+					
+					advancedSearchParaeters.add(new advanceSearchFieldValueBundle(RequestToQueryHandler.AdvancedSearchFields.GENRE, advanceSearchFieldValueBundle.Relation.EQUALS, genreCombo.getText()));						
+					
+					if(yearText.getText().equals("") == false)
+						advancedSearchParaeters.add(new advanceSearchFieldValueBundle(RequestToQueryHandler.AdvancedSearchFields.YEAR, (relationCombo.getSelectionIndex()==0 ? advanceSearchFieldValueBundle.Relation.GREATER : relationCombo.getSelectionIndex()==1 ? advanceSearchFieldValueBundle.Relation.EQUALS : advanceSearchFieldValueBundle.Relation.LESSER) , yearText.getText()));
 								
-								progressBar.setVisible(false);
+					RequestToQueryHandler advanceSearch = new RequestToQueryHandler(dataTableId, RequestToQueryHandler.Priority.LOW_PRIORITY, RequestToQueryHandler.SearchType.ADVANCED, advancedSearchParaeters);
+					SearchesPriorityQueue.addSearch(advanceSearch);
+					
+					progressBar.setVisible(true);
+					goButton.setEnabled(false);
+					final int maximum = progressBar.getMaximum();
+					new Thread() {
+						public void run()
+						{
+							boolean update = TableViewsMap.getUpdate(dataTableId);
+							while(update == TableViewsMap.getUpdate(dataTableId))
+							{
+								for (final int[] i = new int[1]; i[0] <= maximum; i[0]++)
+								{
+									try
+									{
+										Thread.sleep(100);
+									} catch (Throwable th)
+									{
+									}
+									if (parent.getDisplay().isDisposed())
+										return;
+									parent.getDisplay().asyncExec(new Runnable() {
+										public void run()
+										{
+											if (progressBar.isDisposed())
+												return;
+											progressBar.setSelection(i[0]);
+										}
+									});
+								}
 							}
-						});				
-					}
-				}.start();			
+							
+							parent.getDisplay().asyncExec(new Runnable() {
+								public void run()
+								{		
+									String[][] results = TableViewsMap.getData(dataTableId);
+									if(results != null)
+									{
+										createColumns(queryResultsViewer, results);
+										queryResultsViewer.setContentProvider(new ResultTableContentProvider());
+										queryResultsViewer.setLabelProvider(new ResultTableLabelProvider());
+										queryResultsViewer.setInput(results);
+										queryResultsViewer.refresh();
+									}
+									else
+									{
+										View.displayErroMessage("Encountered problem with the requested search. Please try again.");
+									}
+									
+									progressBar.setVisible(false);
+								}
+							});				
+						}
+					}.start();			
+				}
 			}
 		});	
 		
