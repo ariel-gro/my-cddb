@@ -45,13 +45,13 @@ public class queryHandler implements Runnable
 		timeToQuit = true;
 	}
 
-	public String UniqueID() {
+	private synchronized String UniqueID() {
 		Long current= System.currentTimeMillis();
 		return current.toString();
 	}
 
 
-	public void createTables(){
+	public synchronized void createTables(){
 		//TODO query to get table names, then checking if each table exists. if not, create it.
 		SqlStatement sqlStmt = new SqlStatement(null, "SELECT * FROM all_tables", null, 0);
 		connectionManager.insertToQueryQueue(sqlStmt);
@@ -77,7 +77,7 @@ public class queryHandler implements Runnable
 			this.searchReq = searchReq;
 		}
 
-		public void run() {
+		public synchronized void run() {
 			this.createQuery();
 			if (this.searchReq.getTheQueryType() != QueryType.QUERY) {
 				//we are not expecting any results back so quit
@@ -106,7 +106,7 @@ public class queryHandler implements Runnable
 			}
 		}
 
-		private void createQuery()
+		private synchronized void createQuery()
 		{
 			String query = "";
 			if (searchReq.getTheQueryType() == SqlStatement.QueryType.QUERY)
@@ -342,7 +342,7 @@ public class queryHandler implements Runnable
 			}
 		}
 
-		private String[][] resultSetInto2DStringArray(ResultSet rs) {
+		private synchronized String[][] resultSetInto2DStringArray(ResultSet rs) {
 			try {
 				rs.last();
 				int rowCount = rs.getRow();
@@ -366,17 +366,5 @@ public class queryHandler implements Runnable
 			}
 		}
 	}
-
-	//	private String[][] resultListener {
-	//			
-	//			Result result = null;
-	//			while (!timeToQuit) {
-	//				result = ResultsQueue.peek();
-	//				if((result != null) && (result.getId() == )) {
-	//					Result result = ResultsQueue.getResult();
-	//					int numOfCols = result.getResultSet().gets
-	//				}
-	//			}
-	//		}
 
 }
