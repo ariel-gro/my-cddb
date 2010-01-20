@@ -50,9 +50,8 @@ public class queryHandler implements Runnable
 		return current.toString();
 	}
 
-	//this method checks if tables exist i nthe DB. if not - creates all tables.
+	//this method checks if tables exist i the DB. if not - creates all tables.
 	public synchronized void createTables(){
-		//TODO query to get table names, then checking if each table exists. if not, create it.
 		SqlStatement sqlStmt = new SqlStatement(null, "SELECT table_name FROM all_tables ORDER BY table_name", null, 0);
 		connectionManager.insertToQueryQueue(sqlStmt);
 		boolean waitforanswer = false;
@@ -282,7 +281,7 @@ public class queryHandler implements Runnable
 							attributes[num][1] = e.getValue()[0];
 							num++;
 							if(num > sizeOfBulk)
-							{								//fix artistId - send query Select count(*) from Artists
+							{								
 								sqlStmt = new SqlStatement(QueryType.INSERT_BULK, "INSERT INTO Artists (Name, ArtistId) " +
 										"VALUES (?, ?)", attributes, searchReq.getId());
 								connectionManager.insertToQueryQueue(sqlStmt);
@@ -311,7 +310,7 @@ public class queryHandler implements Runnable
 							attributes[num][1] = e.getValue()[0];
 							num++;
 							if(num > sizeOfBulk)
-							{								//fix genreId - send query Select count(*) from Genres
+							{								
 								sqlStmt = new SqlStatement(QueryType.INSERT_BULK, "INSERT INTO Genres (Genre, GenreId) " +
 										"VALUES (?, ?)", attributes, searchReq.getId());
 								connectionManager.insertToQueryQueue(sqlStmt);
@@ -344,8 +343,8 @@ public class queryHandler implements Runnable
 							}
 							num++;
 							if(num > sizeOfBulk)
-							{						//fix trackId - send query Select count(*) from Tracks 
-								sqlStmt = new SqlStatement(QueryType.INSERT_BULK, "INSERT INTO Tracks (TrackId, DiscID, Number, TrackTitle) " +
+							{						
+								sqlStmt = new SqlStatement(QueryType.INSERT_BULK, "INSERT INTO Tracks (TrackId, DiscID, TrackTitle, Number) " +
 										"VALUES (?, ?, ?, ?)", attributes, searchReq.getId());
 								connectionManager.insertToQueryQueue(sqlStmt);
 								num = 0;
