@@ -35,7 +35,6 @@ public class DbConnector implements Runnable{
 	public synchronized void run(){
 
 		QueryType qt = stmt.getQueryType();
-		ResultSet resultSet = null;
 
 		System.out.println("DbConnector: reading stmt type: " + qt.toString());
 
@@ -51,7 +50,7 @@ public class DbConnector implements Runnable{
 			}
 			return;
 		case QUERY:
-			resultSet = executeQuery(stmt);
+			ResultSet resultSet = executeQuery(stmt);
 			if (resultSet == null) {
 				View.displayErroMessage("DB access error occurred while executing a query.\n\n");
 			}
@@ -143,6 +142,9 @@ public class DbConnector implements Runnable{
 //
 //			// creating the connection
 //
+//			String jdbcURL =
+//				"jdbc:oracle:thin:@127.0.0.1:1521/XE";
+//	
 //			String jdbcURL =
 //				"jdbc:oracle:thin:@127.0.0.1:1521/XE";
 //

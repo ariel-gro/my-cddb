@@ -102,9 +102,8 @@ public class connectionManager implements Runnable{
 						connectionReTries = 5;
 					}
 				}
-				stmt = queryQueue.take();
-				System.out.println("connectionManager: taking stmt from queue: " + stmt.getQueryType().toString());
-				DbConnector con = new DbConnector(connQueue.take(), stmt);				
+				System.out.println("connectionManager: taking stmt and connection from queues ");
+				DbConnector con = new DbConnector(connQueue.take(), queryQueue.take());				
 				connThreads.execute(con);
 			}
 			catch (InterruptedException e) {
@@ -176,43 +175,6 @@ public class connectionManager implements Runnable{
 //	for testing purposes only
 //
 //	public static void main (String[] args) {
-//		// loading the driver
-//		Class cc = null;
-//		Connection connection = null;
-//		try
-//		{
-//			cc = Class.forName("oracle.jdbc.OracleDriver");
-//		}
-//		catch (ClassNotFoundException e)
-//		{
-//			System.out.println("Unable to load the Oracle JDBC driver");
-//			timeToQuit = true;
-//		}
-//		
-//		System.out.println(cc.toString());
-//
-//		// creating the connection
-//		boolean closed;
-//		try
-//		{
-//			connection =
-//				DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:XE","system","12341234");
-//			
-//			closed = connection.isClosed();
-//			System.out.println(connection.isClosed());
-//			insertToConnectionQueue(connection);
-//			insertToConVector(numOfConnections, connection);
-//			numOfConnections++;
-//			if (!connection.isClosed())
-//				connection.close();
-//			closed = connection.isClosed();
-//			System.out.println(closed);
-//		}
-//		catch (SQLException e)
-//		{
-//			System.out.println("An error occured while trying to connect to the DB.\n\n"+e.getMessage());
-//			timeToQuit = true;
-//		}
 //		
 //	}
 }
