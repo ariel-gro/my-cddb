@@ -88,7 +88,7 @@ public class queryHandler implements Runnable
 					create_stmt[0] = new SqlStatement(QueryType.INSERT_SINGLE, "CREATE TABLE Albums(PRIMARY KEY DiscId NUMBER, ArtistId INT, "
 							+ "Title VARCHAR(50), Year SMALLINT, Genre VARCHAR(50), TotalTime SMALLINT, Price FLOAT)", null, 0);
 					create_stmt[1] = new SqlStatement(QueryType.INSERT_SINGLE, "CREATE TABLE Tracks(PRIMARY KEY TrackId INT, DiscID NUMBER, "
-							+ "Number SMALLINT, TrackTitle VARCHAR(50))", null, 0);
+							+ "Num SMALLINT, TrackTitle VARCHAR(50))", null, 0);
 					create_stmt[2] = new SqlStatement(QueryType.INSERT_SINGLE, "CREATE TABLE Artists(Name VARCHAR(50), PRIMARY KEY ArtistId INT)", 
 							null, 0);
 					create_stmt[3] = new SqlStatement(QueryType.INSERT_SINGLE, "CREATE TABLE Genres(Genre VARCHAR(50), PRIMARY KEY GenreId INT)", 
