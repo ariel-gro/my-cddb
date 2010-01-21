@@ -1,5 +1,6 @@
 package controller;
 import java.sql.*;
+
 import view.views.View;
 
 
@@ -36,6 +37,8 @@ public class DbConnector implements Runnable{
 		QueryType qt = stmt.getQueryType();
 		ResultSet resultSet = null;
 		
+		System.out.println("DbConnector: reading stmt type: " + qt.toString());
+		
 		switch (qt){
 		case INSERT_BULK:
 			if (executeBulkInsert(stmt) == PreparedStatement.EXECUTE_FAILED) {
@@ -60,7 +63,7 @@ public class DbConnector implements Runnable{
 		}
 		
 		//close ps and give connection back to connectionManager
-		try {
+	/*	try {
 			if (!this.ps.isClosed())
 				this.ps.close();
 		}
@@ -68,7 +71,7 @@ public class DbConnector implements Runnable{
 			View.displayErroMessage("DB access error occurred while closing a statement.\n\n"+
 					e.getMessage());
 		}
-		giveBackConnection();
+	*/	giveBackConnection();
 		
 	}
 
@@ -81,6 +84,7 @@ public class DbConnector implements Runnable{
 	private synchronized ResultSet executeQuery(SqlStatement stmt) {
 		try
 		{
+			System.out.println("DbConnector: executing query of type:" + stmt.getQueryType().toString());
 			ps = connection.prepareStatement(stmt.getStmt());
 			return ps.executeQuery();
 		}
@@ -93,6 +97,7 @@ public class DbConnector implements Runnable{
 	private synchronized int executeSingleInsert(SqlStatement stmt) {
 		try
 		{
+			System.out.println("DbConnector: executing single isert of type:" + stmt.getQueryType().toString());
 			ps = connection.prepareStatement(stmt.getStmt());
 			return ps.executeUpdate();
 		}
@@ -104,6 +109,8 @@ public class DbConnector implements Runnable{
 
 	private synchronized int executeBulkInsert(SqlStatement stmt) {
 		try {
+			System.out.println("DbConnector: executing bulk single isert of type:" + stmt.getQueryType().toString());
+			
 			ps = connection.prepareStatement(stmt.getStmt());
 			
 			int tupleSize, bulkSize = stmt.getTuples().length;
