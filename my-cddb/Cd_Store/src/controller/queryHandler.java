@@ -85,14 +85,18 @@ public class queryHandler implements Runnable
 					System.out.println("inside if");
 					myResult = ResultsQueue.getResult();
 					SqlStatement[] create_stmt = new SqlStatement[6];
-					create_stmt[0] = new SqlStatement(QueryType.INSERT_SINGLE, "CREATE TABLE Albums(DiscId NUMBER, ArtistId INT, "
+					create_stmt[0] = new SqlStatement(QueryType.INSERT_SINGLE, "CREATE TABLE Albums(PRIMARY KEY DiscId NUMBER, ArtistId INT, "
 							+ "Title VARCHAR(50), Year SMALLINT, Genre VARCHAR(50), TotalTime SMALLINT, Price FLOAT)", null, 0);
-					create_stmt[1] = new SqlStatement(QueryType.INSERT_SINGLE, "CREATE TABLE Tracks(TrackId INT, DiscID NUMBER, "
+					create_stmt[1] = new SqlStatement(QueryType.INSERT_SINGLE, "CREATE TABLE Tracks(PRIMARY KEY TrackId INT, DiscID NUMBER, "
 							+ "Number SMALLINT, TrackTitle VARCHAR(50))", null, 0);
-					create_stmt[2] = new SqlStatement(QueryType.INSERT_SINGLE, "CREATE TABLE Artists(Name VARCHAR(50), ArtistId INT)", null, 0);
-					create_stmt[3] = new SqlStatement(QueryType.INSERT_SINGLE, "CREATE TABLE Genres(Genre VARCHAR(50), GenreId INT)", null, 0);
-					create_stmt[4] = new SqlStatement(QueryType.INSERT_SINGLE, "CREATE TABLE Users(UserId INT, UserName VARCHAR(20), Password VARCHAR(20))", null, 0);
-					create_stmt[5] = new SqlStatement(QueryType.INSERT_SINGLE, "CREATE TABLE Sales(OrderId INT, UserId INT, DiscId NUMBER)", null, 0);
+					create_stmt[2] = new SqlStatement(QueryType.INSERT_SINGLE, "CREATE TABLE Artists(Name VARCHAR(50), PRIMARY KEY ArtistId INT)", 
+							null, 0);
+					create_stmt[3] = new SqlStatement(QueryType.INSERT_SINGLE, "CREATE TABLE Genres(Genre VARCHAR(50), PRIMARY KEY GenreId INT)", 
+							null, 0);
+					create_stmt[4] = new SqlStatement(QueryType.INSERT_SINGLE, "CREATE TABLE Users(PRIMARY KEY UserId INT, UserName VARCHAR(20), Password VARCHAR(20))", 
+							null, 0);
+					create_stmt[5] = new SqlStatement(QueryType.INSERT_SINGLE, "CREATE TABLE Sales(PRIMARY KEY (OrderId INT, UserId INT), DiscId NUMBER)", 
+							null, 0);
 					for (int i = 0; i < 6; i++)
 					{
 						connectionManager.insertToQueryQueue(create_stmt[i]);
