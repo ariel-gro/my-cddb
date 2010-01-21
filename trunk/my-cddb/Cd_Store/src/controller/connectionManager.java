@@ -68,16 +68,26 @@ public class connectionManager implements Runnable{
 		if (connQueue == null){
 			connQueue = new LinkedBlockingQueue<Connection>();
 			conVector = new Vector<Connection>(numOfThreads);
-			openConnection();
+			if (openConnection() == false) {
+				//initial connection to DB failed => kill thread
+				return;
+			}
 		}
 		
 		SqlStatement stmt = null;
+		int connectionReTries = 5;
 		while (!timeToQuit){
 			try {
-				stmt = queryQueue.take();
-				if ((numOfConnections < numOfThreads) && connQueue.isEmpty())
-					openConnection();
+				if ((numOfConnections < numOfThreads) && connQueue.isEmpty() && (connectionReTries > 0))
+					if (openConnection() == false) {
+						connectionReTries--;
+						break;
+					}
+					else {
+						connectionReTries = 5;
+					}
 				DbConnector con = new DbConnector(connQueue.take(), stmt);
+				stmt = queryQueue.take();
 				connThreads.execute(con);
 			}
 			catch (InterruptedException e) {
@@ -103,7 +113,7 @@ public class connectionManager implements Runnable{
 		timeToQuit = true;
 	}
 	
-	private static synchronized void openConnection()
+	private static synchronized boolean openConnection()
 	{
 		// loading the driver
 		try
@@ -114,7 +124,7 @@ public class connectionManager implements Runnable{
 		{
 			View.displayErroMessage("Unable to load the Oracle JDBC driver");
 			timeToQuit = true;
-			return;
+			return false;
 		}
 		
 		// creating the connection
@@ -136,8 +146,10 @@ public class connectionManager implements Runnable{
 		{
 			View.displayErroMessage("An error occured while trying to connect to the DB.\n\n"+e.getMessage());
 			timeToQuit = true;
-			return;
+			return false;
 		}
+		System.out.println("connected to DB");
+		return true;
 	}
 	
 //	for testing purposes only
