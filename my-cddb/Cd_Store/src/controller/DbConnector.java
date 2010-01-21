@@ -14,9 +14,9 @@ public class DbConnector implements Runnable{
 
 	private Connection connection;	// DB connection
 	private SqlStatement stmt;
-	
+
 	private PreparedStatement ps;
-	
+
 
 	public DbConnector(Connection connection, SqlStatement statement) {		
 		this.connection = connection;
@@ -31,14 +31,14 @@ public class DbConnector implements Runnable{
 	public synchronized void setStatement(SqlStatement stmt){
 		this.stmt = stmt;
 	}
-		
+
 	public synchronized void run(){
-		
+
 		QueryType qt = stmt.getQueryType();
 		ResultSet resultSet = null;
-		
+
 		System.out.println("DbConnector: reading stmt type: " + qt.toString());
-		
+
 		switch (qt){
 		case INSERT_BULK:
 			if (executeBulkInsert(stmt) == PreparedStatement.EXECUTE_FAILED) {
@@ -61,25 +61,16 @@ public class DbConnector implements Runnable{
 			}
 			break;
 		}
-		
-		//close ps and give connection back to connectionManager
-	/*	try {
-			if (!this.ps.isClosed())
-				this.ps.close();
-		}
-		catch (SQLException e) {
-			View.displayErroMessage("DB access error occurred while closing a statement.\n\n"+
-					e.getMessage());
-		}
-	*/	giveBackConnection();
-		
+
+		giveBackConnection();
+
 	}
 
 	private synchronized void giveBackConnection() {
 		connectionManager.insertToConnectionQueue(this.connection);
 		this.connection = null;
 	}
-	
+
 
 	private synchronized ResultSet executeQuery(SqlStatement stmt) {
 		try
@@ -90,6 +81,7 @@ public class DbConnector implements Runnable{
 		}
 		catch (SQLException e)
 		{
+			System.out.println(e.toString());
 			return null;
 		}
 	}
@@ -110,19 +102,19 @@ public class DbConnector implements Runnable{
 	private synchronized int executeBulkInsert(SqlStatement stmt) {
 		try {
 			System.out.println("DbConnector: executing bulk single isert of type:" + stmt.getQueryType().toString());
-			
+
 			ps = connection.prepareStatement(stmt.getStmt());
-			
+
 			int tupleSize, bulkSize = stmt.getTuples().length;
 			for(int row=0; row<bulkSize; row++) {
 				String[] currentTuple = stmt.getTuples()[row];
 				tupleSize = currentTuple.length;
 				for (int col=0; col<tupleSize; col++) {
-					ps.setString(col, currentTuple[col]);
+					ps.setString(col+1, currentTuple[col]);
 				}
 				ps.addBatch();
 			}
-			
+
 			int[] returnedVals = ps.executeBatch();
 			for (int i=0; i<returnedVals.length; i++) {
 				if (returnedVals[i] == PreparedStatement.EXECUTE_FAILED)
@@ -131,7 +123,90 @@ public class DbConnector implements Runnable{
 			return 1;
 		}
 		catch (SQLException e) {
+			System.out.println(e.toString());
 			return PreparedStatement.EXECUTE_FAILED;
 		}	
 	}
+
+//	unit test code
+//	public static void main(String[] args) {
+//		Connection con = null;
+//		Thread t = null;
+//		try
+//		{
+//			// loading the driver
+//
+//			Class.forName("oracle.jdbc.OracleDriver");
+//
+//
+//			System.out.println("driver loaded successfully");
+//
+//			// creating the connection
+//
+//			String jdbcURL =
+//				"jdbc:oracle:thin:@127.0.0.1:1521/XE";
+//
+//			con = DriverManager.getConnection(jdbcURL,"system", "12341234");
+//
+//			System.out.println("connected to DB");
+//
+//			SqlStatement s1 = new SqlStatement(QueryType.INSERT_SINGLE, "INSERT INTO DEMO(FNAME, LNAME, ID) VALUES('mmm', 'nnn', 'ooo')", null, 1);
+//			String[][] tup = {{"aaa", "bbb", "ccc"}, {"hhh", "iii", "kkk"}, {"xxx", "yyy", "zzz"}};
+//			SqlStatement s2 = new SqlStatement(QueryType.INSERT_BULK, 
+//					"INSERT INTO DEMO(FNAME, LNAME, ID) VALUES(?, ?, ?)"
+//					, tup, 42); 
+//			SqlStatement s3 = new SqlStatement(QueryType.QUERY, "SELECT * FROM DEMO", null, 1);
+//
+//			Statement s	= con.createStatement();
+//			s.executeUpdate("DELETE FROM DEMO");
+//
+//			t = new Thread(new DbConnector(con, s1));
+//			t.start();
+//			t.join();
+//
+//			t = new Thread(new DbConnector(con, s2));
+//			t.start();
+//			t.join();
+//
+//			t = new Thread(new DbConnector(con, s3));
+//			t.start();
+//			t.join();
+//
+//
+//			ResultSet r = s.executeQuery("SELECT * FROM DEMO");
+//
+//			System.out.println("row: " + r.getRow());
+//			r.next();
+//			while (!r.isAfterLast()) {
+//				System.out.println("row: " + r.getRow());
+//				System.out.println(r.getString(1));
+//				System.out.println(r.getString(2));
+//				System.out.println(r.getString(3));
+//				r.next();
+//			}
+//
+//			s.close();
+//		}
+//
+//		catch (InterruptedException e) {
+//			System.out.println(e.getMessage());
+//		}
+//
+//
+//		catch (ClassNotFoundException e)
+//		{
+//			System.out.println("Unable to load the Oracle JDBC driver");
+//		}
+//		catch (SQLException e) {
+//			System.out.println(e.getMessage());
+//		}
+//		finally {
+//			try{
+//				con.close();
+//				System.out.println("connection closed");
+//			}catch (SQLException e) {
+//				System.out.println(e.getMessage());
+//			}
+//		}
+//	}
 }
