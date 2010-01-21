@@ -50,11 +50,13 @@ public class MainParser extends Thread
 	private HashMap<String,String[]> tracksMap = new HashMap<String,String[]>(80000, 0.9f);
 	HashMap<String,String> oldArtistMap;
 	HashMap<String,String> oldGenresMap;
+	int genreId, artistsId, tracksId;
 	
 	public MainParser(String fileToParse, boolean updateFile)
 	{
 		this.fileToParse = fileToParse;
 		this.updateFile = updateFile;
+
 	}
 
 	public void run()
@@ -83,6 +85,9 @@ public class MainParser extends Thread
 					oldGenresMap.put(reqGenres[i][0], reqGenres[i][1]);
 				}
 			}
+			genreId = this.getId("genres");
+			artistsId = this.getId("artists");
+			tracksId = this.getId("tracks");
 
 			// Read the file
 			int track_index = 0;
@@ -95,7 +100,7 @@ public class MainParser extends Thread
 				{
 					if (line.startsWith("# xmcd"))
 					{
-						if (currentDisk != null)
+						if ((currentDisk != null))
 						{
 							updateMaps(currentDisk);
 							if (diskMap.size() >= 50000)
@@ -239,9 +244,9 @@ public class MainParser extends Thread
 	private void updateMaps(Disk currentDisk)
 	{
 		String diskId;
-		String artistId;
-		String genreId;
-		String trackId;
+		String artistId = this.artistsId+"";
+		String genreId = this.genreId+"";
+		String trackId = this.tracksId+"";
 		
 		diskId = Long.parseLong(currentDisk.getId(), 16)+""; 
 		if(diskMap.containsKey(diskId) == false)
@@ -250,7 +255,6 @@ public class MainParser extends Thread
 			{
 				if (this.updateFile == false || this.oldArtistMap.containsKey(currentDisk.getArtist()) == false)
 				{
-					artistId = artistMap.size()+"";
 					artistMap.put(currentDisk.getArtist(), new String[]{artistId+""});
 				}
 				else
@@ -268,7 +272,6 @@ public class MainParser extends Thread
 			{
 				if (this.updateFile == false || this.oldGenresMap.containsKey(currentDisk.getGenre()) == false)
 				{
-					genreId = genresMap.size()+"";
 					genresMap.put(currentDisk.getGenre(), new String[]{genreId+""});
 				}
 				else
@@ -287,7 +290,6 @@ public class MainParser extends Thread
 			{
 				if(tracks[i] != null)
 				{
-					trackId = tracksMap.size()+"";
 					tracksMap.put(trackId, new String[]{diskId+"", tracks[i], i+""});
 				}
 			}
@@ -368,10 +370,53 @@ public class MainParser extends Thread
 	private String[][] getStringResults(String query)
 	{
 		String[][] results = new String[2][];
-		Connection connection;	// DB connection
+		Connection connection = bypassConnect();	// DB connection
 		PreparedStatement ps;
 		ResultSet queryResult;
 		
+		try
+		{
+			ps = connection.prepareStatement(query);
+			queryResult = ps.executeQuery();
+		}
+		catch (SQLException e)
+		{
+			View.displayErroMessage("error retriving data from DB.\n"
+					+e.getMessage());
+			return null;
+		}
+		
+		try {
+			results[0] = (String[]) queryResult.getArray(1).getArray();
+			results[1] = (String[]) queryResult.getArray(2).getArray();
+		} catch (SQLException e) {
+			View.displayErroMessage("error retriving fata from DB.\n"
+					+e.getMessage());
+		}
+		
+		return results;
+	}
+	
+	private int getId (String table)
+	{
+		Connection connection = bypassConnect();	// DB connection
+		PreparedStatement ps;
+		
+		try
+		{
+			ps = connection.prepareStatement("SELECT COUNT(*) from " + table);
+			return ps.executeQuery().getInt(1);
+		}
+		catch (SQLException e)
+		{
+			View.displayErroMessage("error retriving data from DB.\n"
+					+e.getMessage());
+			return -1;
+		}
+	}
+	
+	private Connection bypassConnect()
+	{
 		// loading the driver
 		try
 		{
@@ -391,8 +436,7 @@ public class MainParser extends Thread
 				"jdbc:oracle:thin:@" + DbConfiguration.getIpAddress()+":" + DbConfiguration.getPort() +
 				"/" + DbConfiguration.getDb();
 			
-			connection =
-				DriverManager.getConnection(jdbcURL,
+			return DriverManager.getConnection(jdbcURL,
 					DbConfiguration.getUser(), DbConfiguration.getPassword());
 		}
 		catch (SQLException e)
@@ -400,28 +444,6 @@ public class MainParser extends Thread
 			View.displayErroMessage("An error occured while trying to connect to the DB.\n\n"+e.getMessage());
 			return null;
 		}
-
-		try
-		{
-			ps = connection.prepareStatement(query);
-			queryResult = ps.executeQuery();
-		}
-		catch (SQLException e)
-		{
-			View.displayErroMessage("error retriving artists name and id from DB.\n"
-					+e.getMessage());
-			return null;
-		}
-		
-		try {
-			results[0] = (String[]) queryResult.getArray(1).getArray();
-			results[1] = (String[]) queryResult.getArray(2).getArray();
-		} catch (SQLException e) {
-			View.displayErroMessage("error retriving artists name and id from DB.\n"
-					+e.getMessage());
-		}
-		
-		return results;
 	}
 	
 //	public static void main (String args[])
