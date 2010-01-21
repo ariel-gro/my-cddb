@@ -55,8 +55,9 @@ public class queryHandler implements Runnable
 	// this method checks if tables exist i the DB. if not - creates all tables.
 	public static synchronized void createTables()
 	{
+		int tester = -1;
 		SqlStatement sqlStmt = new SqlStatement(QueryType.QUERY, 
-												"SELECT count(table_name) FROM all_tables WEHRE " +
+												"SELECT count(table_name) FROM all_tables WHERE " +
 												"(table_name = 'ARTISTS' OR table_name = 'ALBUMS' OR " +
 												"table_name = 'TRACKS' OR table_name = 'SALES' OR " + 
 												"table_name = 'GENRES' OR table_name = 'USERS')", 
@@ -66,25 +67,37 @@ public class queryHandler implements Runnable
 		Result myResult = null;
 		while (!waitforanswer)
 		{
-			myResult = ResultsQueue.peek();
-			
-			if ((myResult != null) && (myResult.getId() == 0))
-			{
-				myResult = ResultsQueue.getResult();
-				SqlStatement[] create_stmt = new SqlStatement[6];
-				create_stmt[0] = new SqlStatement(QueryType.INSERT_SINGLE, "CREATE TABLE Albums(DiscId BIGINT, ArtistId INT, "
-						+ "Title VARCHAR(50), Year SMALLINT, Genre VARCHAR(50), TotalTime SMALLINT, Price FLOAT)", null, 0);
-				create_stmt[1] = new SqlStatement(QueryType.INSERT_SINGLE, "CREATE TABLE Tracks(TrackId INT, DiscID BIGINT, "
-						+ "Number TINYINT, TrackTitle VARCHAR(50))", null, 0);
-				create_stmt[2] = new SqlStatement(QueryType.INSERT_SINGLE, "CREATE TABLE Artists(Name VARCHAR(50), ArtistId INT)", null, 0);
-				create_stmt[3] = new SqlStatement(QueryType.INSERT_SINGLE, "CREATE TABLE Genres(Genre VARCHAR(50), GenreId INT)", null, 0);
-				create_stmt[4] = new SqlStatement(QueryType.INSERT_SINGLE, "CREATE TABLE Users(UserId INT, UserName VARCHAR(20), Password VARCHAR(20))", null, 0);
-				create_stmt[5] = new SqlStatement(QueryType.INSERT_SINGLE, "CREATE TABLE Sales(OrderId INT, UserId INT, DiscId BIGINT)", null, 0);
-				for (int i = 0; i < 6; i++)
+			try {
+				myResult = ResultsQueue.peek();
+				if (myResult != null)
 				{
-					connectionManager.insertToQueryQueue(create_stmt[i]);
+					tester = myResult.getResultSet().getInt(1);
+					System.out.println(tester);
 				}
-				waitforanswer = true;
+				else
+					System.out.println("result null");
+
+				if ((tester >= 0) && (tester < 6))
+				{
+					System.out.println("inside if");
+					myResult = ResultsQueue.getResult();
+					SqlStatement[] create_stmt = new SqlStatement[6];
+					create_stmt[0] = new SqlStatement(QueryType.INSERT_SINGLE, "CREATE TABLE Albums(DiscId BIGINT, ArtistId INT, "
+							+ "Title VARCHAR(50), Year SMALLINT, Genre VARCHAR(50), TotalTime SMALLINT, Price FLOAT)", null, 0);
+					create_stmt[1] = new SqlStatement(QueryType.INSERT_SINGLE, "CREATE TABLE Tracks(TrackId INT, DiscID BIGINT, "
+							+ "Number TINYINT, TrackTitle VARCHAR(50))", null, 0);
+					create_stmt[2] = new SqlStatement(QueryType.INSERT_SINGLE, "CREATE TABLE Artists(Name VARCHAR(50), ArtistId INT)", null, 0);
+					create_stmt[3] = new SqlStatement(QueryType.INSERT_SINGLE, "CREATE TABLE Genres(Genre VARCHAR(50), GenreId INT)", null, 0);
+					create_stmt[4] = new SqlStatement(QueryType.INSERT_SINGLE, "CREATE TABLE Users(UserId INT, UserName VARCHAR(20), Password VARCHAR(20))", null, 0);
+					create_stmt[5] = new SqlStatement(QueryType.INSERT_SINGLE, "CREATE TABLE Sales(OrderId INT, UserId INT, DiscId BIGINT)", null, 0);
+					for (int i = 0; i < 6; i++)
+					{
+						connectionManager.insertToQueryQueue(create_stmt[i]);
+					}
+					waitforanswer = true;
+				}
+			} catch (SQLException e1) {
+				e1.printStackTrace();
 			}
 			try {
 				Thread.sleep(100);
