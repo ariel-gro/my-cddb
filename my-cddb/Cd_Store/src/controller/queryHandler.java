@@ -231,6 +231,7 @@ public class queryHandler implements Runnable
 				switch (searchReq.getMapType()) 
 				{
 				case ALBUMS:
+					num=0;
 					while(sizeOfMap>0)
 					{
 						if(sizeOfMap>sizeOfBulk)
@@ -263,6 +264,7 @@ public class queryHandler implements Runnable
 					}
 					break;
 				case ARTISTS:
+					num=0;
 					while(sizeOfMap>0)
 					{
 						if(sizeOfMap>sizeOfBulk)
@@ -292,6 +294,7 @@ public class queryHandler implements Runnable
 					}
 					break;
 				case GENRES:
+					num=0;
 					while(sizeOfMap>0)
 					{
 						if(sizeOfMap>sizeOfBulk)
@@ -321,6 +324,7 @@ public class queryHandler implements Runnable
 					}
 					break;
 				case TRACKS:
+					num=0;
 					while(sizeOfMap>0)
 					{
 						if(sizeOfMap>sizeOfBulk)
