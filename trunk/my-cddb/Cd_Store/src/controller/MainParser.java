@@ -70,8 +70,8 @@ public class MainParser extends Thread
 				this.oldGenresMap = new HashMap<String,String>(3000, 0.9f);
 				this.oldArtistMap = new HashMap<String,String>(100000, 0.8f);
 				
-				String[][] reqGenres = getStringResults("SELECT genre, id FROM Genre");
-				String[][] reqArtists = getStringResults("SELECT name, id FROM Artists");
+				String[][] reqGenres = getStringResults("SELECT genre, id FROM GEMRES");
+				String[][] reqArtists = getStringResults("SELECT name, id FROM ARTISTS");
 				if (reqArtists == null || reqGenres == null)
 					return;
 				
@@ -85,9 +85,9 @@ public class MainParser extends Thread
 					oldGenresMap.put(reqGenres[i][0], reqGenres[i][1]);
 				}
 			}
-			genreId = this.getId("genres");
-			artistsId = this.getId("artists");
-			tracksId = this.getId("tracks");
+			genreId = this.getId("GENRES");
+			artistsId = this.getId("ARTISTS");
+			tracksId = this.getId("TRACKS");
 
 			// Read the file
 			int track_index = 0;
