@@ -21,103 +21,114 @@ import model.TableViewsMap;
 import model.advanceSearchFieldValueBundle;
 import model.SqlStatement.QueryType;
 
-
-
 public class queryHandler implements Runnable
 {
 
 	private static boolean timeToQuit = false;
 	private ExecutorService threadPool = Executors.newCachedThreadPool();;
 
-	public synchronized void run() {
-
-		while (!timeToQuit) {
-			if (!SearchesPriorityQueue.isEmpty()) {
+	public synchronized void run()
+	{
+		while (!timeToQuit)
+		{
+			if (!SearchesPriorityQueue.isEmpty())
+			{
 				RequestToQueryHandler req = SearchesPriorityQueue.getSearch();
 				HandleQuery q = new HandleQuery(req);
 				this.threadPool.execute(q);
 			}
 		}
-
 		this.threadPool.shutdownNow();
 	}
 
-	public static synchronized void quit() {
+	public static synchronized void quit()
+	{
 		timeToQuit = true;
 	}
 
-	private synchronized String UniqueID() {
-		Long current= System.currentTimeMillis();
+	private synchronized String UniqueID()
+	{
+		Long current = System.currentTimeMillis();
 		return current.toString();
 	}
 
-	//this method checks if tables exist i the DB. if not - creates all tables.
-	public synchronized void createTables(){
+	// this method checks if tables exist i the DB. if not - creates all tables.
+	public synchronized void createTables()
+	{
 		SqlStatement sqlStmt = new SqlStatement(null, "SELECT table_name FROM all_tables ORDER BY table_name", null, 0);
 		connectionManager.insertToQueryQueue(sqlStmt);
 		boolean waitforanswer = false;
 		Result myResult = null;
-		while (!waitforanswer) {
+		while (!waitforanswer)
+		{
 			myResult = ResultsQueue.peek();
-			//this should mean that there are no tables in the DB. but it might also mean we didn't get a result yet?
-			if ((myResult.getId() == 0) && (myResult == null)) { 
+			// this should mean that there are no tables in the DB. but it might
+			// also mean we didn't get a result yet?
+			if ((myResult.getId() == 0) && (myResult == null))
+			{
 				myResult = ResultsQueue.getResult();
-				//need to check the create succeeded? if yes - i'll change the code.
+				// need to check the create succeeded? if yes - i'll change the
+				// code.
 				SqlStatement[] create_stmt = new SqlStatement[6];
-				create_stmt[0] = new SqlStatement(null, "CREATE TABLE Albums(DiscId BIGINT, ArtistId INT, " +
-						"Title VARCHAR(50), Year SMALLINT, Genre VARCHAR(50), TotalTime SMALLINT, Price FLOAT)", null, 0);
-				create_stmt[1] = new SqlStatement(null, "CREATE TABLE Tracks(TrackId INT, DiscID BIGINT, " +
-						"Number TINYINT, TrackTitle VARCHAR(50))", null, 0);
+				create_stmt[0] = new SqlStatement(null, "CREATE TABLE Albums(DiscId BIGINT, ArtistId INT, "
+						+ "Title VARCHAR(50), Year SMALLINT, Genre VARCHAR(50), TotalTime SMALLINT, Price FLOAT)", null, 0);
+				create_stmt[1] = new SqlStatement(null, "CREATE TABLE Tracks(TrackId INT, DiscID BIGINT, "
+						+ "Number TINYINT, TrackTitle VARCHAR(50))", null, 0);
 				create_stmt[2] = new SqlStatement(null, "CREATE TABLE Artists(Name VARCHAR(50), ArtistId INT)", null, 0);
 				create_stmt[3] = new SqlStatement(null, "CREATE TABLE Genres(Genre VARCHAR(50), GenreId INT)", null, 0);
 				create_stmt[4] = new SqlStatement(null, "CREATE TABLE Users(UserId INT, UserName VARCHAR(20), Password VARCHAR(20))", null, 0);
 				create_stmt[5] = new SqlStatement(null, "CREATE TABLE Sales(OrderId INT, UserId INT, DiscId BIGINT)", null, 0);
-				for (int i=0;i<6;i++) {
+				for (int i = 0; i < 6; i++)
+				{
 					connectionManager.insertToQueryQueue(create_stmt[i]);
 				}
 				waitforanswer = true;
 			}
-			
 		}
-		
-
 	}
 
-	private class HandleQuery implements Runnable {
+	private class HandleQuery implements Runnable
+	{
 
 		private RequestToQueryHandler searchReq;
 		private SqlStatement sqlStmt;
-		private HashMap<String,String[]> map;
-		private int sizeOfBulk = 50000;
+		private HashMap<String, String[]> map;
+		//private int sizeOfBulk = 50000;
 		private String[][] attributes;
 
-		protected HandleQuery(RequestToQueryHandler searchReq) {
+		protected HandleQuery(RequestToQueryHandler searchReq)
+		{
 			this.searchReq = searchReq;
 		}
 
-		public synchronized void run() {
+		public synchronized void run()
+		{
 			this.createQuery();
-			if (this.searchReq.getTheQueryType() != QueryType.QUERY) {
-				//we are not expecting any results back so quit
+			if (this.searchReq.getTheQueryType() != QueryType.QUERY)
+			{
+				// we are not expecting any results back so quit
 				return;
 			}
-			
-			//we are expecting results so sit back and wait for them
+
+			// we are expecting results so sit back and wait for them
 			Result myResult = null;
-			while (!timeToQuit) {
+			while (!timeToQuit)
+			{
 				myResult = ResultsQueue.peek();
-				if ((myResult != null) && (myResult.getId() == this.searchReq.getId())) {
-					//ResultsQueue has a result and it's ours!!
-					
+				if ((myResult != null) && (myResult.getId() == this.searchReq.getId()))
+				{
+					// ResultsQueue has a result and it's ours!!
+
 					myResult = ResultsQueue.getResult();
 					ResultSet rs = myResult.getResultSet();
 					String[][] table = resultSetInto2DStringArray(rs);
-					if (table != null) {
+					if (table != null)
+					{
 						TableViewsMap.addTable(this.searchReq.getId(), table);
 						return;
-					}
-					else {
-						//an error occurred
+					} else
+					{
+						// an error occurred
 						return;
 					}
 				}
@@ -127,7 +138,7 @@ public class queryHandler implements Runnable
 		private synchronized void createQuery()
 		{
 			DecimalFormat df = new DecimalFormat("####.00");
-			
+
 			String query = "";
 			if (searchReq.getTheQueryType() == SqlStatement.QueryType.QUERY)
 			{
@@ -140,7 +151,7 @@ public class queryHandler implements Runnable
 						{
 							sqlStmt = new SqlStatement(QueryType.QUERY,
 									"SELECT TOP 10 * FROM (SELECT * FROM Albums ORDERBY Albums.year) WHERE Albums.genre = "
-									+ searchReq.getMusicGenre().toString(), null, searchReq.getId());
+											+ searchReq.getMusicGenre().toString(), null, searchReq.getId());
 							connectionManager.insertToQueryQueue(sqlStmt);
 						} else
 						{
@@ -189,9 +200,9 @@ public class queryHandler implements Runnable
 							break;
 						case YEAR:
 							query += "Albums.year "
-								+ (advanceSearchFieldValue.getRelation().equals(advanceSearchFieldValueBundle.Relation.GREATER) ? ">"
-										: advanceSearchFieldValue.getRelation().equals(advanceSearchFieldValueBundle.Relation.EQUALS) ? "=" : "<")
-										+ advanceSearchFieldValue.getValue() + " ";
+									+ (advanceSearchFieldValue.getRelation().equals(advanceSearchFieldValueBundle.Relation.GREATER) ? ">"
+											: advanceSearchFieldValue.getRelation().equals(advanceSearchFieldValueBundle.Relation.EQUALS) ? "=" : "<")
+									+ advanceSearchFieldValue.getValue() + " ";
 							break;
 						default:
 							break;
@@ -209,194 +220,131 @@ public class queryHandler implements Runnable
 				}
 			} else if (searchReq.getTheQueryType() == SqlStatement.QueryType.INSERT_SINGLE)
 			{
-				switch (searchReq.getSingleInsertType()){
+				switch (searchReq.getSingleInsertType()) {
 				case ADD_USER:
 					String[] fields1 = searchReq.getDualFields();
 					String UID1 = UniqueID();
-					sqlStmt = new SqlStatement(QueryType.INSERT_SINGLE, "INSERT INTO Users (UserId, UserName, Password) VALUES (" 
-							+ UID1 + ", " + fields1[0] + ", " + fields1[1] + ")", null, searchReq.getId());
+					sqlStmt = new SqlStatement(QueryType.INSERT_SINGLE, "INSERT INTO Users (UserId, UserName, Password) VALUES (" + UID1 + ", "
+							+ fields1[0] + ", " + fields1[1] + ")", null, searchReq.getId());
 					connectionManager.insertToQueryQueue(sqlStmt);
 					break;
 				case ADD_SALE:
 					String[] fields2 = searchReq.getDualFields();
 					String UID2 = UniqueID();
-					sqlStmt = new SqlStatement(QueryType.INSERT_SINGLE, "INSERT INTO Sales (OrderId, UserId, DiscId) VALUES (" 
-							+ UID2 + ", " + fields2[0] + ", " + fields2[1] + ")", null, searchReq.getId());
+					sqlStmt = new SqlStatement(QueryType.INSERT_SINGLE, "INSERT INTO Sales (OrderId, UserId, DiscId) VALUES (" + UID2 + ", "
+							+ fields2[0] + ", " + fields2[1] + ")", null, searchReq.getId());
 					connectionManager.insertToQueryQueue(sqlStmt);
 					break;
 				}
-			} else // Insert Bulk
+			} else
+			// Insert Bulk
 			{
 				map = searchReq.getMap();
 				int sizeOfMap = map.entrySet().size();
-				boolean createArray = true;
-				int sizeOfCurrentChunk = 0;
-				int num=0;
+				attributes = new String[sizeOfMap][];
+				int num = 0;
 
-				switch (searchReq.getMapType()) 
-				{
+				switch (searchReq.getMapType()) {
 				case ALBUMS:
-					createArray = true;
 					num = 0;
-					sizeOfCurrentChunk = 0;
 					for (Entry<String, String[]> e : map.entrySet())
 					{
-						if(createArray)
-						{
-							if(sizeOfMap>sizeOfBulk)
-							{
-								attributes = new String[sizeOfBulk][];                        
-								sizeOfMap =  sizeOfMap - sizeOfBulk;  
-								sizeOfCurrentChunk = sizeOfBulk;
-							} else
-							{
-								attributes = new String[sizeOfMap][];                        
-								sizeOfMap = 0;
-								sizeOfCurrentChunk = sizeOfMap;
-							}
-							createArray = false;
-						}
-						
-						attributes[num] = new String[7]; 
+						attributes[num] = new String[7];
 						attributes[num][0] = e.getKey();
 						String[] values = e.getValue();
 						for (int i = 1; i < values.length; i++)
 						{
-							attributes[num][i] = values[i-1];
+							attributes[num][i] = values[i - 1];
 						}
-						
+
 						num++;
-						
-						if(num > sizeOfCurrentChunk)
-						{						
-							sqlStmt = new SqlStatement(QueryType.INSERT_BULK, "INSERT INTO Albums (DiscId, ArtistId, Title, Year, Genre, TotalTime, Price) " +
-									"VALUES (?, ?, ?, ?, ?, ?, "+ df.format((5+Math.random()*10)) +")", attributes, searchReq.getId());
-							connectionManager.insertToQueryQueue(sqlStmt);
-							num = 0;
-							createArray = true;
-						}
-						
 					}
+					
+					sqlStmt = new SqlStatement(QueryType.INSERT_BULK,
+							"INSERT INTO Albums (DiscId, ArtistId, Title, Year, Genre, TotalTime, Price) " + "VALUES (?, ?, ?, ?, ?, ?, "
+									+ df.format((5 + Math.random() * 10)) + ")", attributes, searchReq.getId());
+					connectionManager.insertToQueryQueue(sqlStmt);
+					
 					break;
 				case ARTISTS:
-					createArray = true;
 					num = 0;
-					sizeOfCurrentChunk = 0;
+					//sizeOfCurrentChunk = 0;
 					for (Entry<String, String[]> e : map.entrySet())
 					{
-						if(createArray)
+						/*if (createArray)
 						{
-							if(sizeOfMap>sizeOfBulk)
+							if (sizeOfMap > sizeOfBulk)
 							{
-								attributes = new String[sizeOfBulk][];                        
-								sizeOfMap =  sizeOfMap - sizeOfBulk;  
+								attributes = new String[sizeOfBulk][];
+								sizeOfMap = sizeOfMap - sizeOfBulk;
 								sizeOfCurrentChunk = sizeOfBulk;
 							} else
 							{
-								attributes = new String[sizeOfMap][];                        
+								attributes = new String[sizeOfMap][];
 								sizeOfMap = 0;
 								sizeOfCurrentChunk = sizeOfMap;
 							}
 							createArray = false;
-						}
-												
-						attributes[num] = new String[2]; 
+						}*/
+
+						attributes[num] = new String[2];
 						attributes[num][0] = e.getKey();
 						attributes[num][1] = e.getValue()[0];
-						
+
 						num++;
-						
-						if(num > sizeOfCurrentChunk)
-						{						
-							sqlStmt = new SqlStatement(QueryType.INSERT_BULK, "INSERT INTO Artists (Name, ArtistId) " +
-									"VALUES (?, ?)", attributes, searchReq.getId());
+
+						/*if (num > sizeOfCurrentChunk)
+						{
+							sqlStmt = new SqlStatement(QueryType.INSERT_BULK, "INSERT INTO Artists (Name, ArtistId) " + "VALUES (?, ?)", attributes,
+									searchReq.getId());
 							connectionManager.insertToQueryQueue(sqlStmt);
 							num = 0;
-							createArray = true;
-						}				
+							//createArray = true;
+						}
+						*/
 					}
+					
+					sqlStmt = new SqlStatement(QueryType.INSERT_BULK, "INSERT INTO Artists (Name, ArtistId) " + "VALUES (?, ?)", attributes,
+							searchReq.getId());
+					connectionManager.insertToQueryQueue(sqlStmt);
+					
 					break;
 				case GENRES:
-					createArray = true;
 					num = 0;
-					sizeOfCurrentChunk = 0;
 					for (Entry<String, String[]> e : map.entrySet())
 					{
-						if(createArray)
-						{
-							if(sizeOfMap>sizeOfBulk)
-							{
-								attributes = new String[sizeOfBulk][];                        
-								sizeOfMap =  sizeOfMap - sizeOfBulk;  
-								sizeOfCurrentChunk = sizeOfBulk;
-							} else
-							{
-								attributes = new String[sizeOfMap][];                        
-								sizeOfMap = 0;
-								sizeOfCurrentChunk = sizeOfMap;
-							}
-							createArray = false;
-						}
-												
-						attributes[num] = new String[2]; 
+						attributes[num] = new String[2];
 						attributes[num][0] = e.getKey();
 						attributes[num][1] = e.getValue()[0];
-						
+
 						num++;
-						
-						if(num > sizeOfCurrentChunk)
-						{						
-							sqlStmt = new SqlStatement(QueryType.INSERT_BULK, "INSERT INTO Genres (Genre, GenreId) " +
-									"VALUES (?, ?)", attributes, searchReq.getId());
-							connectionManager.insertToQueryQueue(sqlStmt);
-							num = 0;
-							createArray = true;
-						}
-						
+
 					}
+					
+					sqlStmt = new SqlStatement(QueryType.INSERT_BULK, "INSERT INTO Genres (Genre, GenreId) " + "VALUES (?, ?)", attributes, searchReq
+							.getId());
+					connectionManager.insertToQueryQueue(sqlStmt);
+					
 					break;
 				case TRACKS:
-					createArray = true;
 					num = 0;
-					sizeOfCurrentChunk = 0;
 					for (Entry<String, String[]> e : map.entrySet())
 					{
-						if(createArray)
-						{
-							if(sizeOfMap>sizeOfBulk)
-							{
-								attributes = new String[sizeOfBulk][];                        
-								sizeOfMap =  sizeOfMap - sizeOfBulk;  
-								sizeOfCurrentChunk = sizeOfBulk;
-							} else
-							{
-								attributes = new String[sizeOfMap][];                        
-								sizeOfMap = 0;
-								sizeOfCurrentChunk = sizeOfMap;
-							}
-							createArray = false;
-						}
-						
-						attributes[num] = new String[4]; 
+						attributes[num] = new String[4];
 						attributes[num][0] = e.getKey();
 						String[] values = e.getValue();
 						for (int i = 1; i < values.length; i++)
 						{
-							attributes[num][i] = values[i-1];
+							attributes[num][i] = values[i - 1];
 						}
-						
+
 						num++;
-						
-						if(num > sizeOfCurrentChunk)
-						{						
-							sqlStmt = new SqlStatement(QueryType.INSERT_BULK, "INSERT INTO Tracks (TrackId, DiscID, TrackTitle, Number) " +
-									"VALUES (?, ?, ?, ?)", attributes, searchReq.getId());
-							connectionManager.insertToQueryQueue(sqlStmt);
-							num = 0;
-							createArray = true;
-						}
-						
 					}
+
+					sqlStmt = new SqlStatement(QueryType.INSERT_BULK, "INSERT INTO Tracks (TrackId, DiscID, TrackTitle, Number) "
+							+ "VALUES (?, ?, ?, ?)", attributes, searchReq.getId());
+					connectionManager.insertToQueryQueue(sqlStmt);
+					
 					break;
 				default:
 					break;
@@ -405,26 +353,29 @@ public class queryHandler implements Runnable
 			}
 		}
 
-		private synchronized String[][] resultSetInto2DStringArray(ResultSet rs) {
-			try {
+		private synchronized String[][] resultSetInto2DStringArray(ResultSet rs)
+		{
+			try
+			{
 				rs.last();
 				int rowCount = rs.getRow();
 				int colCount = rs.getMetaData().getColumnCount();
 				String[][] table = new String[rowCount][colCount];
 				rs.first();
-				while (!rs.isAfterLast()) {
-					int row = rs.getRow()-1;
-					for (int col=0; col<colCount; col++) {
-						table[row][col] = rs.getString(col+1);
+				while (!rs.isAfterLast())
+				{
+					int row = rs.getRow() - 1;
+					for (int col = 0; col < colCount; col++)
+					{
+						table[row][col] = rs.getString(col + 1);
 					}
 					rs.next();
 				}
 
 				return table;
-			}
-			catch (SQLException e) {
-				View.displayErroMessage("An error occurred while manipulating a result from the DB.\n\n" +
-						e.toString());
+			} catch (SQLException e)
+			{
+				View.displayErroMessage("An error occurred while manipulating a result from the DB.\n\n" + e.toString());
 				return null;
 			}
 		}
