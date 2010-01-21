@@ -160,7 +160,7 @@ public class View extends ViewPart
 		
 		Label textLabel = new Label(mainArea, SWT.WRAP);
 		textLabel.setBackgroundImage(backgroundImage);
-		textLabel.setText("\n Choose some predifined searches on your left.\n Create your own simple or advanced searches above.\n When you find your CD, you can add it to the Shopping Cart on your right just by clicking it.\n\n");	
+		textLabel.setText("\n Choose some predifined searches on your left, which results you get bellow.\n Create your own simple or advanced searches above.\n When you find your CD, you can add it to the Shopping Cart on your right just by clicking it.\n\n");	
 		textLabel.setFont(contentBoldFont);
 		textLabel.setLayoutData(new GridData(GridData.FILL_BOTH));
 		
