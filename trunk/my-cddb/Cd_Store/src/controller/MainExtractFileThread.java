@@ -35,6 +35,19 @@ public class MainExtractFileThread extends Thread
 	public void run()
 	{
 		mainPath = firstFileToExtract.substring(0, firstFileToExtract.lastIndexOf("\\"));
+		File extrationDir = new File(mainPath);
+		if(extrationDir.isDirectory())
+		{
+			File[] filesInDir = extrationDir.listFiles();
+			for (int i = 0; i < filesInDir.length; i++)
+			{
+				if(filesInDir[i].isFile() && filesInDir[i].equals(new File(firstFileToExtract))==false && filesInDir[i].getName().indexOf(firstFileToExtract.substring(firstFileToExtract.lastIndexOf("\\")+1, firstFileToExtract.lastIndexOf(".")-1)) != -1)
+				{
+					filesInDir[i].delete();
+				}
+			}
+		}	
+		
 		ExtractFileThread myExtractFile1 = new ExtractFileThread(firstFileToExtract, mainPath, false, null);
 		myExtractFile1.start();
 		
