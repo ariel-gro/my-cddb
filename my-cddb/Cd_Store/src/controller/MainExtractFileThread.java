@@ -70,6 +70,8 @@ public class MainExtractFileThread extends Thread
 		DbImportWizardPageTwo.updateProgress("Starting to extract internal disks folders", 1);
 		
 		File resultFile = new File(mainPath + "\\allDisks.txt");
+		if(resultFile.exists())
+			resultFile.delete();
 		
 		while(myExtractFile2.isAlive())
 		{
