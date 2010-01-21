@@ -2,6 +2,7 @@ package controller;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -125,6 +126,8 @@ public class queryHandler implements Runnable
 
 		private synchronized void createQuery()
 		{
+			DecimalFormat df = new DecimalFormat("####.00");
+			
 			String query = "";
 			if (searchReq.getTheQueryType() == SqlStatement.QueryType.QUERY)
 			{
@@ -166,7 +169,7 @@ public class queryHandler implements Runnable
 					List<advanceSearchFieldValueBundle> params = searchReq.getAdvanceSearchParameters();
 					query += "SELECT Albums.* FROM Albums, Artists, Genres, tracks WHERE ";
 
-					for (Iterator iterator = params.iterator(); iterator.hasNext();)
+					for (Iterator<advanceSearchFieldValueBundle> iterator = params.iterator(); iterator.hasNext();)
 					{
 						advanceSearchFieldValueBundle advanceSearchFieldValue = (advanceSearchFieldValueBundle) iterator.next();
 
@@ -226,134 +229,173 @@ public class queryHandler implements Runnable
 			{
 				map = searchReq.getMap();
 				int sizeOfMap = map.entrySet().size();
+				boolean createArray = true;
+				int sizeOfCurrentChunk = 0;
 				int num=0;
 
 				switch (searchReq.getMapType()) 
 				{
 				case ALBUMS:
-					num=0;
-					while(sizeOfMap>0)
+					createArray = true;
+					num = 0;
+					sizeOfCurrentChunk = 0;
+					for (Entry<String, String[]> e : map.entrySet())
 					{
-						if(sizeOfMap>sizeOfBulk)
+						if(createArray)
 						{
-							attributes = new String[sizeOfBulk][];                        
-							sizeOfMap =  sizeOfMap - sizeOfBulk;                    
-						} else
-						{
-							attributes = new String[sizeOfMap][];                        
-							sizeOfMap = 0;
-						}
-						for (Entry<String, String[]> e : map.entrySet())
-						{
-							attributes[num] = new String[7];
-							attributes[num][0] = e.getKey();
-							String[] values = e.getValue();
-							for (int i = 1; i <= values.length; i++)
+							if(sizeOfMap>sizeOfBulk)
 							{
-								attributes[num][i] = values[i-1];
-							}
-							num++;
-							if(num > sizeOfBulk)
+								attributes = new String[sizeOfBulk][];                        
+								sizeOfMap =  sizeOfMap - sizeOfBulk;  
+								sizeOfCurrentChunk = sizeOfBulk;
+							} else
 							{
-								sqlStmt = new SqlStatement(QueryType.INSERT_BULK, "INSERT INTO Albums (DiscId, ArtistId, Title, Year, Genre, TotalTime, Price) " +
-										"VALUES (?, ?, ?, ?, ?, ?, "+ (5+Math.random()*10) +")", attributes, searchReq.getId());
-								connectionManager.insertToQueryQueue(sqlStmt);
-								num = 0;
+								attributes = new String[sizeOfMap][];                        
+								sizeOfMap = 0;
+								sizeOfCurrentChunk = sizeOfMap;
 							}
+							createArray = false;
 						}
+						
+						attributes[num] = new String[7]; 
+						attributes[num][0] = e.getKey();
+						String[] values = e.getValue();
+						for (int i = 1; i < values.length; i++)
+						{
+							attributes[num][i] = values[i-1];
+						}
+						
+						num++;
+						
+						if(num > sizeOfCurrentChunk)
+						{						
+							sqlStmt = new SqlStatement(QueryType.INSERT_BULK, "INSERT INTO Albums (DiscId, ArtistId, Title, Year, Genre, TotalTime, Price) " +
+									"VALUES (?, ?, ?, ?, ?, ?, "+ df.format((5+Math.random()*10)) +")", attributes, searchReq.getId());
+							connectionManager.insertToQueryQueue(sqlStmt);
+							num = 0;
+							createArray = true;
+						}
+						
 					}
 					break;
 				case ARTISTS:
-					num=0;
-					while(sizeOfMap>0)
+					createArray = true;
+					num = 0;
+					sizeOfCurrentChunk = 0;
+					for (Entry<String, String[]> e : map.entrySet())
 					{
-						if(sizeOfMap>sizeOfBulk)
+						if(createArray)
 						{
-							attributes = new String[sizeOfBulk][];                        
-							sizeOfMap =  sizeOfMap - sizeOfBulk;                    
-						} else
-						{
-							attributes = new String[sizeOfMap][];                        
-							sizeOfMap = 0;
-						}
-						for (Entry<String, String[]> e : map.entrySet())
-						{
-							attributes[num] = new String[2]; 
-							attributes[num][0] = e.getKey();
-							attributes[num][1] = e.getValue()[0];
-							num++;
-							if(num > sizeOfBulk)
-							{								
-								sqlStmt = new SqlStatement(QueryType.INSERT_BULK, "INSERT INTO Artists (Name, ArtistId) " +
-										"VALUES (?, ?)", attributes, searchReq.getId());
-								connectionManager.insertToQueryQueue(sqlStmt);
-								num = 0;
-
+							if(sizeOfMap>sizeOfBulk)
+							{
+								attributes = new String[sizeOfBulk][];                        
+								sizeOfMap =  sizeOfMap - sizeOfBulk;  
+								sizeOfCurrentChunk = sizeOfBulk;
+							} else
+							{
+								attributes = new String[sizeOfMap][];                        
+								sizeOfMap = 0;
+								sizeOfCurrentChunk = sizeOfMap;
 							}
+							createArray = false;
 						}
+												
+						attributes[num] = new String[2]; 
+						attributes[num][0] = e.getKey();
+						attributes[num][1] = e.getValue()[0];
+						
+						num++;
+						
+						if(num > sizeOfCurrentChunk)
+						{						
+							sqlStmt = new SqlStatement(QueryType.INSERT_BULK, "INSERT INTO Artists (Name, ArtistId) " +
+									"VALUES (?, ?)", attributes, searchReq.getId());
+							connectionManager.insertToQueryQueue(sqlStmt);
+							num = 0;
+							createArray = true;
+						}				
 					}
 					break;
 				case GENRES:
-					num=0;
-					while(sizeOfMap>0)
+					createArray = true;
+					num = 0;
+					sizeOfCurrentChunk = 0;
+					for (Entry<String, String[]> e : map.entrySet())
 					{
-						if(sizeOfMap>sizeOfBulk)
+						if(createArray)
 						{
-							attributes = new String[sizeOfBulk][];                        
-							sizeOfMap =  sizeOfMap - sizeOfBulk;                    
-						} else
-						{
-							attributes = new String[sizeOfMap][];                        
-							sizeOfMap = 0;
-						}
-						for (Entry<String, String[]> e : map.entrySet())
-						{
-							attributes[num] = new String[2]; 
-							attributes[num][0] = e.getKey();
-							attributes[num][1] = e.getValue()[0];
-							num++;
-							if(num > sizeOfBulk)
-							{								
-								sqlStmt = new SqlStatement(QueryType.INSERT_BULK, "INSERT INTO Genres (Genre, GenreId) " +
-										"VALUES (?, ?)", attributes, searchReq.getId());
-								connectionManager.insertToQueryQueue(sqlStmt);
-								num = 0;
-
+							if(sizeOfMap>sizeOfBulk)
+							{
+								attributes = new String[sizeOfBulk][];                        
+								sizeOfMap =  sizeOfMap - sizeOfBulk;  
+								sizeOfCurrentChunk = sizeOfBulk;
+							} else
+							{
+								attributes = new String[sizeOfMap][];                        
+								sizeOfMap = 0;
+								sizeOfCurrentChunk = sizeOfMap;
 							}
+							createArray = false;
 						}
+												
+						attributes[num] = new String[2]; 
+						attributes[num][0] = e.getKey();
+						attributes[num][1] = e.getValue()[0];
+						
+						num++;
+						
+						if(num > sizeOfCurrentChunk)
+						{						
+							sqlStmt = new SqlStatement(QueryType.INSERT_BULK, "INSERT INTO Genres (Genre, GenreId) " +
+									"VALUES (?, ?)", attributes, searchReq.getId());
+							connectionManager.insertToQueryQueue(sqlStmt);
+							num = 0;
+							createArray = true;
+						}
+						
 					}
 					break;
 				case TRACKS:
-					num=0;
-					while(sizeOfMap>0)
+					createArray = true;
+					num = 0;
+					sizeOfCurrentChunk = 0;
+					for (Entry<String, String[]> e : map.entrySet())
 					{
-						if(sizeOfMap>sizeOfBulk)
+						if(createArray)
 						{
-							attributes = new String[sizeOfBulk][];                        
-							sizeOfMap =  sizeOfMap - sizeOfBulk;                    
-						} else
-						{
-							attributes = new String[sizeOfMap][];                        
-							sizeOfMap = 0;
-						}
-						for (Entry<String, String[]> e : map.entrySet())
-						{
-							attributes[num] = new String[4]; 
-							attributes[num][0] = e.getKey();
-							String[] values = e.getValue();
-							for (int i = 1; i <= values.length; i++)
+							if(sizeOfMap>sizeOfBulk)
 							{
-								attributes[num][i] = values[i-1];
+								attributes = new String[sizeOfBulk][];                        
+								sizeOfMap =  sizeOfMap - sizeOfBulk;  
+								sizeOfCurrentChunk = sizeOfBulk;
+							} else
+							{
+								attributes = new String[sizeOfMap][];                        
+								sizeOfMap = 0;
+								sizeOfCurrentChunk = sizeOfMap;
 							}
-							num++;
-							if(num > sizeOfBulk)
-							{						
-								sqlStmt = new SqlStatement(QueryType.INSERT_BULK, "INSERT INTO Tracks (TrackId, DiscID, TrackTitle, Number) " +
-										"VALUES (?, ?, ?, ?)", attributes, searchReq.getId());
-								connectionManager.insertToQueryQueue(sqlStmt);
-								num = 0;
-							}
+							createArray = false;
 						}
+						
+						attributes[num] = new String[4]; 
+						attributes[num][0] = e.getKey();
+						String[] values = e.getValue();
+						for (int i = 1; i < values.length; i++)
+						{
+							attributes[num][i] = values[i-1];
+						}
+						
+						num++;
+						
+						if(num > sizeOfCurrentChunk)
+						{						
+							sqlStmt = new SqlStatement(QueryType.INSERT_BULK, "INSERT INTO Tracks (TrackId, DiscID, TrackTitle, Number) " +
+									"VALUES (?, ?, ?, ?)", attributes, searchReq.getId());
+							connectionManager.insertToQueryQueue(sqlStmt);
+							num = 0;
+							createArray = true;
+						}
+						
 					}
 					break;
 				default:
