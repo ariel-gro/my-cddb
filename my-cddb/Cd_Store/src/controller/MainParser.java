@@ -405,7 +405,10 @@ public class MainParser extends Thread
 		try
 		{
 			ps = connection.prepareStatement("SELECT COUNT(*) from " + table);
-			return ps.executeQuery().getInt(1);
+			ResultSet result = ps.executeQuery();
+			result.next();
+			
+			return result.getInt(1);
 		}
 		catch (SQLException e)
 		{
