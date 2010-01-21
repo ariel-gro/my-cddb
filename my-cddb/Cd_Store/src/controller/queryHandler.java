@@ -176,12 +176,12 @@ public class queryHandler implements Runnable
 						if (searchReq.getMusicGenre() != null)
 						{
 							sqlStmt = new SqlStatement(QueryType.QUERY,
-									"SELECT TOP 10 * FROM (SELECT * FROM Albums ORDERBY Albums.year) WHERE Albums.genre = "
+									"SELECT TOP 10 * FROM (SELECT * FROM ALBUMS ORDERBY ALBUMS.year) WHERE ALBUMS.genre = "
 											+ searchReq.getMusicGenre().toString(), null, searchReq.getId());
 							connectionManager.insertToQueryQueue(sqlStmt);
 						} else
 						{
-							sqlStmt = new SqlStatement(QueryType.QUERY, "SELECT TOP 10 * FROM (SELECT * FROM Albums ORDERBY Albums.year)", null,
+							sqlStmt = new SqlStatement(QueryType.QUERY, "SELECT TOP 10 * FROM (SELECT * FROM ALBUMS ORDERBY ALBUMS.year)", null,
 									searchReq.getId());
 							connectionManager.insertToQueryQueue(sqlStmt);
 						}
@@ -189,7 +189,7 @@ public class queryHandler implements Runnable
 					case MOST_POPULAR:
 						sqlStmt = new SqlStatement(
 								QueryType.QUERY,
-								"SELECT TOP 10 Albums.* FROM Albums, (SELECT id, COUNT(id) FROM Sales GROUP BY id ORDER BY COUNT(id) DESC) WHERE Sales.id = Albums.id",
+								"SELECT TOP 10 Albums.* FROM ALBUMS, (SELECT id, COUNT(id) FROM SALES GROUP BY id ORDER BY COUNT(id) DESC) WHERE SALES.id = ALBUMS.id",
 								null, searchReq.getId());
 						connectionManager.insertToQueryQueue(sqlStmt);
 						break;
@@ -197,14 +197,14 @@ public class queryHandler implements Runnable
 						break;
 					}
 				case REGULAR:
-					sqlStmt = new SqlStatement(QueryType.QUERY, "SELECT Albums.* FROM Albums, Artists WHERE (Albums.title LIKE '%"
-							+ searchReq.getRegularSearchString() + "%') OR (Artists.name LIKE '%" + searchReq.getRegularSearchString()
-							+ "%') GROUP BY Albums.id", null, searchReq.getId());
+					sqlStmt = new SqlStatement(QueryType.QUERY, "SELECT ALBUMS.* FROM ALBUMS, ARTISTS WHERE (ALBUMS.title LIKE '%"
+							+ searchReq.getRegularSearchString() + "%') OR (ARTISTS.name LIKE '%" + searchReq.getRegularSearchString()
+							+ "%') GROUP BY ALBUMS.id", null, searchReq.getId());
 					connectionManager.insertToQueryQueue(sqlStmt);
 					break;
 				case ADVANCED:
 					List<advanceSearchFieldValueBundle> params = searchReq.getAdvanceSearchParameters();
-					query += "SELECT Albums.* FROM Albums, Artists, Genres, tracks WHERE ";
+					query += "SELECT ALBUMS.* FROM ALBUMS, ARTISTS, GENRES, TRACKS WHERE ";
 
 					for (Iterator<advanceSearchFieldValueBundle> iterator = params.iterator(); iterator.hasNext();)
 					{
@@ -212,20 +212,20 @@ public class queryHandler implements Runnable
 
 						switch (advanceSearchFieldValue.getSearchField()) {
 						case ALBUM_TITLE:
-							query += "Albums.title LIKE '%" + advanceSearchFieldValue.getValue() + "%' ";
+							query += "ALBUMS.title LIKE '%" + advanceSearchFieldValue.getValue() + "%' ";
 							break;
 						case ARTIST_NAME:
-							query += "Artists.name LIKE '%" + advanceSearchFieldValue.getValue() + "%' AND Albums.artistId = Artists.artistId ";
+							query += "ARTISTS.name LIKE '%" + advanceSearchFieldValue.getValue() + "%' AND ALBUMS.artistId = ARTISTS.artistId ";
 							break;
 						case GENRE:
 							if (advanceSearchFieldValue.getValue().equals("All_Music_Genres") == false)
-								query += "Genres.genre LIKE '%" + advanceSearchFieldValue.getValue() + "%' AND Genres.genreId = Albums.genreId ";
+								query += "GENRES.genre LIKE '%" + advanceSearchFieldValue.getValue() + "%' AND GENRES.genreId = ALBUMS.genreId ";
 							break;
 						case TRACK_TITLE:
-							query += "Tracks.title LIKE '%" + advanceSearchFieldValue.getValue() + "%' AND Tracks.id = Albums.id ";
+							query += "TRACKS.title LIKE '%" + advanceSearchFieldValue.getValue() + "%' AND TRACKS.id = ALBUMS.id ";
 							break;
 						case YEAR:
-							query += "Albums.year "
+							query += "ALBUMS.year "
 									+ (advanceSearchFieldValue.getRelation().equals(advanceSearchFieldValueBundle.Relation.GREATER) ? ">"
 											: advanceSearchFieldValue.getRelation().equals(advanceSearchFieldValueBundle.Relation.EQUALS) ? "=" : "<")
 									+ advanceSearchFieldValue.getValue() + " ";
@@ -234,11 +234,11 @@ public class queryHandler implements Runnable
 							break;
 						}
 					}
-					query += "GROUP BY Albums.id";
+					query += "GROUP BY ALBUMS.id";
 					sqlStmt = new SqlStatement(QueryType.QUERY, query, null, searchReq.getId());
 					connectionManager.insertToQueryQueue(sqlStmt);
 				case GET_USERS:
-					sqlStmt = new SqlStatement(QueryType.QUERY, "SELECT * FROM Users", null, searchReq.getId());
+					sqlStmt = new SqlStatement(QueryType.QUERY, "SELECT * FROM USERS", null, searchReq.getId());
 					connectionManager.insertToQueryQueue(sqlStmt);
 					break;
 				default:
@@ -250,14 +250,14 @@ public class queryHandler implements Runnable
 				case ADD_USER:
 					String[] fields1 = searchReq.getDualFields();
 					String UID1 = UniqueID();
-					sqlStmt = new SqlStatement(QueryType.INSERT_SINGLE, "INSERT INTO Users (UserId, UserName, Password) VALUES (" + UID1 + ", "
+					sqlStmt = new SqlStatement(QueryType.INSERT_SINGLE, "INSERT INTO USERS (UserId, UserName, Password) VALUES (" + UID1 + ", "
 							+ fields1[0] + ", " + fields1[1] + ")", null, searchReq.getId());
 					connectionManager.insertToQueryQueue(sqlStmt);
 					break;
 				case ADD_SALE:
 					String[] fields2 = searchReq.getDualFields();
 					String UID2 = UniqueID();
-					sqlStmt = new SqlStatement(QueryType.INSERT_SINGLE, "INSERT INTO Sales (OrderId, UserId, DiscId) VALUES (" + UID2 + ", "
+					sqlStmt = new SqlStatement(QueryType.INSERT_SINGLE, "INSERT INTO SALES (OrderId, UserId, DiscId) VALUES (" + UID2 + ", "
 							+ fields2[0] + ", " + fields2[1] + ")", null, searchReq.getId());
 					connectionManager.insertToQueryQueue(sqlStmt);
 					break;
@@ -287,7 +287,7 @@ public class queryHandler implements Runnable
 					}
 					
 					sqlStmt = new SqlStatement(QueryType.INSERT_BULK,
-							"INSERT INTO Albums (DiscId, ArtistId, Title, Year, Genre, TotalTime, Price) " + "VALUES (?, ?, ?, ?, ?, ?, "
+							"INSERT INTO ALBUMS (DiscId, ArtistId, Title, Year, Genre, TotalTime, Price) " + "VALUES (?, ?, ?, ?, ?, ?, "
 									+ df.format((5 + Math.random() * 10)) + ")", attributes, searchReq.getId());
 					connectionManager.insertToQueryQueue(sqlStmt);
 					
@@ -330,7 +330,7 @@ public class queryHandler implements Runnable
 						*/
 					}
 					
-					sqlStmt = new SqlStatement(QueryType.INSERT_BULK, "INSERT INTO Artists (Name, ArtistId) " + "VALUES (?, ?)", attributes,
+					sqlStmt = new SqlStatement(QueryType.INSERT_BULK, "INSERT INTO ARTISTS (Name, ArtistId) " + "VALUES (?, ?)", attributes,
 							searchReq.getId());
 					connectionManager.insertToQueryQueue(sqlStmt);
 					
@@ -347,7 +347,7 @@ public class queryHandler implements Runnable
 
 					}
 					
-					sqlStmt = new SqlStatement(QueryType.INSERT_BULK, "INSERT INTO Genres (Genre, GenreId) " + "VALUES (?, ?)", attributes, searchReq
+					sqlStmt = new SqlStatement(QueryType.INSERT_BULK, "INSERT INTO GENRES (Genre, GenreId) " + "VALUES (?, ?)", attributes, searchReq
 							.getId());
 					connectionManager.insertToQueryQueue(sqlStmt);
 					
@@ -367,7 +367,7 @@ public class queryHandler implements Runnable
 						num++;
 					}
 
-					sqlStmt = new SqlStatement(QueryType.INSERT_BULK, "INSERT INTO Tracks (TrackId, DiscID, TrackTitle, Number) "
+					sqlStmt = new SqlStatement(QueryType.INSERT_BULK, "INSERT INTO TRACKS (TrackId, DiscID, TrackTitle, Number) "
 							+ "VALUES (?, ?, ?, ?)", attributes, searchReq.getId());
 					connectionManager.insertToQueryQueue(sqlStmt);
 					
