@@ -29,6 +29,8 @@ public class queryHandler implements Runnable
 
 	public synchronized void run()
 	{
+		queryHandler.createTables();
+		
 		while (!timeToQuit)
 		{
 			if (!SearchesPriorityQueue.isEmpty())
@@ -62,17 +64,18 @@ public class queryHandler implements Runnable
 												"table_name = 'TRACKS' OR table_name = 'SALES' OR " + 
 												"table_name = 'GENRES' OR table_name = 'USERS')", 
 												null, 0);
+		System.out.println("Inserting sqlStmt to queue");
 		connectionManager.insertToQueryQueue(sqlStmt);
 		boolean waitforanswer = false;
 		Result myResult = null;
 		while (!waitforanswer)
 		{
 			try {
-				myResult = ResultsQueue.peek();
+				myResult = ResultsQueue.getResult();
 				if (myResult != null)
 				{
-					tester = myResult.getResultSet().getInt(1);
-					System.out.println(tester);
+					myResult.getResultSet().next();
+					tester = myResult.getResultSet().getInt(1);		
 				}
 				else
 					System.out.println("result null");
