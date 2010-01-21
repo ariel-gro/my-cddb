@@ -27,6 +27,7 @@ public class connectionManager implements Runnable{
 			queryQueue = new LinkedBlockingQueue<SqlStatement>();
 		
 		try {
+			System.out.println("Really Inserting sqlStmt to queue");
 			queryQueue.put(sqlStatment);
 		} catch (InterruptedException e) {
 			View.displayErroMessage("Error during connection maneger initialization:\n"+
@@ -58,17 +59,28 @@ public class connectionManager implements Runnable{
 	}
 
 	public synchronized void run() {
+	
+		System.out.println("connectionManager: Starting run() of connectionManager");
 		//initialize class fields
 		if (connThreads == null)
 			connThreads = Executors.newFixedThreadPool(numOfThreads);
 
+		System.out.println("connectionManager: after connThreads");
+		
 		if (queryQueue == null)
 			queryQueue = new LinkedBlockingQueue<SqlStatement>();
 
+		System.out.println("connectionManager: after queryQueue");
+		
 		if (connQueue == null){
+			
+			System.out.println("connectionManager: inside conQueue if");
 			connQueue = new LinkedBlockingQueue<Connection>();
 			conVector = new Vector<Connection>(numOfThreads);
+			System.out.println("connectionManager: inside conQueue if after creating LinkedBlockingqueue and convector");
+			
 			if (openConnection() == false) {
+				System.out.println("connectionManager: Exiting because conection failed");
 				//initial connection to DB failed => kill thread
 				return;
 			}
@@ -76,9 +88,12 @@ public class connectionManager implements Runnable{
 		
 		SqlStatement stmt = null;
 		int connectionReTries = 5;
+		System.out.println("connectionManager: Before while of connectionManager");
 		while (!timeToQuit){
 			try {
 				if ((numOfConnections < numOfThreads) && connQueue.isEmpty() && (connectionReTries > 0))
+				{
+					System.out.println("connectionManager: got inot first if");
 					if (openConnection() == false) {
 						connectionReTries--;
 						break;
@@ -86,8 +101,10 @@ public class connectionManager implements Runnable{
 					else {
 						connectionReTries = 5;
 					}
-				DbConnector con = new DbConnector(connQueue.take(), stmt);
+				}
 				stmt = queryQueue.take();
+				System.out.println("connectionManager: taking stmt from queue: " + stmt.getQueryType().toString());
+				DbConnector con = new DbConnector(connQueue.take(), stmt);				
 				connThreads.execute(con);
 			}
 			catch (InterruptedException e) {
@@ -118,6 +135,7 @@ public class connectionManager implements Runnable{
 		// loading the driver
 		try
 		{
+			System.out.println("connectionManager: inside openConnection");
 			Class.forName("oracle.jdbc.OracleDriver");
 		}
 		catch (ClassNotFoundException e)
@@ -134,11 +152,14 @@ public class connectionManager implements Runnable{
 				"jdbc:oracle:thin:@" + DbConfiguration.getIpAddress()+":" + DbConfiguration.getPort() +
 				"/" + DbConfiguration.getDb();
 			
+			System.out.println("connectionManager: connecting...");
 			Connection connection =
 				DriverManager.getConnection(jdbcURL,
 					DbConfiguration.getUser(), DbConfiguration.getPassword());
 			
+			System.out.println("connectionManager: inseting connection to queue");
 			insertToConnectionQueue(connection);
+			System.out.println("connectionManager: inseting connection to vecotr");
 			insertToConVector(numOfConnections, connection);
 			numOfConnections++;
 		}
@@ -149,7 +170,6 @@ public class connectionManager implements Runnable{
 			return false;
 		}
 		System.out.println("connected to DB");
-		queryHandler.createTables();
 		return true;
 	}
 	
