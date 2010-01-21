@@ -70,8 +70,8 @@ public class MainParser extends Thread
 				this.oldGenresMap = new HashMap<String,String>(3000, 0.9f);
 				this.oldArtistMap = new HashMap<String,String>(100000, 0.8f);
 				
-				String[][] reqGenres = getStringResults("SELECT genre, id FROM GEMRES");
-				String[][] reqArtists = getStringResults("SELECT name, id FROM ARTISTS");
+				String[][] reqGenres = getStringResults("SELECT Genre, GenreId FROM GENRES");
+				String[][] reqArtists = getStringResults("SELECT Name, ArtistId FROM ARTISTS");
 				if (reqArtists == null || reqGenres == null)
 					return;
 				
