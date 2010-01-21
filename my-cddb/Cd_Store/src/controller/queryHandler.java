@@ -85,17 +85,17 @@ public class queryHandler implements Runnable
 					System.out.println("inside if");
 					myResult = ResultsQueue.getResult();
 					SqlStatement[] create_stmt = new SqlStatement[6];
-					create_stmt[0] = new SqlStatement(QueryType.INSERT_SINGLE, "CREATE TABLE Albums(PRIMARY KEY DiscId NUMBER, ArtistId INT, "
-							+ "Title VARCHAR(50), Year SMALLINT, Genre VARCHAR(50), TotalTime SMALLINT, Price FLOAT)", null, 0);
-					create_stmt[1] = new SqlStatement(QueryType.INSERT_SINGLE, "CREATE TABLE Tracks(PRIMARY KEY TrackId INT, DiscID NUMBER, "
-							+ "Num SMALLINT, TrackTitle VARCHAR(50))", null, 0);
-					create_stmt[2] = new SqlStatement(QueryType.INSERT_SINGLE, "CREATE TABLE Artists(Name VARCHAR(50), PRIMARY KEY ArtistId INT)", 
+					create_stmt[0] = new SqlStatement(QueryType.INSERT_SINGLE, "CREATE TABLE Albums(DiscId NUMBER, ArtistId INT, "
+							+ "Title VARCHAR(50), Year SMALLINT, Genre VARCHAR(50), TotalTime SMALLINT, Price FLOAT, PRIMARY KEY(DiscId))", null, 0);
+					create_stmt[1] = new SqlStatement(QueryType.INSERT_SINGLE, "CREATE TABLE Tracks(TrackId INT, DiscID NUMBER, "
+							+ "Num SMALLINT, TrackTitle VARCHAR(50), PRIMARY KEY(TrackId))", null, 0);
+					create_stmt[2] = new SqlStatement(QueryType.INSERT_SINGLE, "CREATE TABLE Artists(Name VARCHAR(50), ArtistId INT, PRIMARY KEY(ArtistId))", 
 							null, 0);
-					create_stmt[3] = new SqlStatement(QueryType.INSERT_SINGLE, "CREATE TABLE Genres(Genre VARCHAR(50), PRIMARY KEY GenreId INT)", 
+					create_stmt[3] = new SqlStatement(QueryType.INSERT_SINGLE, "CREATE TABLE Genres(Genre VARCHAR(50), GenreId INT, PRIMARY KEY(GenreId))", 
 							null, 0);
-					create_stmt[4] = new SqlStatement(QueryType.INSERT_SINGLE, "CREATE TABLE Users(PRIMARY KEY UserId INT, UserName VARCHAR(20), Password VARCHAR(20))", 
+					create_stmt[4] = new SqlStatement(QueryType.INSERT_SINGLE, "CREATE TABLE Users(UserId INT, UserName VARCHAR(20), Password VARCHAR(20), PRIMARY KEY(UserId))", 
 							null, 0);
-					create_stmt[5] = new SqlStatement(QueryType.INSERT_SINGLE, "CREATE TABLE Sales(PRIMARY KEY (OrderId INT, UserId INT), DiscId NUMBER)", 
+					create_stmt[5] = new SqlStatement(QueryType.INSERT_SINGLE, "CREATE TABLE Sales(OrderId INT, UserId INT, DiscId NUMBER, PRIMARY KEY(OrderId, UserId))", 
 							null, 0);
 					for (int i = 0; i < 6; i++)
 					{
