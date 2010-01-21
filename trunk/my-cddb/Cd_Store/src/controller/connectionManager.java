@@ -149,6 +149,7 @@ public class connectionManager implements Runnable{
 			return false;
 		}
 		System.out.println("connected to DB");
+		queryHandler.createTables();
 		return true;
 	}
 	

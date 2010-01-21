@@ -53,36 +53,42 @@ public class queryHandler implements Runnable
 	}
 
 	// this method checks if tables exist i the DB. if not - creates all tables.
-	public synchronized void createTables()
+	public static synchronized void createTables()
 	{
-		SqlStatement sqlStmt = new SqlStatement(null, "SELECT table_name FROM all_tables ORDER BY table_name", null, 0);
+		SqlStatement sqlStmt = new SqlStatement(QueryType.QUERY, 
+												"SELECT count(table_name) FROM all_tables WEHRE " +
+												"(table_name = 'ARTISTS' OR table_name = 'ALBUMS' OR " +
+												"table_name = 'TRACKS' OR table_name = 'SALES' OR " + 
+												"table_name = 'GENRES' OR table_name = 'USERS')", 
+												null, 0);
 		connectionManager.insertToQueryQueue(sqlStmt);
 		boolean waitforanswer = false;
 		Result myResult = null;
 		while (!waitforanswer)
 		{
 			myResult = ResultsQueue.peek();
-			// this should mean that there are no tables in the DB. but it might
-			// also mean we didn't get a result yet?
-			if ((myResult.getId() == 0) && (myResult == null))
+			
+			if ((myResult != null) && (myResult.getId() == 0))
 			{
 				myResult = ResultsQueue.getResult();
-				// need to check the create succeeded? if yes - i'll change the
-				// code.
 				SqlStatement[] create_stmt = new SqlStatement[6];
-				create_stmt[0] = new SqlStatement(null, "CREATE TABLE Albums(DiscId BIGINT, ArtistId INT, "
+				create_stmt[0] = new SqlStatement(QueryType.INSERT_SINGLE, "CREATE TABLE Albums(DiscId BIGINT, ArtistId INT, "
 						+ "Title VARCHAR(50), Year SMALLINT, Genre VARCHAR(50), TotalTime SMALLINT, Price FLOAT)", null, 0);
-				create_stmt[1] = new SqlStatement(null, "CREATE TABLE Tracks(TrackId INT, DiscID BIGINT, "
+				create_stmt[1] = new SqlStatement(QueryType.INSERT_SINGLE, "CREATE TABLE Tracks(TrackId INT, DiscID BIGINT, "
 						+ "Number TINYINT, TrackTitle VARCHAR(50))", null, 0);
-				create_stmt[2] = new SqlStatement(null, "CREATE TABLE Artists(Name VARCHAR(50), ArtistId INT)", null, 0);
-				create_stmt[3] = new SqlStatement(null, "CREATE TABLE Genres(Genre VARCHAR(50), GenreId INT)", null, 0);
-				create_stmt[4] = new SqlStatement(null, "CREATE TABLE Users(UserId INT, UserName VARCHAR(20), Password VARCHAR(20))", null, 0);
-				create_stmt[5] = new SqlStatement(null, "CREATE TABLE Sales(OrderId INT, UserId INT, DiscId BIGINT)", null, 0);
+				create_stmt[2] = new SqlStatement(QueryType.INSERT_SINGLE, "CREATE TABLE Artists(Name VARCHAR(50), ArtistId INT)", null, 0);
+				create_stmt[3] = new SqlStatement(QueryType.INSERT_SINGLE, "CREATE TABLE Genres(Genre VARCHAR(50), GenreId INT)", null, 0);
+				create_stmt[4] = new SqlStatement(QueryType.INSERT_SINGLE, "CREATE TABLE Users(UserId INT, UserName VARCHAR(20), Password VARCHAR(20))", null, 0);
+				create_stmt[5] = new SqlStatement(QueryType.INSERT_SINGLE, "CREATE TABLE Sales(OrderId INT, UserId INT, DiscId BIGINT)", null, 0);
 				for (int i = 0; i < 6; i++)
 				{
 					connectionManager.insertToQueryQueue(create_stmt[i]);
 				}
 				waitforanswer = true;
+			}
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
 			}
 		}
 	}
