@@ -1,16 +1,20 @@
 package model;
 
+import model.RequestToQueryHandler.MapType;
+
 public class SqlStatement
 {
 	public enum QueryType {INSERT_SINGLE, INSERT_BULK, QUERY}	
 	
 	private QueryType queryType;
+	private MapType mapType;
 	private String stmt;
 	private String[][] tuples;
 	private int requestId;
 	
-	public SqlStatement(QueryType queryType, String stmt, String[][] tuples, int requestId) {
+	public SqlStatement(QueryType queryType, RequestToQueryHandler.MapType mapType, String stmt, String[][] tuples, int requestId) {
 		this.queryType = queryType;
+		this.mapType = mapType;
 		this.stmt = stmt;
 		this.tuples = tuples;
 		this.requestId = requestId;
@@ -22,6 +26,14 @@ public class SqlStatement
 
 	public void setQueryType(QueryType queryType) {
 		this.queryType = queryType;
+	}
+
+	public void setMapType(RequestToQueryHandler.MapType mapType) {
+		this.mapType = mapType;
+	}
+
+	public RequestToQueryHandler.MapType getMapType() {
+		return mapType;
 	}
 
 	public String getStmt() {
