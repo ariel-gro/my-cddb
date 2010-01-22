@@ -97,7 +97,7 @@ public class MainParser extends Thread
 			// Read the file
 			System.out.println("reading file");
 			int track_index = 0;
-			while (((line!=null) && jumpToNextDisk) || (line = br.readLine()) != null)
+			while ((jumpToNextDisk && (line!=null)) || (line = br.readLine()) != null)
 			{
 				if(jumpToNextDisk)
 					jumpToNextDisk = false;
@@ -388,6 +388,7 @@ public class MainParser extends Thread
 		{
 			ps = connection.prepareStatement(query);
 			queryResult = ps.executeQuery();
+			queryResult.next();
 		}
 		catch (SQLException e)
 		{
@@ -445,21 +446,17 @@ public class MainParser extends Thread
 		// creating the connection
 		try
 		{
-//			String jdbcURL =
-//				"jdbc:oracle:thin:@" + DbConfiguration.getIpAddress()+":" + DbConfiguration.getPort() +
-//				"/" + DbConfiguration.getDb();
 			
+			//TODO change back to normal connection
 			String jdbcURL =
-				"jdbc:oracle:thin:@" + "127.0.0.1"+":" + 1521 +
-				"/" + "XE";
+				"jdbc:oracle:thin:@" + DbConfiguration.getIpAddress()+":" + DbConfiguration.getPort() +
+				"/" + DbConfiguration.getDb();
 			
 			System.out.println("bypassed connection");
 			
-//			return DriverManager.getConnection(jdbcURL,
-//					DbConfiguration.getUser(), DbConfiguration.getPassword());
-			
 			return DriverManager.getConnection(jdbcURL,
-					"system", "1234");
+					DbConfiguration.getUser(), DbConfiguration.getPassword());
+			
 		}
 		catch (SQLException e)
 		{
