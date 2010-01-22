@@ -4,9 +4,11 @@ import java.sql.*;
 import view.views.View;
 
 
+import model.RequestToQueryHandler;
 import model.Result;
 import model.ResultsQueue;
 import model.SqlStatement;
+import model.RequestToQueryHandler.MapType;
 import model.SqlStatement.QueryType;
 
 
@@ -103,17 +105,61 @@ public class DbConnector implements Runnable{
 			System.out.println("DbConnector: executing bulk single isert of type:" + stmt.getQueryType().toString());
 
 			ps = connection.prepareStatement(stmt.getStmt());
-
-			int tupleSize, bulkSize = stmt.getTuples().length;
-			for(int row=0; row<bulkSize; row++) {
-				String[] currentTuple = stmt.getTuples()[row];
-				tupleSize = currentTuple.length;
-				for (int col=0; col<tupleSize; col++) {
-					ps.setString(col+1, currentTuple[col]);
+			MapType mapType = stmt.getMapType();
+			int bulkSize = stmt.getTuples().length;
+			
+			switch (mapType) {
+			case ALBUMS:
+				for(int row=0; row<bulkSize; row++) {
+					String[] currentTuple = stmt.getTuples()[row];
+					ps.setLong(1, Long.parseLong(currentTuple[0]));		//DISCID
+					ps.setLong(2, Long.parseLong(currentTuple[1]));		//ARTISTID
+					ps.setString(3, currentTuple[2]);					//TITLE
+					ps.setLong(4, Long.parseLong(currentTuple[3]));		//YEAR
+					ps.setString(5, currentTuple[4]);					//GENRE
+					ps.setLong(6, Long.parseLong(currentTuple[5]));		//TOTALTIME
+					ps.setFloat(7, Float.parseFloat(currentTuple[6]));	//PRICE
+					ps.addBatch();
 				}
-				ps.addBatch();
+				break;
+			case ARTISTS:
+				for(int row=0; row<bulkSize; row++) {
+					String[] currentTuple = stmt.getTuples()[row];
+					ps.setLong(1, Long.parseLong(currentTuple[0]));	//ARTISTID
+					ps.setString(2, currentTuple[1]);				//NAME
+					ps.addBatch();
+				}
+				break;
+			case GENRES:
+				for(int row=0; row<bulkSize; row++) {
+					String[] currentTuple = stmt.getTuples()[row];
+					ps.setLong(1, Long.parseLong(currentTuple[0]));	//GENREID
+					ps.setString(2, currentTuple[1]);				//GENRE
+					ps.addBatch();
+				}
+				break;
+			case TRACKS:
+				for(int row=0; row<bulkSize; row++) {
+					String[] currentTuple = stmt.getTuples()[row];
+					ps.setLong(1, Long.parseLong(currentTuple[0]));		//TRACKID
+					ps.setLong(2, Long.parseLong(currentTuple[1]));		//DISCID
+					ps.setLong(3,Long.parseLong( currentTuple[2]));		//NUM
+					ps.setString(4, currentTuple[3]);					//TRACKTITLE
+					ps.addBatch();
+				}
+				break;
+			default:
+				//all info is Strings, for testing purposes
+				for(int row=0; row<bulkSize; row++) {
+					String[] currentTuple = stmt.getTuples()[row];
+					int tupleSize = currentTuple.length;
+					for (int col=0; col<tupleSize; col++) {
+						ps.setString(col+1, currentTuple[col]);
+					}
+					ps.addBatch();
+				}
 			}
-
+			
 			int[] returnedVals = ps.executeBatch();
 			for (int i=0; i<returnedVals.length; i++) {
 				if (returnedVals[i] == PreparedStatement.EXECUTE_FAILED)
