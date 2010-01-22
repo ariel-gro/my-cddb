@@ -63,6 +63,7 @@ public class MainParser extends Thread
 	{
 		try
 		{
+			System.out.println("running parser");
 			file = new File(fileToParse);
 			br = new BufferedReader(new FileReader(file));
 			if (updateFile == true)
@@ -70,10 +71,14 @@ public class MainParser extends Thread
 				this.oldGenresMap = new HashMap<String,String>(3000, 0.9f);
 				this.oldArtistMap = new HashMap<String,String>(100000, 0.8f);
 				
+				System.out.println("fetching old tables");
 				String[][] reqGenres = getStringResults("SELECT Genre, GenreId FROM GENRES");
 				String[][] reqArtists = getStringResults("SELECT Name, ArtistId FROM ARTISTS");
 				if (reqArtists == null || reqGenres == null)
+				{
+					System.out.println("error fetching old tables");
 					return;
+				}
 				
 				for (int i = 0; i<reqArtists.length; i++)
 				{
@@ -90,8 +95,9 @@ public class MainParser extends Thread
 			tracksId = this.getId("TRACKS");
 
 			// Read the file
+			System.out.println("reading file");
 			int track_index = 0;
-			while ((jumpToNextDisk && (line!=null)) || (line = br.readLine()) != null)
+			while (((line!=null) && jumpToNextDisk) || (line = br.readLine()) != null)
 			{
 				if(jumpToNextDisk)
 					jumpToNextDisk = false;
@@ -179,14 +185,10 @@ public class MainParser extends Thread
 					jumpToNextDisc();
 				}
 			}
-
+			
+			System.out.println("last call");
 			updateMaps(currentDisk);
 			
-//			System.out.println("Num Of Disks: " + diskMap.size());
-//			System.out.println("Num Of Artists: " + artistMap.size());
-//			System.out.println("Num Of Genres: " + genresMap.size());
-//			System.out.println("Num Of Tracks: " + tracksMap.size());
-
 			sendDiskBulk();
 			sendTracksBulk();
 			sendOtherBulk();
@@ -205,6 +207,7 @@ public class MainParser extends Thread
 	}
 
 	private void sendTracksBulk() {
+		System.out.println("sending tracks");
 		RequestToQueryHandler trackReq = new RequestToQueryHandler(QueryId.getId(), 
 				RequestToQueryHandler.Priority.LOW_PRIORITY, 
 				QueryType.INSERT_BULK, 
@@ -216,6 +219,7 @@ public class MainParser extends Thread
 
 	private void sendOtherBulk() 
 	{
+		System.out.println("sending artists");
 		RequestToQueryHandler artistReq = new RequestToQueryHandler(QueryId.getId(), 
 				RequestToQueryHandler.Priority.LOW_PRIORITY, 
 				QueryType.INSERT_BULK, 
@@ -223,6 +227,7 @@ public class MainParser extends Thread
 				MapType.ARTISTS);
 		SearchesPriorityQueue.addSearch(artistReq);
 		
+		System.out.println("sending genres");
 		RequestToQueryHandler genreReq = new RequestToQueryHandler(QueryId.getId(), 
 				RequestToQueryHandler.Priority.LOW_PRIORITY, 
 				QueryType.INSERT_BULK, 
@@ -232,6 +237,7 @@ public class MainParser extends Thread
 	}
 
 	private void sendDiskBulk() {
+		System.out.println("sending discs");
 		RequestToQueryHandler diskReq = new RequestToQueryHandler(QueryId.getId(), 
 																RequestToQueryHandler.Priority.HIGH_PRIORITY, 
 																QueryType.INSERT_BULK, 
@@ -293,6 +299,10 @@ public class MainParser extends Thread
 					tracksMap.put(trackId, new String[]{diskId+"", tracks[i], i+""});
 				}
 			}
+			
+			this.artistsId++;
+			this.genreId++;
+			this.tracksId++;
 			
 			tempNumOfDisks++;
 			if(tempNumOfDisks%1000 == 0)
@@ -435,12 +445,21 @@ public class MainParser extends Thread
 		// creating the connection
 		try
 		{
+//			String jdbcURL =
+//				"jdbc:oracle:thin:@" + DbConfiguration.getIpAddress()+":" + DbConfiguration.getPort() +
+//				"/" + DbConfiguration.getDb();
+			
 			String jdbcURL =
-				"jdbc:oracle:thin:@" + DbConfiguration.getIpAddress()+":" + DbConfiguration.getPort() +
-				"/" + DbConfiguration.getDb();
+				"jdbc:oracle:thin:@" + "127.0.0.1"+":" + 1521 +
+				"/" + "XE";
+			
+			System.out.println("bypassed connection");
+			
+//			return DriverManager.getConnection(jdbcURL,
+//					DbConfiguration.getUser(), DbConfiguration.getPassword());
 			
 			return DriverManager.getConnection(jdbcURL,
-					DbConfiguration.getUser(), DbConfiguration.getPassword());
+					"system", "1234");
 		}
 		catch (SQLException e)
 		{
@@ -449,17 +468,33 @@ public class MainParser extends Thread
 		}
 	}
 	
-//	public static void main (String args[])
-//	{
-//		MainParser myParser = new MainParser("C:\\FreeDB_Files_Temp\\allDisks.txt");
-//		myParser.start();
-//		
-//		try
-//		{
-//			myParser.join();
-//		} catch (InterruptedException e)
-//		{
-//			e.printStackTrace();
-//		}
-//	}
+	public static void main (String args[])
+	{
+		connectionManager cm = new connectionManager();
+		queryHandler qh = new queryHandler();
+		Thread t2 = new Thread(qh);
+		Thread t = new Thread(cm);
+		t2.start();
+		t.start();
+		queryHandler.createTables();
+		MainParser myParser = new MainParser("C:\\test\\allDisks.txt", false);
+		myParser.start();
+		
+		try
+		{
+			myParser.join();
+		} catch (InterruptedException e)
+		{
+			e.printStackTrace();
+		}
+
+		cm.quit();
+		qh.quit();
+		try {
+			t.join();
+			t2.join();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
 }
