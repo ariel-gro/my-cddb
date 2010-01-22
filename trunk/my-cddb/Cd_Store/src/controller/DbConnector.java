@@ -62,7 +62,7 @@ public class DbConnector implements Runnable{
 		}
 
 		giveBackConnection();
-
+		return;
 	}
 
 	private synchronized void giveBackConnection() {
@@ -128,6 +128,7 @@ public class DbConnector implements Runnable{
 	}
 
 //	unit test code
+//	
 //	public static void main(String[] args) {
 //		Connection con = null;
 //		Thread t = null;
@@ -145,8 +146,8 @@ public class DbConnector implements Runnable{
 //			String jdbcURL =
 //				"jdbc:oracle:thin:@127.0.0.1:1521/XE";
 //	
-//			String jdbcURL =
-//				"jdbc:oracle:thin:@127.0.0.1:1521/XE";
+//			String jdbcURLatTAU =
+//				"jdbc:oracle:thin:@nova.cs.tau.ac.il:1555/csodb";
 //
 //			con = DriverManager.getConnection(jdbcURL,"system", "12341234");
 //
@@ -160,7 +161,13 @@ public class DbConnector implements Runnable{
 //			SqlStatement s3 = new SqlStatement(QueryType.QUERY, "SELECT * FROM DEMO", null, 1);
 //
 //			Statement s	= con.createStatement();
-//			s.executeUpdate("DELETE FROM DEMO");
+//			s.executeUpdate("CREATE table DEMO (" +
+//					"FNAME VARCHAR2(4000) NOT NULL, " +
+//					"LNAME VARCHAR2(4000) NOT NULL, " +
+//					"ID VARCHAR2(4000) NOT NULL, " +
+//					"constraint DEMO_PK primary key (ID))");
+//			
+//			System.out.println("Table created");
 //
 //			t = new Thread(new DbConnector(con, s1));
 //			t.start();
@@ -186,7 +193,11 @@ public class DbConnector implements Runnable{
 //				System.out.println(r.getString(3));
 //				r.next();
 //			}
-//
+//			
+//			s.executeUpdate("DELETE FROM DEMO");
+//			System.out.println("Table deleted");
+//			s.execute("DROP TABLE DEMO");
+//			System.out.println("Table dropped");
 //			s.close();
 //		}
 //
