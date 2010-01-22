@@ -75,14 +75,12 @@ public class queryHandler implements Runnable
 				if (myResult != null)
 				{
 					myResult.getResultSet().next();
-					tester = myResult.getResultSet().getInt(1);		
+					tester = myResult.getResultSet().getInt(1);	
+					waitforanswer = true;
 				}
-				else
-					System.out.println("result null");
 
 				if ((tester >= 0) && (tester < 6))
 				{
-					System.out.println("inside if");
 					myResult = ResultsQueue.getResult();
 					SqlStatement[] create_stmt = new SqlStatement[6];
 					create_stmt[0] = new SqlStatement(QueryType.INSERT_SINGLE, "CREATE TABLE Albums(DiscId NUMBER, ArtistId INT, "
@@ -250,15 +248,15 @@ public class queryHandler implements Runnable
 				case ADD_USER:
 					String[] fields1 = searchReq.getDualFields();
 					String UID1 = UniqueID();
-					sqlStmt = new SqlStatement(QueryType.INSERT_SINGLE, "INSERT INTO USERS (UserId, UserName, Password) VALUES (" + UID1 + ", "
-							+ fields1[0] + ", " + fields1[1] + ")", null, searchReq.getId());
+					sqlStmt = new SqlStatement(QueryType.INSERT_SINGLE, "INSERT INTO USERS (UserId, UserName, Password) VALUES ('" + UID1 + "', '"
+							+ fields1[0] + "', '" + fields1[1] + "')", null, searchReq.getId());
 					connectionManager.insertToQueryQueue(sqlStmt);
 					break;
 				case ADD_SALE:
 					String[] fields2 = searchReq.getDualFields();
 					String UID2 = UniqueID();
-					sqlStmt = new SqlStatement(QueryType.INSERT_SINGLE, "INSERT INTO SALES (OrderId, UserId, DiscId) VALUES (" + UID2 + ", "
-							+ fields2[0] + ", " + fields2[1] + ")", null, searchReq.getId());
+					sqlStmt = new SqlStatement(QueryType.INSERT_SINGLE, "INSERT INTO SALES (OrderId, UserId, DiscId) VALUES ('" + UID2 + "', '"
+							+ fields2[0] + "', '" + fields2[1] + "')", null, searchReq.getId());
 					connectionManager.insertToQueryQueue(sqlStmt);
 					break;
 				}
@@ -287,8 +285,8 @@ public class queryHandler implements Runnable
 					}
 					
 					sqlStmt = new SqlStatement(QueryType.INSERT_BULK,
-							"INSERT INTO ALBUMS (DiscId, ArtistId, Title, Year, Genre, TotalTime, Price) " + "VALUES (?, ?, ?, ?, ?, ?, "
-									+ df.format((5 + Math.random() * 10)) + ")", attributes, searchReq.getId());
+							"INSERT INTO ALBUMS (DiscId, ArtistId, Title, Year, Genre, TotalTime, Price) " + "VALUES (?, ?, ?, ?, ?, ?, '"
+									+ df.format((5 + Math.random() * 10)) + "')", attributes, searchReq.getId());
 					connectionManager.insertToQueryQueue(sqlStmt);
 					
 					break;
