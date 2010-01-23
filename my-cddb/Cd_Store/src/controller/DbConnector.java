@@ -117,24 +117,23 @@ public class DbConnector implements Runnable{
 					ps.setString(3, currentTuple[2]);					//TITLE
 					ps.setLong(4, Long.parseLong(currentTuple[3]));		//YEAR
 					ps.setString(5, currentTuple[4]);					//GENRE
-					ps.setLong(6, Long.parseLong(currentTuple[5]));		//TOTALTIME
-					ps.setFloat(7, Float.parseFloat(currentTuple[6]));	//PRICE
+					ps.setLong(6, Long.parseLong(currentTuple[5]==null?"0":currentTuple[5])); //TOTALTIME
 					ps.addBatch();
 				}
 				break;
 			case ARTISTS:
 				for(int row=0; row<bulkSize; row++) {
 					String[] currentTuple = stmt.getTuples()[row];
-					ps.setLong(1, Long.parseLong(currentTuple[0]));	//ARTISTID
-					ps.setString(2, currentTuple[1]);				//NAME
+					ps.setLong(2, Long.parseLong(currentTuple[1]));	//NAME
+					ps.setString(1, currentTuple[0]);				//ARTISTID
 					ps.addBatch();
 				}
 				break;
 			case GENRES:
 				for(int row=0; row<bulkSize; row++) {
 					String[] currentTuple = stmt.getTuples()[row];
-					ps.setLong(1, Long.parseLong(currentTuple[0]));	//GENREID
-					ps.setString(2, currentTuple[1]);				//GENRE
+					ps.setLong(2, Long.parseLong(currentTuple[1]));	//GENRE
+					ps.setString(1, currentTuple[0]);				//GENREID
 					ps.addBatch();
 				}
 				break;
@@ -143,8 +142,8 @@ public class DbConnector implements Runnable{
 					String[] currentTuple = stmt.getTuples()[row];
 					ps.setLong(1, Long.parseLong(currentTuple[0]));		//TRACKID
 					ps.setLong(2, Long.parseLong(currentTuple[1]));		//DISCID
-					ps.setLong(3,Long.parseLong( currentTuple[2]));		//NUM
-					ps.setString(4, currentTuple[3]);					//TRACKTITLE
+					ps.setString(3, currentTuple[2]);					//TRACKTITLE
+					ps.setLong(4,Long.parseLong( currentTuple[3]==null?"0":currentTuple[3]));	//NUM
 					ps.addBatch();
 				}
 				break;
