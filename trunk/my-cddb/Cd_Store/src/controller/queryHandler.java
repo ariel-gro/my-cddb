@@ -85,15 +85,15 @@ public class queryHandler implements Runnable
 					myResult = ResultsQueue.getResult();
 					SqlStatement[] create_stmt = new SqlStatement[6];
 					create_stmt[0] = new SqlStatement(QueryType.INSERT_SINGLE, RequestToQueryHandler.MapType.ALBUMS, "CREATE TABLE Albums(DiscId NUMBER, ArtistId INT, "
-									+ "Title VARCHAR(50), Year SMALLINT, Genre VARCHAR(50), TotalTime SMALLINT, Price FLOAT, PRIMARY KEY(DiscId))", null, 0);
+									+ "Title VARCHAR(200), Year SMALLINT, Genre VARCHAR(200), TotalTime SMALLINT, Price FLOAT, PRIMARY KEY(DiscId))", null, 0);
 					create_stmt[1] = new SqlStatement(QueryType.INSERT_SINGLE, RequestToQueryHandler.MapType.TRACKS, "CREATE TABLE Tracks(TrackId INT, DiscID NUMBER, "
-									+ "Num SMALLINT, TrackTitle VARCHAR(50), PRIMARY KEY(TrackId))", null, 0);
+									+ "Num SMALLINT, TrackTitle VARCHAR(200), PRIMARY KEY(TrackId))", null, 0);
 					create_stmt[2] = new SqlStatement(QueryType.INSERT_SINGLE, RequestToQueryHandler.MapType.ARTISTS, 
-							"CREATE TABLE Artists(Name VARCHAR(50), ArtistId INT, PRIMARY KEY(ArtistId))", null, 0);
+							"CREATE TABLE Artists(Name VARCHAR(200), ArtistId INT, PRIMARY KEY(ArtistId))", null, 0);
 					create_stmt[3] = new SqlStatement(QueryType.INSERT_SINGLE, RequestToQueryHandler.MapType.GENRES, 
-							"CREATE TABLE Genres(Genre VARCHAR(50), GenreId INT, PRIMARY KEY(GenreId))", null, 0);
+							"CREATE TABLE Genres(Genre VARCHAR(200), GenreId INT, PRIMARY KEY(GenreId))", null, 0);
 					create_stmt[4] = new SqlStatement(QueryType.INSERT_SINGLE, null, 
-							"CREATE TABLE Users(UserId INT, UserName VARCHAR(20), Password VARCHAR(20), PRIMARY KEY(UserId))", null, 0);
+							"CREATE TABLE Users(UserId INT, UserName VARCHAR(50), Password VARCHAR(50), PRIMARY KEY(UserId))", null, 0);
 					create_stmt[5] = new SqlStatement(QueryType.INSERT_SINGLE, null, 
 							"CREATE TABLE Sales(OrderId INT, UserId INT, DiscId NUMBER, PRIMARY KEY(OrderId, UserId))", null, 0);
 					for (int i = 0; i < 6; i++)
@@ -274,7 +274,7 @@ public class queryHandler implements Runnable
 					num = 0;
 					for (Entry<String, String[]> e : map.entrySet())
 					{
-						attributes[num] = new String[7];
+						attributes[num] = new String[6];
 						attributes[num][0] = e.getKey();
 						String[] values = e.getValue();
 						for (int i = 1; i < values.length; i++)
@@ -286,8 +286,8 @@ public class queryHandler implements Runnable
 					}
 					
 					sqlStmt = new SqlStatement(QueryType.INSERT_BULK,
-							searchReq.getMapType(), "INSERT INTO ALBUMS (DiscId, ArtistId, Title, Year, Genre, TotalTime, Price) " + "VALUES (?, ?, ?, ?, ?, ?, '"
-											+ df.format((5 + Math.random() * 10)) + "')", attributes, searchReq.getId());
+							searchReq.getMapType(), "INSERT INTO ALBUMS (DiscId, ArtistId, Title, Year, Genre, TotalTime, Price) " + "VALUES (?, ?, ?, ?, ?, ?, "
+											+ df.format((5 + Math.random() * 10)) + ")", attributes, searchReq.getId());
 					connectionManager.insertToQueryQueue(sqlStmt);
 					
 					break;
@@ -365,7 +365,7 @@ public class queryHandler implements Runnable
 
 						num++;
 					}
-
+					
 					sqlStmt = new SqlStatement(QueryType.INSERT_BULK, searchReq.getMapType(), "INSERT INTO TRACKS (TrackId, DiscID, TrackTitle, Number) "
 									+ "VALUES (?, ?, ?, ?)", attributes, searchReq.getId());
 					connectionManager.insertToQueryQueue(sqlStmt);

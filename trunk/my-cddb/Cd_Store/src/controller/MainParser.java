@@ -60,7 +60,7 @@ public class MainParser extends Thread
 	}
 
 	public void run()
-	{
+	{		
 		try
 		{
 			System.out.println("running parser");
@@ -129,7 +129,7 @@ public class MainParser extends Thread
 
 					if (line.startsWith("# Disc length: "))
 					{
-						currentDisk.setTotalTime(line.split("\\s")[3]);
+						currentDisk.setTotalTime(Integer.parseInt(line.split("\\s")[3]) + "");
 					} else if (line.startsWith("DISCID="))
 					{
 						currentDisk.setId(line.substring(line.indexOf("=") + 1).split(",")[0]);
@@ -271,7 +271,7 @@ public class MainParser extends Thread
 			else
 			{
 				
-				artistId = artistMap.get(currentDisk.getArtist())+"";
+				artistId = artistMap.get(currentDisk.getArtist())[0]+"";
 			}
 			
 			if(genresMap.containsKey(currentDisk.getGenre()) == false)
@@ -287,7 +287,7 @@ public class MainParser extends Thread
 			}
 			else
 			{
-				genreId = genresMap.get(currentDisk.getGenre())+"";
+				genreId = genresMap.get(currentDisk.getGenre())[0]+"";
 			}
 			
 			diskMap.put(diskId, new String[]{artistId+"", currentDisk.getTitle(), currentDisk.getYear(), genreId+"", currentDisk.getTotalTime()+""/*, (5+Math.random()*10)+""*/});
@@ -306,7 +306,7 @@ public class MainParser extends Thread
 			
 			tempNumOfDisks++;
 			if(tempNumOfDisks%1000 == 0)
-			{
+			{	
 				System.out.println("Num Of Disks = " + tempNumOfDisks);
 			}
 		}
