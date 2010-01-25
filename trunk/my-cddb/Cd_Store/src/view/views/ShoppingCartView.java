@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import model.DbConfiguration;
 import model.Disk;
 import model.RequestToQueryHandler;
 import model.SearchesPriorityQueue;
@@ -78,21 +79,27 @@ public class ShoppingCartView extends ViewPart
 		{
 			public void widgetSelected(SelectionEvent e)
 			{
-				List<Disk> shoppingCartList = ShoppingCartContent.getContent();
-				for (Iterator<Disk> iterator = shoppingCartList.iterator(); iterator.hasNext();)
+				if (DbConfiguration.isConnectedToDb())
 				{
-					Disk disk = (Disk) iterator.next();
-					int dataTableId = QueryId.getId();
+					List<Disk> shoppingCartList = ShoppingCartContent.getContent();
+					for (Iterator<Disk> iterator = shoppingCartList.iterator(); iterator.hasNext();)
+					{
+						Disk disk = (Disk) iterator.next();
+						int dataTableId = QueryId.getId();
+						
+						RequestToQueryHandler regularSearch = new RequestToQueryHandler(dataTableId, RequestToQueryHandler.Priority.HIGH_PRIORITY,
+								QueryType.INSERT_SINGLE, RequestToQueryHandler.SingleInsertType.ADD_SALE, new String[]{UserPassword.getId()+"", disk.getId()});
+						SearchesPriorityQueue.addSearch(regularSearch);
+					}		
 					
-					RequestToQueryHandler regularSearch = new RequestToQueryHandler(dataTableId, RequestToQueryHandler.Priority.HIGH_PRIORITY,
-							QueryType.INSERT_SINGLE, RequestToQueryHandler.SingleInsertType.ADD_SALE, new String[]{UserPassword.getId()+"", disk.getId()});
-					SearchesPriorityQueue.addSearch(regularSearch);
-				}		
-				
-				ShoppingCartContent.clearContent();
-				viewer.refresh();
-				
-				View.displayInfoMessage("You order has been approved and registered in the DB.\nYou should expect delivery within 14 days.\n\nThank you for shopping at our CD Store :)");
+					ShoppingCartContent.clearContent();
+					viewer.refresh();
+					
+					View.displayInfoMessage("You order has been approved and registered in the DB.\nYou should expect delivery within 14 days.\n\nThank you for shopping at our CD Store :)");
+				} else
+				{
+					View.displayErroMessage("You cannot do anything before you connect to the DB.\nPlease connect to the DB via Database --> DB Configuration.");
+				}
 			}
 		});
 		
@@ -104,32 +111,39 @@ public class ShoppingCartView extends ViewPart
 			@SuppressWarnings("unchecked")
 			public void widgetSelected(SelectionEvent e)
 			{
-				TableItem[] shoppingCartTableItems  = viewer.getTable().getItems();
-				ArrayList tempList = new ArrayList<Boolean>();
-				for (int i = 0; i < shoppingCartTableItems.length; i++) 
+				if (DbConfiguration.isConnectedToDb())
 				{
-					tempList.add(new Boolean(false));
-					if(shoppingCartTableItems[i].getChecked())
-						tempList.set(i, new Boolean(true));
-				}
-				
-				boolean gotMoreItemsToRemove = true;
-				while(gotMoreItemsToRemove)
-				{
-					gotMoreItemsToRemove = false;
-					for (int j = 0; j < tempList.size(); j++) 
+					TableItem[] shoppingCartTableItems  = viewer.getTable().getItems();
+					ArrayList tempList = new ArrayList<Boolean>();
+					for (int i = 0; i < shoppingCartTableItems.length; i++) 
 					{
-						if((Boolean) tempList.get(j))
+						tempList.add(new Boolean(false));
+						if(shoppingCartTableItems[i].getChecked())
+							tempList.set(i, new Boolean(true));
+					}
+					
+					boolean gotMoreItemsToRemove = true;
+					while(gotMoreItemsToRemove)
+					{
+						gotMoreItemsToRemove = false;
+						for (int j = 0; j < tempList.size(); j++) 
 						{
-							ShoppingCartContent.removeFromContent(j);
-							tempList.remove(j);
-							gotMoreItemsToRemove = true;
-							break;
+							if((Boolean) tempList.get(j))
+							{
+								ShoppingCartContent.removeFromContent(j);
+								tempList.remove(j);
+								gotMoreItemsToRemove = true;
+								break;
+							}
 						}
 					}
-				}
+					
+					viewer.refresh();
 				
-				viewer.refresh();
+				} else
+				{
+					View.displayErroMessage("You cannot do anything before you connect to the DB.\nPlease connect to the DB via Database --> DB Configuration.");
+				}
 			}
 		});
 		

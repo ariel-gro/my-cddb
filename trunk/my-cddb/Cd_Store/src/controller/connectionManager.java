@@ -65,6 +65,16 @@ public class connectionManager implements Runnable{
 	public synchronized void run() {
 	
 		System.out.println("connectionManager: Starting run() of connectionManager");
+		
+		boolean initConOpened = openConnection();
+		if (initConOpened == false) {
+			System.out.println("connectionManager: Exiting because conection failed");
+			//initial connection to DB failed => kill thread
+			return;
+		}
+		DbConfiguration.setConnectedToDb(true);
+		View.displayInfoMessage("Successfully connected to DB :)");
+		
 		//initialize class fields
 		if (connThreads == null)
 			connThreads = Executors.newFixedThreadPool(numOfThreads);
@@ -76,7 +86,7 @@ public class connectionManager implements Runnable{
 
 		System.out.println("connectionManager: after queryQueue");
 		
-		if (connQueue == null){
+	/*	if (connQueue == null || connQueue.isEmpty()){
 			
 			System.out.println("connectionManager: inside conQueue if");
 			connQueue = new LinkedBlockingQueue<Connection>();
@@ -89,8 +99,10 @@ public class connectionManager implements Runnable{
 				//initial connection to DB failed => kill thread
 				return;
 			}
+			DbConfiguration.setConnectedToDb(true);
+			View.displayInfoMessage("Successfully connected to DB :)");
 		}
-		
+	*/	
 		int connectionReTries = 5;
 		System.out.println("connectionManager: Before while of connectionManager");
 		while (!timeToQuit){
@@ -147,7 +159,7 @@ public class connectionManager implements Runnable{
 		catch (ClassNotFoundException e)
 		{
 			View.displayErroMessage("Unable to load the Oracle JDBC driver");
-			timeToQuit = true;
+			//timeToQuit = true;
 			return false;
 		}
 		
@@ -157,7 +169,7 @@ public class connectionManager implements Runnable{
 			String jdbcURL =
 				"jdbc:oracle:thin:@" + DbConfiguration.getIpAddress()+":" + DbConfiguration.getPort() +
 				"/" + DbConfiguration.getDb();
-			
+			System.out.println(jdbcURL);
 			System.out.println("connectionManager: connecting...");
 			Connection connection =
 				DriverManager.getConnection(jdbcURL,
@@ -172,7 +184,7 @@ public class connectionManager implements Runnable{
 		catch (SQLException e)
 		{
 			View.displayErroMessage("An error occured while trying to connect to the DB.\n\n"+e.getMessage());
-			timeToQuit = true;
+			//timeToQuit = true;
 			return false;
 		}
 		System.out.println("connected to DB");

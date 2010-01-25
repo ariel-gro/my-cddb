@@ -145,6 +145,11 @@ public class DbConfigDialog extends MessageDialog
 	{
 		return password;
 	}
+	
+	public synchronized String getDbNameString()
+	{
+		return dbNameString;
+	}
 
 	public void setMessage(String message)
 	{

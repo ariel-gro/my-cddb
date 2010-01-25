@@ -29,6 +29,7 @@ public class OpenDbConfigDialogAction extends Action {
 		int serverPort;
 		String user;
 		String password;
+		String dbName;
 		DbConfigDialog dbConfigDialog = new DbConfigDialog("DB Configuration", "Please enter your database connection details");
 
 		boolean inputOk = false;
@@ -40,10 +41,12 @@ public class OpenDbConfigDialogAction extends Action {
 					serverPortString = dbConfigDialog.getServerPortString();
 					user = dbConfigDialog.getUser();
 					password = dbConfigDialog.getPassword();
+					dbName = dbConfigDialog.getDbNameString();
 					
 					DbConfiguration.setIpAddress(serverIp);
 					DbConfiguration.setUser(user);
 					DbConfiguration.setPassword(password);
+					DbConfiguration.setDb(dbName);
 					
 					if(isValidIp(serverIp) == false)
 					{
