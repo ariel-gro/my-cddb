@@ -406,124 +406,86 @@ public class queryHandler implements Runnable
 
 			}
 		}
+	}
+	
+	public static synchronized String[][] resultSetInto2DStringArray(ResultSet rs)
+	{
+		int rowCount = getQueryResultRowCount(rs);
+		System.out.println("Row Count: " + rowCount );
+		String[][] theResultArray = new String[rowCount][];
 
-//		private synchronized String[][] resultSetInto2DStringArray(ResultSet rs)
-//		{
-//			try
-//			{
-//				rs.last();
-//				int rowCount = rs.getRow();
-//				int colCount = rs.getMetaData().getColumnCount();
-//				String[][] table = new String[rowCount][colCount];
-//				rs.first();
-//				while (!rs.isAfterLast())
-//				{
-//					int row = rs.getRow() - 1;
-//					for (int col = 0; col < colCount; col++)
-//					{
-//						table[row][col] = rs.getString(col + 1);
-//					}
-//					rs.next();
-//				}
-//
-//				return table;
-//			} catch (SQLException e)
-//			{
-//				View.displayErroMessage("An error occurred while manipulating a result from the DB.\n\n" + e.toString());
-//				return null;
-//			}
-//		}
-
-
-
-		private synchronized String[][] resultSetInto2DStringArray(ResultSet rs)
-		{
-			int rowCount = getQueryResultRowCount(rs);
-			System.out.println("Row Count: " + rowCount );
-			String[][] theResultArray = new String[rowCount][];
-
-			for (int row = 1; row <= rowCount; row++)
-				theResultArray[row - 1] = getQueryResultWholeRow(rs, row);
-
-			for (int i = 0; i < theResultArray.length; i++)
-			{
-				for (int j = 0; j < theResultArray[i].length; j++)
-				{
-					System.out.println(theResultArray[i][j]);
-				}
-			}
-			
-			return theResultArray;
-		}
-
-		private int getQueryResultRowCount(ResultSet queryResult)
-		{
-			int size = 0;
-			try
-			{
-				if (queryResult.getType() == ResultSet.TYPE_FORWARD_ONLY)
-				{
-					size = queryResult.getRow();
-					while (queryResult.next())
-					{
-						size++;
-					}
-				}
-				else
-				{
-					if (queryResult.last())
-						size = queryResult.getRow();
-				}
-			}
-			catch (Exception sqle)
-			{
-				sqle.printStackTrace();
-			}
-
-			return size;
-		}
-
-		private String[] getQueryResultWholeRow(ResultSet queryResult, int theRow)
-		{
-			String[] theOutput = new String[] {};
-
-			int theColumnNum = 0;
+		for (int row = 1; row <= rowCount; row++)
+			theResultArray[row - 1] = getQueryResultWholeRow(rs, row);
 		
-			try
-			{
-				theColumnNum = getQueryResultColumnCount(queryResult);
-				System.out.println("theColumnNum: " + theColumnNum );
-				theOutput = new String[theColumnNum];
-				if (queryResult.absolute(theRow))
-					for (int i = 1; i <= theColumnNum; i++)
-					{
-						theOutput[i - 1] = queryResult.getString(i);
-						System.out.println("i=" + i + " " + theOutput[i - 1]);
-					}
+		return theResultArray;
+	}
 
-			}
-			catch (SQLException sqle)
-			{
-				sqle.printStackTrace();
-			}
-			return theOutput;
-		}
-
-		private int getQueryResultColumnCount(ResultSet queryResult)
+	private static int getQueryResultRowCount(ResultSet queryResult)
+	{
+		int size = 0;
+		try
 		{
-			try
+			if (queryResult.getType() == ResultSet.TYPE_FORWARD_ONLY)
 			{
-				ResultSetMetaData rsmd = queryResult.getMetaData();
-				//  Get the number of columns in the result set
-				return rsmd.getColumnCount();
+				size = queryResult.getRow();
+				while (queryResult.next())
+				{
+					size++;
+				}
 			}
-			catch (SQLException sqle)
+			else
 			{
-				sqle.printStackTrace();
+				if (queryResult.last())
+					size = queryResult.getRow();
 			}
-
-			return 0;
+		}
+		catch (Exception sqle)
+		{
+			sqle.printStackTrace();
 		}
 
+		return size;
+	}
+
+	private static String[] getQueryResultWholeRow(ResultSet queryResult, int theRow)
+	{
+		String[] theOutput = new String[] {};
+
+		int theColumnNum = 0;
+	
+		try
+		{
+			theColumnNum = getQueryResultColumnCount(queryResult);
+			//System.out.println("theColumnNum: " + theColumnNum );
+			theOutput = new String[theColumnNum];
+			if (queryResult.absolute(theRow))
+				for (int i = 1; i <= theColumnNum; i++)
+				{
+					theOutput[i - 1] = queryResult.getString(i);
+					//System.out.println("i=" + i + " " + theOutput[i - 1]);
+				}
+
+		}
+		catch (SQLException sqle)
+		{
+			sqle.printStackTrace();
+		}
+		return theOutput;
+	}
+
+	private static int getQueryResultColumnCount(ResultSet queryResult)
+	{
+		try
+		{
+			ResultSetMetaData rsmd = queryResult.getMetaData();
+			//  Get the number of columns in the result set
+			return rsmd.getColumnCount();
+		}
+		catch (SQLException sqle)
+		{
+			sqle.printStackTrace();
+		}
+
+		return 0;
 	}
 }
