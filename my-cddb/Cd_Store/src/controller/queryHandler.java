@@ -213,10 +213,10 @@ public class queryHandler implements Runnable
 				break;
 				case REGULAR:
 					sqlStmt = new SqlStatement(QueryType.QUERY, searchReq.getMapType(), 
-							"SELECT ALBUMS.* FROM ALBUMS, ARTISTS WHERE (ALBUMS.title LIKE '%"
-							+ searchReq.getRegularSearchString() + "%') OR (ARTISTS.name LIKE '%" + 
-							searchReq.getRegularSearchString()
-							+ "%') GROUP BY ALBUMS.discid", null, searchReq.getId());
+							"SELECT distinct ALBUMS.*, ARTISTS.name FROM ALBUMS, ARTISTS WHERE ((ALBUMS.title LIKE '%"+ searchReq.getRegularSearchString() 
+							+ "%') OR (ARTISTS.name LIKE '%" + searchReq.getRegularSearchString() 
+							+ "%')) AND (artists.artistid = albums.artistid)", 
+							null, searchReq.getId());
 					connectionManager.insertToQueryQueue(sqlStmt);
 					break;
 				case ADVANCED:
