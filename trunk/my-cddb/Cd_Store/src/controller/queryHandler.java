@@ -217,7 +217,7 @@ public class queryHandler implements Runnable
 							"FROM ALBUMS, ARTISTS, GENRES WHERE " +
 							"((ALBUMS.title LIKE '%"+ searchReq.getRegularSearchString() + "%') " +
 							"OR (ARTISTS.name LIKE '%" + searchReq.getRegularSearchString()+ "%')) " +
-							"AND (artists.artistid = albums.artistid) AND (genere.genreid = albums.genre) AND " +
+							"AND (artists.artistid = albums.artistid) AND (generes.genreid = albums.genre) AND " +
 							"(genres.genre = '" + searchReq.getMusicGenre().toString().toLowerCase() + "')", 
 							null, searchReq.getId());
 					connectionManager.insertToQueryQueue(sqlStmt);
