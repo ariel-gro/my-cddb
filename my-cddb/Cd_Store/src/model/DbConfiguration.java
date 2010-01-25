@@ -8,6 +8,16 @@ public class DbConfiguration
 	private static String password = "oklydokly";
 	private static String db = "xe";
 	private static String fileToImport = "";
+	private static boolean isConnectedToDb = false;
+	
+	public static synchronized boolean isConnectedToDb()
+	{
+		return isConnectedToDb;
+	}
+	public static synchronized void setConnectedToDb(boolean isConnectedToDb)
+	{
+		DbConfiguration.isConnectedToDb = isConnectedToDb;
+	}
 	
 	public static synchronized String getUser()
 	{

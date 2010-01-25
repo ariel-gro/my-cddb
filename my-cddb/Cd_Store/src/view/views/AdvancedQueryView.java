@@ -156,6 +156,7 @@ public class AdvancedQueryView extends ViewPart
 		
 		Label message = new Label(mainComposite, SWT.NONE);
 		message.setText("* After the search is complete, double click on the disk you want to add to the Shopping Cart");
+		message.setFont(boldFont);
 		GridData seperatorGd3 = new GridData();
 		seperatorGd3.horizontalSpan = 3;
 		message.setLayoutData(seperatorGd3);
@@ -245,7 +246,7 @@ public class AdvancedQueryView extends ViewPart
 		});	
 		
 		// ********************* This whole block is Temporary
-		Label pad8 = new Label(topQueryComposite1, SWT.NONE);
+		/*Label pad8 = new Label(topQueryComposite1, SWT.NONE);
 		pad8.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		final Button tempButton = new Button(topQueryComposite1, SWT.PUSH);
 		tempButton.setText(" Temp Update map ");
@@ -270,6 +271,7 @@ public class AdvancedQueryView extends ViewPart
 				TableViewsMap.addTable(dataTableId, temp);				
 			}
 		});		
+		*/
 		
 		Composite tableComposite = new Composite(mainComposite, SWT.BORDER);
 		tableComposite.setLayout(new GridLayout(1, false));

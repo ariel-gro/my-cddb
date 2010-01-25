@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Collections;
 
+import model.DbConfiguration;
 import model.Disk;
 import model.MainViewSearchId;
 import model.SearchParameters;
@@ -103,21 +104,28 @@ public class View extends ViewPart
 			@Override
 			public void widgetSelected(SelectionEvent e)
 			{
-				if(text.getText().equals(""))
+				if(DbConfiguration.isConnectedToDb())
 				{
-					View.displayErroMessage("Search string cannot be empty !!!");
+					if(text.getText().equals(""))
+					{
+						View.displayErroMessage("Search string cannot be empty !!!");
+					}
+					else
+					{
+						SearchParameters.setGenre(categoriesCombo.getText());
+						SearchParameters.setSearchString(text.getText());
+						
+						IHandlerService handlerService = (IHandlerService) getSite().getService(IHandlerService.class);
+						try {
+							handlerService.executeCommand(ICommandIds.CMD_OPEN_QUERY_VIEW, null);
+						} catch (Exception ex) {
+							throw new RuntimeException(ICommandIds.CMD_OPEN_QUERY_VIEW + " command not found");
+						}
+					}
 				}
 				else
 				{
-					SearchParameters.setGenre(categoriesCombo.getText());
-					SearchParameters.setSearchString(text.getText());
-					
-					IHandlerService handlerService = (IHandlerService) getSite().getService(IHandlerService.class);
-					try {
-						handlerService.executeCommand(ICommandIds.CMD_OPEN_QUERY_VIEW, null);
-					} catch (Exception ex) {
-						throw new RuntimeException(ICommandIds.CMD_OPEN_QUERY_VIEW + " command not found");
-					}
+					View.displayErroMessage("You cannot do anything before you connect to the DB.\nPlease connect to the DB via Database --> DB Configuration.");
 				}
 			}
 		});
@@ -132,13 +140,21 @@ public class View extends ViewPart
 		loginLink.addSelectionListener(new SelectionAdapter() {    
 			public void widgetSelected(SelectionEvent e) 
 			{
-				IHandlerService handlerService = (IHandlerService) getSite().getService(IHandlerService.class);
-				try {
-					handlerService.executeCommand(ICommandIds.CMD_OPEN_ADVANCED_QUERY_VIEW, null);
-				} catch (Exception ex) {
-					throw new RuntimeException(ICommandIds.CMD_OPEN_ADVANCED_QUERY_VIEW + " command not found");
-				}	
-			}    
+				if (DbConfiguration.isConnectedToDb())
+				{
+					IHandlerService handlerService = (IHandlerService) getSite().getService(IHandlerService.class);
+					try
+					{
+						handlerService.executeCommand(ICommandIds.CMD_OPEN_ADVANCED_QUERY_VIEW, null);
+					} catch (Exception ex)
+					{
+						throw new RuntimeException(ICommandIds.CMD_OPEN_ADVANCED_QUERY_VIEW + " command not found");
+					}
+				} else
+				{
+					View.displayErroMessage("You cannot do anything before you connect to the DB.\nPlease connect to the DB via Database --> DB Configuration.");
+				}
+			}
 		});
 		
 		// Main area
@@ -166,7 +182,7 @@ public class View extends ViewPart
 		
 		
 		// ********************* This whole block is Temporary ******************************//
-		final Button tempButton = new Button(mainArea, SWT.PUSH);
+		/*final Button tempButton = new Button(mainArea, SWT.PUSH);
 		tempButton.setText(" Temp Update map ");
 		tempButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_CENTER));
 		tempButton.addSelectionListener(new SelectionAdapter() {
@@ -187,7 +203,7 @@ public class View extends ViewPart
 				TableViewsMap.addTable(MainViewSearchId.getId(), temp);
 			}
 		});
-		
+		*/
 		
 		final Composite mainRecordsCoversArea = new Composite(mainArea, SWT.CENTER);
 		mainRecordsCoversArea.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, true));

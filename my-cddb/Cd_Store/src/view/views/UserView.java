@@ -1,5 +1,6 @@
 package view.views;
 
+import model.DbConfiguration;
 import model.RequestToQueryHandler;
 import model.SearchesPriorityQueue;
 import model.TableViewsMap;
@@ -64,7 +65,13 @@ public class UserView extends ViewPart
 		loginLink.setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_WHITE));
 		loginLink.addSelectionListener(new SelectionAdapter() {    
 			public void widgetSelected(SelectionEvent e) {
-				checkLogin();
+				if (DbConfiguration.isConnectedToDb())
+				{
+					checkLogin();
+				} else
+				{
+					View.displayErroMessage("You cannot do anything before you connect to the DB.\nPlease connect to the DB via Database --> DB Configuration.");
+				}
 			}    
 		});
 		
@@ -79,8 +86,14 @@ public class UserView extends ViewPart
 		newCustomerLink.setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_WHITE));
 		newCustomerLink.addSelectionListener(new SelectionAdapter() {    
 			public void widgetSelected(SelectionEvent e) {			
-				addUser();	
-			}    
+				if (DbConfiguration.isConnectedToDb())
+				{
+					addUser();
+				} else
+				{
+					View.displayErroMessage("You cannot do anything before you connect to the DB.\nPlease connect to the DB via Database --> DB Configuration.");
+				}
+			}
 		});
 	}
 

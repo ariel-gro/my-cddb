@@ -50,7 +50,7 @@ public class MainParser extends Thread
 	private HashMap<String,String[]> tracksMap = new HashMap<String,String[]>(80000, 0.9f);
 	HashMap<String,String> oldArtistMap;
 	HashMap<String,String> oldGenresMap;
-	int genreId, artistsId, tracksId;
+	long genreId = 0, artistsId = 0, tracksId = 0, maxDiskId=0;
 	
 	public MainParser(String fileToParse, boolean updateFile)
 	{
@@ -74,6 +74,10 @@ public class MainParser extends Thread
 				System.out.println("fetching old tables");
 				String[][] reqGenres = getStringResults("SELECT Genre, GenreId FROM GENRES");
 				String[][] reqArtists = getStringResults("SELECT Name, ArtistId FROM ARTISTS");
+				
+				System.out.println("Got GENRES table from DB with size of: " + reqGenres.length);
+				System.out.println("Got ARTISTS table from DB with size of: " + reqArtists.length);
+				
 				if (reqArtists == null || reqGenres == null)
 				{
 					System.out.println("error fetching old tables");
@@ -89,10 +93,17 @@ public class MainParser extends Thread
 				{
 					oldGenresMap.put(reqGenres[i][0], reqGenres[i][1]);
 				}
+				
+				genreId = this.getId("GENRES", "genreid")+1;
+				artistsId = this.getId("ARTISTS", "artistid")+1;
+				tracksId = this.getId("TRACKS", "trackid")+1;
+				maxDiskId = this.getId("ALBUMS", "discid")+1;
+				
+				System.out.println("GENRES ID = " + genreId);
+				System.out.println("ARTISTS ID = " + artistsId);
+				System.out.println("TRACKS ID = " + tracksId);
+				System.out.println("DISC ID = " + maxDiskId);
 			}
-			genreId = this.getId("GENRES");
-			artistsId = this.getId("ARTISTS");
-			tracksId = this.getId("TRACKS");
 
 			// Read the file
 			System.out.println("reading file");
@@ -158,7 +169,7 @@ public class MainParser extends Thread
 						{
 							int year = Integer.parseInt(line.substring(line.indexOf("=") + 1).trim());
 							currentDisk.setYear(year+"");
-							if (year > 10000)
+							if (year > 2020)
 							{
 								currentDisk.setYear(0+"");
 							}
@@ -250,66 +261,68 @@ public class MainParser extends Thread
 	private void updateMaps(Disk currentDisk)
 	{
 		String diskId;
+		long diskIdL;
 		String artistId = this.artistsId+"";
 		String genreId = this.genreId+"";
-		String trackId = this.tracksId+"";
 		
-		diskId = Long.parseLong(currentDisk.getId(), 16)+""; 
-		if(diskMap.containsKey(diskId) == false)
-		{
-			if(artistMap.containsKey(currentDisk.getArtist()) == false)
+		diskIdL = Long.parseLong(currentDisk.getId(), 16);
+		diskId = diskIdL+""; 
+		if(this.updateFile == false || diskIdL>this.maxDiskId)
+			if(diskMap.containsKey(diskId) == false)
 			{
-				if (this.updateFile == false || this.oldArtistMap.containsKey(currentDisk.getArtist()) == false)
+				if(artistMap.containsKey(currentDisk.getArtist()) == false)
 				{
-					artistMap.put(currentDisk.getArtist(), new String[]{artistId+""});
+					if (this.updateFile == false || this.oldArtistMap.containsKey(currentDisk.getArtist()) == false)
+					{
+						artistMap.put(currentDisk.getArtist(), new String[]{artistId+""});
+						this.artistsId++;
+					}
+					else
+					{
+						artistId = oldArtistMap.get(currentDisk.getArtist())+"";
+					}
 				}
 				else
 				{
-					artistId = oldArtistMap.get(currentDisk.getArtist())+"";
+					
+					artistId = artistMap.get(currentDisk.getArtist())[0]+"";
 				}
-			}
-			else
-			{
 				
-				artistId = artistMap.get(currentDisk.getArtist())[0]+"";
-			}
-			
-			if(genresMap.containsKey(currentDisk.getGenre()) == false)
-			{
-				if (this.updateFile == false || this.oldGenresMap.containsKey(currentDisk.getGenre()) == false)
+				if(genresMap.containsKey(currentDisk.getGenre()) == false)
 				{
-					genresMap.put(currentDisk.getGenre(), new String[]{genreId+""});
+					if (this.updateFile == false || this.oldGenresMap.containsKey(currentDisk.getGenre()) == false)
+					{
+						genresMap.put(currentDisk.getGenre(), new String[]{genreId+""});
+						this.genreId++;
+					}
+					else
+					{
+						genreId = oldGenresMap.get(currentDisk.getGenre())+"";
+					}		
 				}
 				else
 				{
-					genreId = oldGenresMap.get(currentDisk.getGenre())+"";
+					genreId = genresMap.get(currentDisk.getGenre())[0]+"";
 				}
-			}
-			else
-			{
-				genreId = genresMap.get(currentDisk.getGenre())[0]+"";
-			}
-			
-			diskMap.put(diskId, new String[]{artistId+"", currentDisk.getTitle(), currentDisk.getYear(), genreId+"", currentDisk.getTotalTime()+""/*, (5+Math.random()*10)+""*/});
-			
-			for (int i = 0; i < tracks.length; i++)
-			{
-				if(tracks[i] != null)
+				
+				
+				diskMap.put(diskId, new String[]{artistId+"", currentDisk.getTitle(), currentDisk.getYear(), genreId+"", currentDisk.getTotalTime()+""/*, (5+Math.random()*10)+""*/});
+				
+				for (int i = 0; i < tracks.length; i++)
 				{
-					tracksMap.put(trackId, new String[]{diskId+"", tracks[i], i+""});
+					if(tracks[i] != null)
+					{
+						tracksMap.put(this.tracksId+"", new String[]{diskId+"", tracks[i], i+""});
+						this.tracksId++;
+					}
+				}	
+				
+				tempNumOfDisks++;
+				if(tempNumOfDisks%1000 == 0)
+				{	
+					System.out.println("Num Of Disks = " + tempNumOfDisks);
 				}
 			}
-			
-			this.artistsId++;
-			this.genreId++;
-			this.tracksId++;
-			
-			tempNumOfDisks++;
-			if(tempNumOfDisks%1000 == 0)
-			{	
-				System.out.println("Num Of Disks = " + tempNumOfDisks);
-			}
-		}
 	}
 	
 	private void jumpToNextDisc()
@@ -386,7 +399,7 @@ public class MainParser extends Thread
 		
 		try
 		{
-			ps = connection.prepareStatement(query);
+			ps = connection.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
 			queryResult = ps.executeQuery();
 			queryResult.next();
 		}
@@ -397,35 +410,29 @@ public class MainParser extends Thread
 			return null;
 		}
 		
-		try {
-			results[0] = (String[]) queryResult.getArray(1).getArray();
-			results[1] = (String[]) queryResult.getArray(2).getArray();
-		} catch (SQLException e) {
-			View.displayErroMessage("error retriving fata from DB.\n"
-					+e.getMessage());
-		}
+		results = queryHandler.resultSetInto2DStringArray(queryResult);
 		
 		return results;
 	}
 	
-	private int getId (String table)
+	private long getId (String table, String key)
 	{
 		Connection connection = bypassConnect();	// DB connection
 		PreparedStatement ps;
 		
 		try
 		{
-			ps = connection.prepareStatement("SELECT COUNT(*) from " + table);
+			ps = connection.prepareStatement("SELECT max(" + table + "." + key + ") from " + table, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
 			ResultSet result = ps.executeQuery();
 			result.next();
 			
-			return result.getInt(1);
+			return result.getLong(1);
 		}
 		catch (SQLException e)
 		{
 			View.displayErroMessage("error retriving data from DB.\n"
 					+e.getMessage());
-			return -1;
+			return 0;
 		}
 	}
 	
@@ -446,8 +453,6 @@ public class MainParser extends Thread
 		// creating the connection
 		try
 		{
-			
-			//TODO change back to normal connection
 			String jdbcURL =
 				"jdbc:oracle:thin:@" + DbConfiguration.getIpAddress()+":" + DbConfiguration.getPort() +
 				"/" + DbConfiguration.getDb();
@@ -465,7 +470,7 @@ public class MainParser extends Thread
 		}
 	}
 	
-	public static void main (String args[])
+/*	public static void main (String args[])
 	{
 		connectionManager cm = new connectionManager();
 		queryHandler qh = new queryHandler();
@@ -493,5 +498,5 @@ public class MainParser extends Thread
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-	}
+	}*/
 }
