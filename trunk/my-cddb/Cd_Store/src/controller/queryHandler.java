@@ -217,22 +217,23 @@ public class queryHandler implements Runnable
 							"FROM ALBUMS, ARTISTS, GENRES WHERE " +
 							"((ALBUMS.title LIKE '%"+ searchReq.getRegularSearchString() + "%') " +
 							"OR (ARTISTS.name LIKE '%" + searchReq.getRegularSearchString()+ "%')) " +
-							"AND (artists.artistid = albums.artistid) AND (generes.genreid = albums.genre) AND " +
+							"AND (artists.artistid = albums.artistid) AND (genres.genreid = albums.genre) AND " +
 							"(genres.genre = '" + searchReq.getMusicGenre().toString().toLowerCase() + "')", 
 							null, searchReq.getId());
 					connectionManager.insertToQueryQueue(sqlStmt);
 					break;
 				case ADVANCED:
 					List<advanceSearchFieldValueBundle> params = searchReq.getAdvanceSearchParameters();
-					query += "SELECT ALBUMS.* FROM ALBUMS, ARTISTS, GENRES, TRACKS WHERE ";
+					query += "SELECT ALBUMS.title, ARTISTS.name, ALBUMS.year, GENRES.genre, ALBUMS.totaltime, ALBUMS.price " +
+							"FROM ALBUMS, ARTISTS, GENRES, TRACKS WHERE ";
 
 					for (Iterator<advanceSearchFieldValueBundle> iterator = params.iterator(); iterator.hasNext();)
 					{
 						advanceSearchFieldValueBundle advanceSearchFieldValue = (advanceSearchFieldValueBundle) iterator.next();
-
+						
 						switch (advanceSearchFieldValue.getSearchField()) {
 						case ALBUM_TITLE:
-							query += "ALBUMS.title LIKE '%" + advanceSearchFieldValue.getValue() + "%' ";
+							query += "ALBUMS.title LIKE '%" + advanceSearchFieldValue.getValue() + "%'";
 							break;
 						case ARTIST_NAME:
 							query += "ARTISTS.name LIKE '%" + advanceSearchFieldValue.getValue() + "%' AND ALBUMS.artistId = ARTISTS.artistId ";
