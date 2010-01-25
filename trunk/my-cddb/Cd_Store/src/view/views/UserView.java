@@ -121,6 +121,13 @@ public class UserView extends ViewPart
 							String[][] allUsers = TableViewsMap.getData(dataTableId);
 							for (int i = 0; i < allUsers.length; i++)
 							{
+								for (int j = 0; j < allUsers[i].length; j++)
+								{
+									System.out.println(allUsers[i][j]);
+								}
+							}
+							for (int i = 0; i < allUsers.length; i++)
+							{
 								if(allUsers[i][1].toLowerCase().equals(loginDialog.getUser().toLowerCase()))
 									if(allUsers[i][2].toLowerCase().equals(loginDialog.getPassword().toLowerCase()))
 									{
@@ -182,6 +189,7 @@ public class UserView extends ViewPart
 						
 						int dataTableId = QueryId.getId();
 						
+						System.out.println("Sending single insert to qh from GUI: ID="+dataTableId+" User="+UserPassword.getUser() + " Password="+UserPassword.getPassword());
 						RequestToQueryHandler regularSearch = new RequestToQueryHandler(dataTableId, RequestToQueryHandler.Priority.HIGH_PRIORITY,
 								QueryType.INSERT_SINGLE, RequestToQueryHandler.SingleInsertType.ADD_USER, new String[]{UserPassword.getUser(), UserPassword.getPassword()});
 						SearchesPriorityQueue.addSearch(regularSearch);

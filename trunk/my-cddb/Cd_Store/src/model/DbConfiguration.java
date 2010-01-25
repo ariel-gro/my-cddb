@@ -2,11 +2,11 @@ package model;
 
 public class DbConfiguration
 {
-	private static String ipAddress = "";
-	private static int port = 0;
-	private static String user = "";
-	private static String password = "";
-	private static String db = "";
+	private static String ipAddress = "127.0.0.1";
+	private static int port = 1521;
+	private static String user = "SYSTEM";
+	private static String password = "oklydokly";
+	private static String db = "xe";
 	private static String fileToImport = "";
 	
 	public static synchronized String getUser()

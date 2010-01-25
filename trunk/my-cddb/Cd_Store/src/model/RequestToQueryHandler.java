@@ -38,7 +38,7 @@ public class RequestToQueryHandler implements Comparable<RequestToQueryHandler>
 		this.priority = priority;
 		this.searchType = searchType;
 		this.musicGenre = musicGenre;
-		this.top10Type = null;
+		this.top10Type = Top10Type.LATEST;
 	}
 	
 	// TOP 10 by top10Type
