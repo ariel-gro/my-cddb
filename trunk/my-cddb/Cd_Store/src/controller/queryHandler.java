@@ -185,12 +185,15 @@ public class queryHandler implements Runnable
 						if (searchReq.getMusicGenre() != null)
 						{
 							sqlStmt = new SqlStatement(QueryType.QUERY,		
-									searchReq.getMapType(), "SELECT * FROM (select * from albums where genre = (SELECT genreid FROM genres where genres.genre='" + searchReq.getMusicGenre().toString().toLowerCase() + "') ORDER BY year desc,discid desc) where rownum<=10"
+									searchReq.getMapType(), 
+									"SELECT * FROM (select * from albums where genre = (SELECT genreid FROM genres where genres.genre='" 
+									+ searchReq.getMusicGenre().toString().toLowerCase() + "') ORDER BY year desc,discid desc) where rownum<=10"
 									, null, searchReq.getId());
 							connectionManager.insertToQueryQueue(sqlStmt);
 						} else
 						{
-							sqlStmt = new SqlStatement(QueryType.QUERY, searchReq.getMapType(), "SELECT TOP 10 * FROM (SELECT * FROM ALBUMS ORDERBY ALBUMS.year)",
+							sqlStmt = new SqlStatement(QueryType.QUERY, searchReq.getMapType(), 
+									"SELECT * FROM (select * from albums ORDER BY year desc) where rownum<=10",
 									null, searchReq.getId());
 							connectionManager.insertToQueryQueue(sqlStmt);
 						}
@@ -199,7 +202,9 @@ public class queryHandler implements Runnable
 						sqlStmt = new SqlStatement(
 								QueryType.QUERY,
 								searchReq.getMapType(),
-								"SELECT TOP 10 Albums.* FROM ALBUMS, (SELECT discid, COUNT(discid) FROM SALES GROUP BY discid ORDER BY COUNT(discid) DESC) WHERE SALES.discid = ALBUMS.discid", null, searchReq.getId());
+								"SELECT TOP 10 Albums.* FROM ALBUMS, (SELECT discid, COUNT(discid) "
+								+"FROM SALES GROUP BY discid ORDER BY COUNT(discid) DESC) WHERE SALES.discid = ALBUMS.discid", null, 
+								searchReq.getId());
 						connectionManager.insertToQueryQueue(sqlStmt);
 						break;
 					default:
@@ -207,8 +212,10 @@ public class queryHandler implements Runnable
 					}
 				break;
 				case REGULAR:
-					sqlStmt = new SqlStatement(QueryType.QUERY, searchReq.getMapType(), "SELECT ALBUMS.* FROM ALBUMS, ARTISTS WHERE (ALBUMS.title LIKE '%"
-							+ searchReq.getRegularSearchString() + "%') OR (ARTISTS.name LIKE '%" + searchReq.getRegularSearchString()
+					sqlStmt = new SqlStatement(QueryType.QUERY, searchReq.getMapType(), 
+							"SELECT ALBUMS.* FROM ALBUMS, ARTISTS WHERE (ALBUMS.title LIKE '%"
+							+ searchReq.getRegularSearchString() + "%') OR (ARTISTS.name LIKE '%" + 
+							searchReq.getRegularSearchString()
 							+ "%') GROUP BY ALBUMS.discid", null, searchReq.getId());
 					connectionManager.insertToQueryQueue(sqlStmt);
 					break;
