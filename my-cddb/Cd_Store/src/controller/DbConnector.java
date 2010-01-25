@@ -77,7 +77,8 @@ public class DbConnector implements Runnable{
 		try
 		{
 			System.out.println("DbConnector: executing query of type:" + stmt.getQueryType().toString());
-			ps = connection.prepareStatement(stmt.getStmt());
+			System.out.println("DbConnector: executing query:" + stmt.getStmt());
+			ps = connection.prepareStatement(stmt.getStmt(), ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
 			return ps.executeQuery();
 		}
 		catch (SQLException e)
@@ -116,7 +117,7 @@ public class DbConnector implements Runnable{
 					ps.setLong(2, Long.parseLong(currentTuple[1]));		//ARTISTID
 					ps.setString(3, currentTuple[2]);					//TITLE
 					ps.setLong(4, Long.parseLong(currentTuple[3]));		//YEAR
-					ps.setString(5, currentTuple[4]);					//GENRE
+					ps.setLong(5, Long.parseLong(currentTuple[4]));		//GENRE
 					ps.setLong(6, Long.parseLong(currentTuple[5]==null?"0":currentTuple[5])); //TOTALTIME
 					ps.addBatch();
 				}

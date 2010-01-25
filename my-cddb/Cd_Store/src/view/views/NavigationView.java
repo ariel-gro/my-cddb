@@ -272,12 +272,26 @@ public class NavigationView extends ViewPart
 							RequestToQueryHandler top10LatestSearch = new RequestToQueryHandler(dataTableId,
 									RequestToQueryHandler.Priority.HIGH_PRIORITY, RequestToQueryHandler.SearchType.TOP_10,
 									RequestToQueryHandler.Top10Type.LATEST);
+							
+							System.out.println("SENDING NEW REQUEST FROM GUI:");
+							System.out.println("ID = " + top10LatestSearch.getId());
+							System.out.println("Query Type = " + top10LatestSearch.getTheQueryType());
+							System.out.println("Search Type = " + top10LatestSearch.getSearchType());
+							System.out.println("Top 10 Type = " + top10LatestSearch.getTop10Type());
+							
 							SearchesPriorityQueue.addSearch(top10LatestSearch);
 						} else if (viewer.getTree().getSelection()[0].getText().equals("Most Popular CDs"))
 						{
 							RequestToQueryHandler top10PopularSearch = new RequestToQueryHandler(dataTableId,
 									RequestToQueryHandler.Priority.HIGH_PRIORITY, RequestToQueryHandler.SearchType.TOP_10,
 									RequestToQueryHandler.Top10Type.MOST_POPULAR);
+							
+							System.out.println("SENDING NEW REQUEST FROM GUI:");
+							System.out.println("ID = " + top10PopularSearch.getId());
+							System.out.println("Query Type = " + top10PopularSearch.getTheQueryType());
+							System.out.println("Search Type = " + top10PopularSearch.getSearchType());
+							System.out.println("Top 10 Type = " + top10PopularSearch.getTop10Type());
+							
 							SearchesPriorityQueue.addSearch(top10PopularSearch);
 						}
 					} else if (viewer.getTree().getSelection()[0].getParentItem().getText().equals("LATEST BY MUSIC GENRES"))
@@ -286,7 +300,7 @@ public class NavigationView extends ViewPart
 						MusicGenres[] allMusicGenresd = RequestToQueryHandler.MusicGenres.values();
 						for (int i = 0; i < allMusicGenresd.length; i++)
 						{
-							if (allMusicGenresd[i].toString().equals(viewer.getTree().getSelection()[0].getText()))
+							if (allMusicGenresd[i].toString().toLowerCase().equals(viewer.getTree().getSelection()[0].getText().toLowerCase()))
 							{
 								selectedMusicGenre = allMusicGenresd[i];
 							}
@@ -294,6 +308,14 @@ public class NavigationView extends ViewPart
 
 						RequestToQueryHandler top10Search = new RequestToQueryHandler(dataTableId, RequestToQueryHandler.Priority.HIGH_PRIORITY,
 								RequestToQueryHandler.SearchType.TOP_10, selectedMusicGenre);
+						
+						System.out.println("SENDING NEW REQUEST FROM GUI:");
+						System.out.println("ID = " + top10Search.getId());
+						System.out.println("Query Type = " + top10Search.getTheQueryType());
+						System.out.println("Search Type = " + top10Search.getSearchType());
+						System.out.println("Top 10 Type = " + top10Search.getTop10Type());
+						System.out.println("Genres = " + top10Search.getMusicGenre());
+						
 						SearchesPriorityQueue.addSearch(top10Search);
 					}
 				}

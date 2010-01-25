@@ -2,6 +2,7 @@ package controller;
 
 import java.net.Authenticator.RequestorType;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.util.HashMap;
@@ -19,6 +20,7 @@ import model.ResultsQueue;
 import model.SearchesPriorityQueue;
 import model.SqlStatement;
 import model.TableViewsMap;
+import model.UserPassword;
 import model.advanceSearchFieldValueBundle;
 import model.SqlStatement.QueryType;
 
@@ -31,15 +33,27 @@ public class queryHandler implements Runnable
 	public synchronized void run()
 	{
 		queryHandler.createTables();
-		
+
 		while (!timeToQuit)
 		{
 			if (!SearchesPriorityQueue.isEmpty())
 			{
+				System.out.println("Got something from SearchesPriorityQueue !!!");
 				RequestToQueryHandler req = SearchesPriorityQueue.getSearch();
+				System.out.println("GOT NEW REQUEST FROM PRIORITY QUEUE:");
+				System.out.println("ID = " + req.getId());
+				System.out.println("Query Type = " + req.getTheQueryType());
+				System.out.println("Search Type = " + req.getSearchType());
+				System.out.println("Top 10 Type = " + req.getTop10Type());
 				HandleQuery q = new HandleQuery(req);
-				this.threadPool.execute(q);
+				this.threadPool.execute(q);		
 			}
+			try
+			{
+				Thread.sleep(100);
+			} catch (InterruptedException e)
+			{}
+			//System.out.println("Waiting to get something from SearchesPriorityQueue");
 		}
 		this.threadPool.shutdownNow();
 	}
@@ -49,22 +63,18 @@ public class queryHandler implements Runnable
 		timeToQuit = true;
 	}
 
-	private synchronized String UniqueID()
-	{
-		Long current = System.currentTimeMillis();
-		return current.toString();
-	}
+
 
 	// this method checks if tables exist i the DB. if not - creates all tables.
 	public static synchronized void createTables()
 	{
 		int tester = -1;
 		SqlStatement sqlStmt = new SqlStatement(QueryType.QUERY, 
-												null, 
-												"SELECT count(table_name) FROM all_tables WHERE " +
-												"(table_name = 'ARTISTS' OR table_name = 'ALBUMS' OR " +
-												"table_name = 'TRACKS' OR table_name = 'SALES' OR " + 
-												"table_name = 'GENRES' OR table_name = 'USERS')", null, 0);
+				null, 
+				"SELECT count(table_name) FROM all_tables WHERE " +
+				"(table_name = 'ARTISTS' OR table_name = 'ALBUMS' OR " +
+				"table_name = 'TRACKS' OR table_name = 'SALES' OR " + 
+				"table_name = 'GENRES' OR table_name = 'USERS')", null, 0);
 		System.out.println("Inserting sqlStmt to queue");
 		connectionManager.insertToQueryQueue(sqlStmt);
 		boolean waitforanswer = false;
@@ -85,13 +95,13 @@ public class queryHandler implements Runnable
 					myResult = ResultsQueue.getResult();
 					SqlStatement[] create_stmt = new SqlStatement[6];
 					create_stmt[0] = new SqlStatement(QueryType.INSERT_SINGLE, RequestToQueryHandler.MapType.ALBUMS, "CREATE TABLE Albums(DiscId NUMBER, ArtistId INT, "
-									+ "Title VARCHAR(200), Year SMALLINT, Genre VARCHAR(200), TotalTime SMALLINT, Price FLOAT, PRIMARY KEY(DiscId))", null, 0);
+							+ "Title VARCHAR(500), Year SMALLINT, Genre INT, TotalTime SMALLINT, Price FLOAT, PRIMARY KEY(DiscId))", null, 0);
 					create_stmt[1] = new SqlStatement(QueryType.INSERT_SINGLE, RequestToQueryHandler.MapType.TRACKS, "CREATE TABLE Tracks(TrackId INT, DiscID NUMBER, "
-									+ "Num SMALLINT, TrackTitle VARCHAR(200), PRIMARY KEY(TrackId))", null, 0);
+							+ "Num SMALLINT, TrackTitle VARCHAR(500), PRIMARY KEY(TrackId))", null, 0);
 					create_stmt[2] = new SqlStatement(QueryType.INSERT_SINGLE, RequestToQueryHandler.MapType.ARTISTS, 
-							"CREATE TABLE Artists(Name VARCHAR(200), ArtistId INT, PRIMARY KEY(ArtistId))", null, 0);
+							"CREATE TABLE Artists(Name VARCHAR(300), ArtistId INT, PRIMARY KEY(ArtistId))", null, 0);
 					create_stmt[3] = new SqlStatement(QueryType.INSERT_SINGLE, RequestToQueryHandler.MapType.GENRES, 
-							"CREATE TABLE Genres(Genre VARCHAR(200), GenreId INT, PRIMARY KEY(GenreId))", null, 0);
+							"CREATE TABLE Genres(Genre VARCHAR(300), GenreId INT, PRIMARY KEY(GenreId))", null, 0);
 					create_stmt[4] = new SqlStatement(QueryType.INSERT_SINGLE, null, 
 							"CREATE TABLE Users(UserId INT, UserName VARCHAR(50), Password VARCHAR(50), PRIMARY KEY(UserId))", null, 0);
 					create_stmt[5] = new SqlStatement(QueryType.INSERT_SINGLE, null, 
@@ -143,7 +153,7 @@ public class queryHandler implements Runnable
 				if ((myResult != null) && (myResult.getId() == this.searchReq.getId()))
 				{
 					// ResultsQueue has a result and it's ours!!
-
+					System.out.println("Got result ID=" + myResult.getId());
 					myResult = ResultsQueue.getResult();
 					ResultSet rs = myResult.getResultSet();
 					String[][] table = resultSetInto2DStringArray(rs);
@@ -167,16 +177,16 @@ public class queryHandler implements Runnable
 			String query = "";
 			if (searchReq.getTheQueryType() == SqlStatement.QueryType.QUERY)
 			{
-				switch (searchReq.getSearchType()) {
-
+				System.out.println("QueryType.QUERY");
+				switch (searchReq.getSearchType()) {			
 				case TOP_10:
 					switch (searchReq.getTop10Type()) {
 					case LATEST:
 						if (searchReq.getMusicGenre() != null)
 						{
-							sqlStmt = new SqlStatement(QueryType.QUERY,
-									searchReq.getMapType(), "SELECT TOP 10 * FROM (SELECT * FROM ALBUMS ORDERBY ALBUMS.year) WHERE ALBUMS.genre = "
-													+ searchReq.getMusicGenre().toString(), null, searchReq.getId());
+							sqlStmt = new SqlStatement(QueryType.QUERY,		
+									searchReq.getMapType(), "SELECT * FROM (select * from albums where genre = (SELECT genreid FROM genres where genres.genre='" + searchReq.getMusicGenre().toString().toLowerCase() + "') ORDER BY year desc,discid desc) where rownum<=10"
+									, null, searchReq.getId());
 							connectionManager.insertToQueryQueue(sqlStmt);
 						} else
 						{
@@ -189,16 +199,17 @@ public class queryHandler implements Runnable
 						sqlStmt = new SqlStatement(
 								QueryType.QUERY,
 								searchReq.getMapType(),
-								"SELECT TOP 10 Albums.* FROM ALBUMS, (SELECT id, COUNT(id) FROM SALES GROUP BY id ORDER BY COUNT(id) DESC) WHERE SALES.id = ALBUMS.id", null, searchReq.getId());
+								"SELECT TOP 10 Albums.* FROM ALBUMS, (SELECT discid, COUNT(discid) FROM SALES GROUP BY discid ORDER BY COUNT(discid) DESC) WHERE SALES.discid = ALBUMS.discid", null, searchReq.getId());
 						connectionManager.insertToQueryQueue(sqlStmt);
 						break;
 					default:
 						break;
 					}
+				break;
 				case REGULAR:
 					sqlStmt = new SqlStatement(QueryType.QUERY, searchReq.getMapType(), "SELECT ALBUMS.* FROM ALBUMS, ARTISTS WHERE (ALBUMS.title LIKE '%"
-									+ searchReq.getRegularSearchString() + "%') OR (ARTISTS.name LIKE '%" + searchReq.getRegularSearchString()
-									+ "%') GROUP BY ALBUMS.id", null, searchReq.getId());
+							+ searchReq.getRegularSearchString() + "%') OR (ARTISTS.name LIKE '%" + searchReq.getRegularSearchString()
+							+ "%') GROUP BY ALBUMS.discid", null, searchReq.getId());
 					connectionManager.insertToQueryQueue(sqlStmt);
 					break;
 				case ADVANCED:
@@ -221,19 +232,19 @@ public class queryHandler implements Runnable
 								query += "GENRES.genre LIKE '%" + advanceSearchFieldValue.getValue() + "%' AND GENRES.genreId = ALBUMS.genreId ";
 							break;
 						case TRACK_TITLE:
-							query += "TRACKS.title LIKE '%" + advanceSearchFieldValue.getValue() + "%' AND TRACKS.id = ALBUMS.id ";
+							query += "TRACKS.title LIKE '%" + advanceSearchFieldValue.getValue() + "%' AND TRACKS.id = ALBUMS.discid ";
 							break;
 						case YEAR:
 							query += "ALBUMS.year "
-									+ (advanceSearchFieldValue.getRelation().equals(advanceSearchFieldValueBundle.Relation.GREATER) ? ">"
-											: advanceSearchFieldValue.getRelation().equals(advanceSearchFieldValueBundle.Relation.EQUALS) ? "=" : "<")
-									+ advanceSearchFieldValue.getValue() + " ";
+								+ (advanceSearchFieldValue.getRelation().equals(advanceSearchFieldValueBundle.Relation.GREATER) ? ">"
+										: advanceSearchFieldValue.getRelation().equals(advanceSearchFieldValueBundle.Relation.EQUALS) ? "=" : "<")
+										+ advanceSearchFieldValue.getValue() + " ";
 							break;
 						default:
 							break;
 						}
 					}
-					query += "GROUP BY ALBUMS.id";
+					query += "GROUP BY ALBUMS.";
 					sqlStmt = new SqlStatement(QueryType.QUERY, searchReq.getMapType(), query, null, searchReq.getId());
 					connectionManager.insertToQueryQueue(sqlStmt);
 				case GET_USERS:
@@ -245,25 +256,36 @@ public class queryHandler implements Runnable
 				}
 			} else if (searchReq.getTheQueryType() == SqlStatement.QueryType.INSERT_SINGLE)
 			{
+				System.out.println("QueryType.INSERT_SINGLE");
+				System.out.println("Single inser type: " + searchReq.getSingleInsertType().toString());
 				switch (searchReq.getSingleInsertType()) {
 				case ADD_USER:
+					System.out.println("In Case ADD_USER");
 					String[] fields1 = searchReq.getDualFields();
-					String UID1 = UniqueID();
+					String UID1 = (System.currentTimeMillis()+"").substring(6);			
+					System.out.println("After UniquId");
 					sqlStmt = new SqlStatement(QueryType.INSERT_SINGLE, searchReq.getMapType(), "INSERT INTO USERS (UserId, UserName, Password) VALUES ('" + UID1 + "', '"
-									+ fields1[0] + "', '" + fields1[1] + "')", null, searchReq.getId());
+							+ fields1[0] + "', '" + fields1[1] + "')", null, searchReq.getId());
+					System.out.println("Sending single insert to DBC from QH: ID="+searchReq.getId()+" User="+fields1[0] + " Password="+fields1[1]);
+					System.out.println("query statment="+sqlStmt.getStmt());
 					connectionManager.insertToQueryQueue(sqlStmt);
 					break;
 				case ADD_SALE:
+					System.out.println("In Case ADD_SALE");
 					String[] fields2 = searchReq.getDualFields();
-					String UID2 = UniqueID();
+					String UID2 = (System.currentTimeMillis()+"").substring(6);
 					sqlStmt = new SqlStatement(QueryType.INSERT_SINGLE, searchReq.getMapType(), "INSERT INTO SALES (OrderId, UserId, DiscId) VALUES ('" + UID2 + "', '"
-									+ fields2[0] + "', '" + fields2[1] + "')", null, searchReq.getId());
+							+ fields2[0] + "', '" + fields2[1] + "')", null, searchReq.getId());
 					connectionManager.insertToQueryQueue(sqlStmt);
 					break;
+				default:
+					System.out.println("In Case Default");
+
 				}
 			} else
-			// Insert Bulk
+				// Insert Bulk
 			{
+				System.out.println("QueryType.INSERT_BULK");
 				map = searchReq.getMap();
 				int sizeOfMap = map.entrySet().size();
 				attributes = new String[sizeOfMap][];
@@ -284,12 +306,12 @@ public class queryHandler implements Runnable
 
 						num++;
 					}
-					
+
 					sqlStmt = new SqlStatement(QueryType.INSERT_BULK,
 							searchReq.getMapType(), "INSERT INTO ALBUMS (DiscId, ArtistId, Title, Year, Genre, TotalTime, Price) " + "VALUES (?, ?, ?, ?, ?, ?, "
-											+ df.format((5 + Math.random() * 10)) + ")", attributes, searchReq.getId());
+							+ df.format((5 + Math.random() * 10)) + ")", attributes, searchReq.getId());
 					connectionManager.insertToQueryQueue(sqlStmt);
-					
+
 					break;
 				case ARTISTS:
 					num = 0;
@@ -326,13 +348,13 @@ public class queryHandler implements Runnable
 							num = 0;
 							//createArray = true;
 						}
-						*/
+						 */
 					}
-					
+
 					sqlStmt = new SqlStatement(QueryType.INSERT_BULK, searchReq.getMapType(), "INSERT INTO ARTISTS (Name, ArtistId) " + "VALUES (?, ?)",
 							attributes, searchReq.getId());
 					connectionManager.insertToQueryQueue(sqlStmt);
-					
+
 					break;
 				case GENRES:
 					num = 0;
@@ -345,11 +367,11 @@ public class queryHandler implements Runnable
 						num++;
 
 					}
-					
+
 					sqlStmt = new SqlStatement(QueryType.INSERT_BULK, searchReq.getMapType(), "INSERT INTO GENRES (Genre, GenreId) " + "VALUES (?, ?)", attributes, searchReq
 							.getId());
 					connectionManager.insertToQueryQueue(sqlStmt);
-					
+
 					break;
 				case TRACKS:
 					num = 0;
@@ -365,11 +387,11 @@ public class queryHandler implements Runnable
 
 						num++;
 					}
-					
-					sqlStmt = new SqlStatement(QueryType.INSERT_BULK, searchReq.getMapType(), "INSERT INTO TRACKS (TrackId, DiscID, TrackTitle, Number) "
-									+ "VALUES (?, ?, ?, ?)", attributes, searchReq.getId());
+
+					sqlStmt = new SqlStatement(QueryType.INSERT_BULK, searchReq.getMapType(), "INSERT INTO TRACKS (TrackId, DiscID, TrackTitle, Num) "
+							+ "VALUES (?, ?, ?, ?)", attributes, searchReq.getId());
 					connectionManager.insertToQueryQueue(sqlStmt);
-					
+
 					break;
 				default:
 					break;
@@ -378,32 +400,123 @@ public class queryHandler implements Runnable
 			}
 		}
 
+//		private synchronized String[][] resultSetInto2DStringArray(ResultSet rs)
+//		{
+//			try
+//			{
+//				rs.last();
+//				int rowCount = rs.getRow();
+//				int colCount = rs.getMetaData().getColumnCount();
+//				String[][] table = new String[rowCount][colCount];
+//				rs.first();
+//				while (!rs.isAfterLast())
+//				{
+//					int row = rs.getRow() - 1;
+//					for (int col = 0; col < colCount; col++)
+//					{
+//						table[row][col] = rs.getString(col + 1);
+//					}
+//					rs.next();
+//				}
+//
+//				return table;
+//			} catch (SQLException e)
+//			{
+//				View.displayErroMessage("An error occurred while manipulating a result from the DB.\n\n" + e.toString());
+//				return null;
+//			}
+//		}
+
+
+
 		private synchronized String[][] resultSetInto2DStringArray(ResultSet rs)
+		{
+			int rowCount = getQueryResultRowCount(rs);
+			System.out.println("Row Count: " + rowCount );
+			String[][] theResultArray = new String[rowCount][];
+
+			for (int row = 1; row <= rowCount; row++)
+				theResultArray[row - 1] = getQueryResultWholeRow(rs, row);
+
+			for (int i = 0; i < theResultArray.length; i++)
+			{
+				for (int j = 0; j < theResultArray[i].length; j++)
+				{
+					System.out.println(theResultArray[i][j]);
+				}
+			}
+			
+			return theResultArray;
+		}
+
+		private int getQueryResultRowCount(ResultSet queryResult)
+		{
+			int size = 0;
+			try
+			{
+				if (queryResult.getType() == ResultSet.TYPE_FORWARD_ONLY)
+				{
+					size = queryResult.getRow();
+					while (queryResult.next())
+					{
+						size++;
+					}
+				}
+				else
+				{
+					if (queryResult.last())
+						size = queryResult.getRow();
+				}
+			}
+			catch (Exception sqle)
+			{
+				sqle.printStackTrace();
+			}
+
+			return size;
+		}
+
+		private String[] getQueryResultWholeRow(ResultSet queryResult, int theRow)
+		{
+			String[] theOutput = new String[] {};
+
+			int theColumnNum = 0;
+		
+			try
+			{
+				theColumnNum = getQueryResultColumnCount(queryResult);
+				System.out.println("theColumnNum: " + theColumnNum );
+				theOutput = new String[theColumnNum];
+				if (queryResult.absolute(theRow))
+					for (int i = 1; i <= theColumnNum; i++)
+					{
+						theOutput[i - 1] = queryResult.getString(i);
+						System.out.println("i=" + i + " " + theOutput[i - 1]);
+					}
+
+			}
+			catch (SQLException sqle)
+			{
+				sqle.printStackTrace();
+			}
+			return theOutput;
+		}
+
+		private int getQueryResultColumnCount(ResultSet queryResult)
 		{
 			try
 			{
-				rs.last();
-				int rowCount = rs.getRow();
-				int colCount = rs.getMetaData().getColumnCount();
-				String[][] table = new String[rowCount][colCount];
-				rs.first();
-				while (!rs.isAfterLast())
-				{
-					int row = rs.getRow() - 1;
-					for (int col = 0; col < colCount; col++)
-					{
-						table[row][col] = rs.getString(col + 1);
-					}
-					rs.next();
-				}
-
-				return table;
-			} catch (SQLException e)
-			{
-				View.displayErroMessage("An error occurred while manipulating a result from the DB.\n\n" + e.toString());
-				return null;
+				ResultSetMetaData rsmd = queryResult.getMetaData();
+				//  Get the number of columns in the result set
+				return rsmd.getColumnCount();
 			}
-		}
-	}
+			catch (SQLException sqle)
+			{
+				sqle.printStackTrace();
+			}
 
+			return 0;
+		}
+
+	}
 }
