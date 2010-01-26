@@ -145,6 +145,7 @@ public class UserView extends ViewPart
 									if(allUsers[i][2].toLowerCase().equals(loginDialog.getPassword().toLowerCase()))
 									{
 										login = true;
+										UserPassword.setLoggedIn(true);
 										UserPassword.setId(Integer.parseInt(allUsers[i][0]));
 										UserPassword.setUser(loginDialog.getUser());
 										UserPassword.setPassword(loginDialog.getPassword());
