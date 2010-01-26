@@ -85,24 +85,7 @@ public class connectionManager implements Runnable{
 			queryQueue = new LinkedBlockingQueue<SqlStatement>();
 
 		System.out.println("connectionManager: after queryQueue");
-		
-	/*	if (connQueue == null || connQueue.isEmpty()){
 			
-			System.out.println("connectionManager: inside conQueue if");
-			connQueue = new LinkedBlockingQueue<Connection>();
-			conVector = new Vector<Connection>(numOfThreads);
-			System.out.println("connectionManager: inside conQueue if after creating LinkedBlockingqueue and convector");
-			
-			boolean initConOpened = openConnection();
-			if (initConOpened == false) {
-				System.out.println("connectionManager: Exiting because conection failed");
-				//initial connection to DB failed => kill thread
-				return;
-			}
-			DbConfiguration.setConnectedToDb(true);
-			View.displayInfoMessage("Successfully connected to DB :)");
-		}
-	*/	
 		int connectionReTries = 5;
 		System.out.println("connectionManager: Before while of connectionManager");
 		while (!timeToQuit){
@@ -123,11 +106,7 @@ public class connectionManager implements Runnable{
 				DbConnector con = new DbConnector(connQueue.take(), queryQueue.take());				
 				connThreads.execute(con);
 			}
-			catch (InterruptedException e) {
-//				View.displayErroMessage("Connection manager was intrrupted.\n"
-//						+e.getMessage());
-//				return;
-			}
+			catch (InterruptedException e) {}
 		}
 		
 		//close all connections to DB
