@@ -141,6 +141,7 @@ public class MainParser extends Thread
 					if (line.startsWith("# Disc length: "))
 					{
 						currentDisk.setTotalTime(Integer.parseInt(line.split("\\s")[3]) + "");
+						
 					} else if (line.startsWith("DISCID="))
 					{
 						currentDisk.setId(line.substring(line.indexOf("=") + 1).split(",")[0]);
@@ -169,7 +170,7 @@ public class MainParser extends Thread
 						{
 							int year = Integer.parseInt(line.substring(line.indexOf("=") + 1).trim());
 							currentDisk.setYear(year+"");
-							if (year > 2020)
+							if (year > 3000)
 							{
 								currentDisk.setYear(0+"");
 							}
