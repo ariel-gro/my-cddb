@@ -213,6 +213,7 @@ public class MainParser extends Thread
 			try
 			{
 				br.close();
+				file.delete();
 			} catch (IOException e)
 			{}
 		}
