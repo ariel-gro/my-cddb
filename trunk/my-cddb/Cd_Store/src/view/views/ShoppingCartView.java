@@ -81,21 +81,28 @@ public class ShoppingCartView extends ViewPart
 			{
 				if (DbConfiguration.isConnectedToDb())
 				{
-					List<Disk> shoppingCartList = ShoppingCartContent.getContent();
-					for (Iterator<Disk> iterator = shoppingCartList.iterator(); iterator.hasNext();)
+					if(UserPassword.isLoggedIn())
 					{
-						Disk disk = (Disk) iterator.next();
-						int dataTableId = QueryId.getId();
+						List<Disk> shoppingCartList = ShoppingCartContent.getContent();
+						for (Iterator<Disk> iterator = shoppingCartList.iterator(); iterator.hasNext();)
+						{
+							Disk disk = (Disk) iterator.next();
+							int dataTableId = QueryId.getId();
+							
+							RequestToQueryHandler regularSearch = new RequestToQueryHandler(dataTableId, RequestToQueryHandler.Priority.HIGH_PRIORITY,
+									QueryType.INSERT_SINGLE, RequestToQueryHandler.SingleInsertType.ADD_SALE, new String[]{UserPassword.getId()+"", disk.getId()});
+							SearchesPriorityQueue.addSearch(regularSearch);
+						}		
 						
-						RequestToQueryHandler regularSearch = new RequestToQueryHandler(dataTableId, RequestToQueryHandler.Priority.HIGH_PRIORITY,
-								QueryType.INSERT_SINGLE, RequestToQueryHandler.SingleInsertType.ADD_SALE, new String[]{UserPassword.getId()+"", disk.getId()});
-						SearchesPriorityQueue.addSearch(regularSearch);
-					}		
-					
-					ShoppingCartContent.clearContent();
-					viewer.refresh();
-					
-					View.displayInfoMessage("You order has been approved and registered in the DB.\nYou should expect delivery within 14 days.\n\nThank you for shopping at our CD Store :)");
+						ShoppingCartContent.clearContent();
+						viewer.refresh();
+						
+						View.displayInfoMessage("You order has been approved and registered in the DB.\nYou should expect delivery within 14 days.\n\nThank you for shopping at our CD Store :)");
+					}
+					else
+					{
+						View.displayErroMessage("You cannot buy anything before you Login.\nPlease login via the \"sign in\" link.");
+					}
 				} else
 				{
 					View.displayErroMessage("You cannot do anything before you connect to the DB.\nPlease connect to the DB via Database --> DB Configuration.");
