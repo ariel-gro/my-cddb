@@ -27,10 +27,14 @@ public class DbConnector implements Runnable{
 		this.ps = null;
 	}
 
+	public synchronized Connection getConnection() {
+		return this.connection;
+	}
+	
 	public synchronized void setConnection(Connection connection) {
 		this.connection = connection;
 	}
-
+	
 	public synchronized void setStatement(SqlStatement stmt){
 		this.stmt = stmt;
 	}
@@ -44,18 +48,19 @@ public class DbConnector implements Runnable{
 		switch (qt){
 		case INSERT_BULK:
 			if (executeBulkInsert(stmt) == PreparedStatement.EXECUTE_FAILED) {
-				View.displayErroMessage("Error during bulk insert");
+				View.displayErroMessage("Error during bulk insert.\nPlease try to reconnect to DB\n\n");
 			}
 			break;
 		case INSERT_SINGLE:
 			if (executeSingleInsert(stmt) == PreparedStatement.EXECUTE_FAILED) {
-				View.displayErroMessage("Error during single insert");
+				View.displayErroMessage("Error during single insert.\nPlease try to reconnect to DB\n\n");
 			}
 			return;
 		case QUERY:
 			ResultSet resultSet = executeQuery(stmt);
 			if (resultSet == null) {
-				View.displayErroMessage("DB access error occurred while executing a query.\n\n");
+				View.displayErroMessage("DB access error occurred while executing a query.\n" +
+						"Please try to reconnect to DB\n\n");
 			}
 			else {
 				Result result = new Result(this.stmt.getRequestId(), resultSet);
