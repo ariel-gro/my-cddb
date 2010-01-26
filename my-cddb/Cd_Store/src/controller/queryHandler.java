@@ -173,7 +173,7 @@ public class queryHandler implements Runnable
 
 		private synchronized void createQuery()
 		{
-			DecimalFormat df = new DecimalFormat("####.00");
+			//DecimalFormat df = new DecimalFormat("####.00");
 
 			String query = "";
 			if (searchReq.getTheQueryType() == SqlStatement.QueryType.QUERY)
@@ -320,8 +320,8 @@ public class queryHandler implements Runnable
 					}
 
 					sqlStmt = new SqlStatement(QueryType.INSERT_BULK,
-							searchReq.getMapType(), "INSERT INTO ALBUMS (DiscId, ArtistId, Title, Year, Genre, TotalTime, Price) " + "VALUES (?, ?, ?, ?, ?, ?, "
-							+ df.format((5 + Math.random() * 10)) + ")", attributes, searchReq.getId());
+							searchReq.getMapType(), "INSERT INTO ALBUMS (DiscId, ArtistId, Title, Year, Genre, TotalTime, Price) " + "VALUES (?, ?, ?, ?, ?, ?, ?"
+							/*+ df.format((5 + Math.random() * 10))*/ + ")", attributes, searchReq.getId());
 					connectionManager.insertToQueryQueue(sqlStmt);
 
 					break;

@@ -1,5 +1,6 @@
 package controller;
 import java.sql.*;
+import java.text.DecimalFormat;
 
 import view.views.View;
 
@@ -108,6 +109,7 @@ public class DbConnector implements Runnable{
 			ps = connection.prepareStatement(stmt.getStmt());
 			MapType mapType = stmt.getMapType();
 			int bulkSize = stmt.getTuples().length;
+			DecimalFormat df = new DecimalFormat("####.00");
 			
 			switch (mapType) {
 			case ALBUMS:
@@ -119,6 +121,7 @@ public class DbConnector implements Runnable{
 					ps.setLong(4, Long.parseLong(currentTuple[3]));		//YEAR
 					ps.setLong(5, Long.parseLong(currentTuple[4]));		//GENRE
 					ps.setLong(6, Long.parseLong(currentTuple[5])); 	//TOTALTIME
+					ps.setFloat(7, Float.parseFloat(df.format((5 + Math.random() * 10)))); 	//PRICE
 					ps.addBatch();
 				}
 				break;
