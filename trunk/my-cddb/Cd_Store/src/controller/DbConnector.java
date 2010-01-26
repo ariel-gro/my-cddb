@@ -119,15 +119,19 @@ public class DbConnector implements Runnable{
 			switch (mapType) {
 			case ALBUMS:
 				for(int row=0; row<bulkSize; row++) {
-					String[] currentTuple = stmt.getTuples()[row];
-					ps.setLong(1, Long.parseLong(currentTuple[0]));		//DISCID
-					ps.setLong(2, Long.parseLong(currentTuple[1]));		//ARTISTID
-					ps.setString(3, currentTuple[2]);					//TITLE
-					ps.setLong(4, Long.parseLong(currentTuple[3]));		//YEAR
-					ps.setLong(5, Long.parseLong(currentTuple[4]));		//GENRE
-					ps.setLong(6, Long.parseLong(currentTuple[5])); 	//TOTALTIME
-					ps.setFloat(7, Float.parseFloat(df.format((5 + Math.random() * 10)))); 	//PRICE
-					ps.addBatch();
+					try
+					{
+						String[] currentTuple = stmt.getTuples()[row];
+						ps.setLong(1, Long.parseLong(currentTuple[0]));		//DISCID
+						ps.setLong(2, Long.parseLong(currentTuple[1]));		//ARTISTID
+						ps.setString(3, currentTuple[2]);					//TITLE
+						ps.setLong(4, Long.parseLong(currentTuple[3]));		//YEAR
+						ps.setLong(5, Long.parseLong(currentTuple[4]));		//GENRE
+						ps.setLong(6, Long.parseLong(currentTuple[5]==null?"0":currentTuple[5])); 	//TOTALTIME
+						ps.setFloat(7, Float.parseFloat(df.format((5 + Math.random() * 10)))); 	//PRICE
+						ps.addBatch();
+					}
+					catch (Exception e) {}
 				}
 				break;
 			case ARTISTS:
