@@ -4,9 +4,9 @@ public class DbConfiguration
 {
 	private static String ipAddress = "127.0.0.1";
 	private static int port = 1521;
-	private static String user = "SYSTEM";
-	private static String password = "oklydokly";
-	private static String db = "xe";
+	private static String user = "";
+	private static String password = "";
+	private static String db = "";
 	private static String fileToImport = "";
 	private static boolean isConnectedToDb = false;
 	
