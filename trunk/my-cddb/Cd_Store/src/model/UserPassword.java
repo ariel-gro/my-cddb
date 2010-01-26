@@ -5,7 +5,16 @@ public class UserPassword
 	private static int id;
 	private static String user;
 	private static String password;
+	private static boolean isLoggedIn;
 	
+	public static synchronized boolean isLoggedIn()
+	{
+		return isLoggedIn;
+	}
+	public static synchronized void setLoggedIn(boolean isLoggedIn)
+	{
+		UserPassword.isLoggedIn = isLoggedIn;
+	}
 	public static synchronized String getUser()
 	{
 		return user;
