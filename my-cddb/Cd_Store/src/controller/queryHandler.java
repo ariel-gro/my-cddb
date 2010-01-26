@@ -233,26 +233,31 @@ public class queryHandler implements Runnable
 					break;
 				case ADVANCED:
 					List<advanceSearchFieldValueBundle> params = searchReq.getAdvanceSearchParameters();
-					query += "SELECT ALBUMS.title, ARTISTS.name, ALBUMS.year, GENRES.genre, ALBUMS.totaltime, ALBUMS.price " +
-							"FROM ALBUMS, ARTISTS, GENRES, TRACKS WHERE ";
+					String select = "SELECT distinct ALBUMS.discid, ALBUMS.title, ARTISTS.name, ALBUMS.year, GENRES.genre, ALBUMS.totaltime, ALBUMS.price ";
+					String from = "FROM ALBUMS, ARTISTS, GENRES ";
+					query = "WHERE ";
 
-					for (Iterator<advanceSearchFieldValueBundle> iterator = params.iterator(); iterator.hasNext();)
-					{
-						advanceSearchFieldValueBundle advanceSearchFieldValue = (advanceSearchFieldValueBundle) iterator.next();
+					for (int i = 0; i < params.size(); i++) {
+						if (i > 0 && i<params.size()-1)
+						{
+							query += " AND ";
+						}
+						advanceSearchFieldValueBundle advanceSearchFieldValue = (advanceSearchFieldValueBundle) params.get(i);
 						
 						switch (advanceSearchFieldValue.getSearchField()) {
 						case ALBUM_TITLE:
 							query += "ALBUMS.title LIKE '%" + advanceSearchFieldValue.getValue() + "%'";
 							break;
 						case ARTIST_NAME:
-							query += "ARTISTS.name LIKE '%" + advanceSearchFieldValue.getValue() + "%' AND ALBUMS.artistId = ARTISTS.artistId ";
+							query += "(ARTISTS.name LIKE '%" + advanceSearchFieldValue.getValue() + "%' )";
 							break;
 						case GENRE:
 							if (advanceSearchFieldValue.getValue().equals("All_Music_Genres") == false)
-								query += "GENRES.genre LIKE '%" + advanceSearchFieldValue.getValue() + "%' AND GENRES.genreId = ALBUMS.genreId ";
+								query += "GENRES.genre LIKE '%" + advanceSearchFieldValue.getValue().toLowerCase() + "%'";
 							break;
 						case TRACK_TITLE:
-							query += "TRACKS.title LIKE '%" + advanceSearchFieldValue.getValue() + "%' AND TRACKS.id = ALBUMS.discid ";
+							query += "ALBUMS.discid IN (select TRACKS.discid from TRACKS WHERE TRACKS.tracktitle LIKE '%" + advanceSearchFieldValue.getValue() + "%')";
+							from += ",TRACKS ";
 							break;
 						case YEAR:
 							query += "ALBUMS.year "
@@ -264,9 +269,14 @@ public class queryHandler implements Runnable
 							break;
 						}
 					}
-					query += "GROUP BY ALBUMS.";
-					sqlStmt = new SqlStatement(QueryType.QUERY, searchReq.getMapType(), query, null, searchReq.getId());
+					query += " AND ALBUMS.artistId = ARTISTS.artistId";
+					query += searchReq.getMusicGenre() == MusicGenres.ALL?"":" AND GENRES.genreId = ALBUMS.genre";
+					
+					sqlStmt = new SqlStatement(QueryType.QUERY, searchReq.getMapType(), 
+							select+from+query,
+							null, searchReq.getId());
 					connectionManager.insertToQueryQueue(sqlStmt);
+				break;
 				case GET_USERS:
 					sqlStmt = new SqlStatement(QueryType.QUERY, searchReq.getMapType(), "SELECT * FROM USERS", null, searchReq.getId());
 					connectionManager.insertToQueryQueue(sqlStmt);
