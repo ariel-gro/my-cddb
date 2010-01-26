@@ -282,7 +282,22 @@ public class QueryView extends ViewPart
 			for (int i = 0; i < data[0].length; i++)
 			{
 				TableViewerColumn column = new TableViewerColumn(viewer, SWT.NONE);
-				column.getColumn().setText(data[0][i]);
+	
+				if(i==0)
+					column.getColumn().setText("Disk ID");
+				else if(i==1)
+					column.getColumn().setText("Name");
+				else if(i==2)
+					column.getColumn().setText("Artist");
+				else if(i==3)
+					column.getColumn().setText("Year");
+				else if(i==4)
+					column.getColumn().setText("Genre");
+				else if(i==5)
+					column.getColumn().setText("Length");
+				else if(i==6)
+					column.getColumn().setText("Price");
+				
 				if(i==0||i==3||i==5||i==6) 
 					column.getColumn().setWidth(50);
 				else if (i==1||i==2)
