@@ -22,6 +22,7 @@ import model.SqlStatement;
 import model.TableViewsMap;
 import model.UserPassword;
 import model.advanceSearchFieldValueBundle;
+import model.RequestToQueryHandler.MusicGenres;
 import model.SqlStatement.QueryType;
 
 public class queryHandler implements Runnable
@@ -217,8 +218,8 @@ public class queryHandler implements Runnable
 							"FROM ALBUMS, ARTISTS, GENRES WHERE " +
 							"((ALBUMS.title LIKE '%"+ searchReq.getRegularSearchString() + "%') " +
 							"OR (ARTISTS.name LIKE '%" + searchReq.getRegularSearchString()+ "%')) " +
-							"AND (artists.artistid = albums.artistid) AND (genres.genreid = albums.genre) AND " +
-							"(genres.genre = '" + searchReq.getMusicGenre().toString().toLowerCase() + "')", 
+							"AND (artists.artistid = albums.artistid) AND (genres.genreid = albums.genre)" +
+							(searchReq.getMusicGenre()==MusicGenres.ALL?"":"AND (genres.genre = '" + searchReq.getMusicGenre().toString().toLowerCase() + "')"), 
 							null, searchReq.getId());
 					connectionManager.insertToQueryQueue(sqlStmt);
 					break;
@@ -310,7 +311,7 @@ public class queryHandler implements Runnable
 						attributes[num] = new String[6];
 						attributes[num][0] = e.getKey();
 						String[] values = e.getValue();
-						for (int i = 1; i < values.length; i++)
+						for (int i = 1; i <= values.length; i++)
 						{
 							attributes[num][i] = values[i - 1];
 						}

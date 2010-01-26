@@ -118,7 +118,7 @@ public class DbConnector implements Runnable{
 					ps.setString(3, currentTuple[2]);					//TITLE
 					ps.setLong(4, Long.parseLong(currentTuple[3]));		//YEAR
 					ps.setLong(5, Long.parseLong(currentTuple[4]));		//GENRE
-					ps.setLong(6, Long.parseLong(currentTuple[5]==null?"0":currentTuple[5])); //TOTALTIME
+					ps.setLong(6, Long.parseLong(currentTuple[5])); 	//TOTALTIME
 					ps.addBatch();
 				}
 				break;
