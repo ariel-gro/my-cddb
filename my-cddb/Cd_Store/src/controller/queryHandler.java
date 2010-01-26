@@ -143,6 +143,7 @@ public class queryHandler implements Runnable
 			if (this.searchReq.getTheQueryType() != QueryType.QUERY)
 			{
 				// we are not expecting any results back so quit
+				searchReq=null;
 				return;
 			}
 
@@ -161,10 +162,12 @@ public class queryHandler implements Runnable
 					if (table != null)
 					{
 						TableViewsMap.addTable(this.searchReq.getId(), table);
+						searchReq=null;
 						return;
 					} else
 					{
 						// an error occurred
+						searchReq=null;
 						return;
 					}
 				}
@@ -211,8 +214,11 @@ public class queryHandler implements Runnable
 						sqlStmt = new SqlStatement(
 								QueryType.QUERY,
 								searchReq.getMapType(),
-								"SELECT TOP 10 Albums.* FROM ALBUMS, (SELECT discid, COUNT(discid) "
-								+"FROM SALES GROUP BY discid ORDER BY COUNT(discid) DESC) WHERE SALES.discid = ALBUMS.discid", null, 
+								"select * from " +
+								"(select ALBUMS.discid, ARTISTS.name, ALBUMS.title, ALBUMS.year, GENRES.genre, ALBUMS.TOTALTIME, ALBUMS.price " +
+								"from albums, artists, genres where (ALBUMS.artistid = ARTISTS.artistid) AND (ALBUMS.GENRE = GENRES.genreid) and " +
+								"ALBUMS.discid in (select discid from (select sales.discid, COUNT(discid) from sales GROUP BY discid order by COUNT(discid) desc))) " +
+								"where (rownum<=10)" , null, 
 								searchReq.getId());
 						connectionManager.insertToQueryQueue(sqlStmt);
 						break;
@@ -341,7 +347,6 @@ public class queryHandler implements Runnable
 							searchReq.getMapType(), "INSERT INTO ALBUMS (DiscId, ArtistId, Title, Year, Genre, TotalTime, Price) " + "VALUES (?, ?, ?, ?, ?, ?, ?"
 							/*+ df.format((5 + Math.random() * 10))*/ + ")", attributes, searchReq.getId());
 					connectionManager.insertToQueryQueue(sqlStmt);
-
 					break;
 				case ARTISTS:
 					num = 0;
@@ -398,8 +403,7 @@ public class queryHandler implements Runnable
 
 					}
 
-					sqlStmt = new SqlStatement(QueryType.INSERT_BULK, searchReq.getMapType(), "INSERT INTO GENRES (Genre, GenreId) " + "VALUES (?, ?)", attributes, searchReq
-							.getId());
+					sqlStmt = new SqlStatement(QueryType.INSERT_BULK, searchReq.getMapType(), "INSERT INTO GENRES (Genre, GenreId) " + "VALUES (?, ?)", attributes, searchReq.getId());
 					connectionManager.insertToQueryQueue(sqlStmt);
 
 					break;
@@ -426,7 +430,8 @@ public class queryHandler implements Runnable
 				default:
 					break;
 				}
-
+				map=null;
+				System.gc();
 			}
 		}
 	}
