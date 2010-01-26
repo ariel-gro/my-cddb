@@ -184,17 +184,25 @@ public class queryHandler implements Runnable
 					switch (searchReq.getTop10Type()) {
 					case LATEST:
 						if (searchReq.getMusicGenre() != null)
-						{
+						{	
 							sqlStmt = new SqlStatement(QueryType.QUERY,		
 									searchReq.getMapType(), 
-									"SELECT * FROM (select * from albums where genre = (SELECT genreid FROM genres where genres.genre='" 
-									+ searchReq.getMusicGenre().toString().toLowerCase() + "') ORDER BY year desc,discid desc) where rownum<=10"
+									"SELECT * FROM " +
+									"(select ALBUMS.discid, ARTISTS.name, ALBUMS.title, ALBUMS.year, GENRES.genre, ALBUMS.TOTALTIME, ALBUMS.price " +
+									"from albums, artists, genres " +
+									"where genres.genreid = (SELECT genreid FROM genres where genres.genre='" + searchReq.getMusicGenre().toString().toLowerCase() + "') " +
+									"AND (ALBUMS.artistid = ARTISTS.artistid) AND (ALBUMS.GENRE = GENRES.genreid) " +
+									"ORDER BY year desc,discid desc) where (rownum<=10)"
 									, null, searchReq.getId());
 							connectionManager.insertToQueryQueue(sqlStmt);
 						} else
 						{
 							sqlStmt = new SqlStatement(QueryType.QUERY, searchReq.getMapType(), 
-									"SELECT * FROM (select * from albums ORDER BY year desc) where rownum<=10",
+									"SELECT * FROM " +
+									"(select ALBUMS.discid, ARTISTS.name, ALBUMS.title, ALBUMS.year, GENRES.genre, ALBUMS.TOTALTIME, ALBUMS.price " +
+									"from albums, artists, genres " +
+									"where (ALBUMS.artistid = ARTISTS.artistid) AND (ALBUMS.GENRE = GENRES.genreid) " +
+									"ORDER BY year desc,discid desc) where (rownum<=10)",
 									null, searchReq.getId());
 							connectionManager.insertToQueryQueue(sqlStmt);
 						}
