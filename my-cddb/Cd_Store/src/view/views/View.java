@@ -229,7 +229,7 @@ public class View extends ViewPart
 					{
 						try
 						{
-							Thread.sleep(200);
+							Thread.sleep(20);
 						} catch (Throwable th)
 						{}
 					}
@@ -352,7 +352,7 @@ public class View extends ViewPart
 			lab.setImage(resize(image, 110, 110));
 			lab.setLayoutData(new GridData(GridData.FILL_BOTH));
 			
-			if(searchId != -1)
+			if(searchId != -1 && (dummyDisks[i].getTitle().equals("")==false && dummyDisks[i].getArtist().equals("")==false))
 			{
 				lab.setToolTipText("Title: " + dummyDisks[i].getTitle() + "\nArtist: " + dummyDisks[i].getArtist());
 				lab.setData(dummyDisks[i]);
@@ -467,27 +467,49 @@ public class View extends ViewPart
 		{
 			String[][] allDisksAsString = TableViewsMap.getData(searchId);
 			FindAndDownloadCdImage[] searchImage = new FindAndDownloadCdImage[10];
-			for (int i = 0; i < 10; i++) 
+			System.out.println("In get Disks. Got allDisksAsString.lenght = " + allDisksAsString.length);
+			if(allDisksAsString!=null && allDisksAsString.length>0)
 			{
-				searchImage[i] = new FindAndDownloadCdImage("\"" + allDisksAsString[i][1] + "\" + \"" +  allDisksAsString[i][2]  + "\"", allDisksAsString[i][0] + ".jpg");
-				searchImage[i].start();
-			}
-			
-			for (int i = 0; i < 10; i++) 
-			{
-				try
+				for (int i = 0; i < 10; i++) 
 				{
-					searchImage[i].join(700);
-				} catch (InterruptedException e)
-				{}
-			}	
-			
-			for (int i = 0; i < 10; i++) 
+					if(allDisksAsString.length>i)
+					{
+						searchImage[i] = new FindAndDownloadCdImage("\"" + allDisksAsString[i][1] + "\" + \"" +  allDisksAsString[i][2]  + "\"", allDisksAsString[i][0] + ".jpg");
+						searchImage[i].start();
+					}
+				}
+				
+				for (int i = 0; i < 10; i++) 
+				{
+					if(allDisksAsString.length>i)
+					{
+						try
+						{
+							searchImage[i].join(700);
+						} catch (InterruptedException e)
+						{}
+					}
+				}	
+				
+				for (int i = 0; i < 10; i++) 
+				{
+					if(allDisksAsString.length>i)
+					{
+						if(new File(localPathFinal + "/" + allDisksAsString[i][0] + ".jpg").exists())		
+							myDisks[i] = new Disk(allDisksAsString[i][0], allDisksAsString[i][2], allDisksAsString[i][1], allDisksAsString[i][4], allDisksAsString[i][3], allDisksAsString[i][5], allDisksAsString[i][6], "album covers/" + allDisksAsString[i][0] + ".jpg", null);
+						else
+							myDisks[i] = new Disk(allDisksAsString[i][0], allDisksAsString[i][2], allDisksAsString[i][1], allDisksAsString[i][4], allDisksAsString[i][3], allDisksAsString[i][5], allDisksAsString[i][6], "album covers\\empty_disk.jpg", null);				
+					}
+					else
+						myDisks[i] = new Disk("","", "", "", "", "", "", "album covers/empty_disk.jpg", null);
+				}
+			}
+			else
 			{
-				if(new File(localPathFinal + "/" + allDisksAsString[i][0] + ".jpg").exists())		
-					myDisks[i] = new Disk(allDisksAsString[i][0], allDisksAsString[i][2], allDisksAsString[i][1], allDisksAsString[i][4], allDisksAsString[i][3], allDisksAsString[i][5], allDisksAsString[i][6], "album covers/" + allDisksAsString[i][0] + ".jpg", null);
-				else
-					myDisks[i] = new Disk(allDisksAsString[i][0], allDisksAsString[i][2], allDisksAsString[i][1], allDisksAsString[i][4], allDisksAsString[i][3], allDisksAsString[i][5], allDisksAsString[i][6], "album covers\\empty_disk.jpg", null);				
+				for (int i = 0; i < myDisks.length; i++) 
+				{
+					myDisks[i] = new Disk("","", "", "", "", "", "", "album covers/empty_disk.jpg", null);
+				}
 			}
 		}
 			
